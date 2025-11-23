@@ -61,36 +61,126 @@ export const GOALS: Goal[] = [
 ];
 
 /**
- * PDF Coordinate Map - Letter size (612 x 792 points)
+ * PDF Coordinate Map - Exact match to Orange County Head Start PCAL form
+ * Letter size (612 x 792 points)
  */
 export const PDF_COORDINATES = {
   PAGE_WIDTH: 612,
   PAGE_HEIGHT: 792,
-  MAX_LINES_PER_PAGE: 15,
 
-  // Header fields
-  HEADER: {
-    CENTER_NAME: { x: 50, y: 700 },
-    TEACHER: { x: 250, y: 700 },
-    CHILD_NAME: { x: 50, y: 680 }
+  // Margins
+  MARGIN: 30,
+
+  // Title section
+  TITLE: {
+    Y: 735,
+    SIZE: 12,
+    LOGO_AREA_HEIGHT: 50
   },
 
-  // Grid layout
-  GRID: {
-    Y_START: 650,
-    ROW_HEIGHT: 26,
-    DATE_COLUMN: 62,
-    NARRATIVE_COLUMN: 140,
-    NARRATIVE_WIDTH: 315,
-    GOAL_CODE_COLUMN: 460,
-    START_TIME_COLUMN: 495,
-    END_TIME_COLUMN: 550,
-    SIGNATURE_COLUMN: 605,
-    ELAPSED_TIME_COLUMN: 730
+  // Header fields (CENTER, TEACHER, CHILD NAME, PARENT NAME, MONTH/YEAR)
+  HEADER_FIELDS: {
+    Y_START: 690,
+    LINE_HEIGHT: 15,
+    LABEL_SIZE: 8,
+    VALUE_SIZE: 9,
+
+    CENTER_LABEL_X: 30,
+    CENTER_VALUE_X: 75,
+
+    TEACHER_LABEL_X: 290,
+    TEACHER_VALUE_X: 365,
+
+    MONTH_LABEL_X: 490,
+    MONTH_VALUE_X: 545,
+
+    CHILD_LABEL_X: 30,
+    CHILD_VALUE_X: 95,
+
+    PARENT_LABEL_X: 290,
+    PARENT_VALUE_X: 360
   },
 
-  // Footer
+  // Goals reference table at top (GOAL 1 through GOAL 6)
+  GOALS_TABLE: {
+    Y_START: 635,
+    HEADER_HEIGHT: 15,
+    CELL_HEIGHT: 40,
+    GOAL_WIDTH: 92,
+    START_X: 30,
+    FONT_SIZE: 7,
+    TITLE_SIZE: 6
+  },
+
+  // Activities section header
+  ACTIVITIES_SECTION: {
+    Y: 405,
+    HEIGHT: 12,
+    FONT_SIZE: 7
+  },
+
+  // Activities by goal (the list under each goal)
+  GOAL_ACTIVITIES: {
+    Y_START: 387,
+    ROW_HEIGHT: 35,
+    GOAL_WIDTH: 92,
+    START_X: 30,
+    FONT_SIZE: 6,
+    TITLE_SIZE: 6
+  },
+
+  // Main data entry table
+  DATA_TABLE: {
+    Y_START: 335,
+    HEADER_Y: 350,
+    ROW_HEIGHT: 25,
+    MAX_ROWS: 8,
+    FONT_SIZE: 8,
+    HEADER_FONT_SIZE: 7,
+
+    // Column X positions and widths
+    DATE_X: 30,
+    DATE_WIDTH: 50,
+
+    ACTIVITY_DESC_X: 80,
+    ACTIVITY_DESC_WIDTH: 245,
+
+    GOAL_NUM_X: 325,
+    GOAL_NUM_WIDTH: 40,
+
+    START_TIME_X: 365,
+    START_TIME_WIDTH: 40,
+
+    END_TIME_X: 405,
+    END_TIME_WIDTH: 40,
+
+    SIGNATURE_X: 445,
+    SIGNATURE_WIDTH: 95,
+
+    ELAPSED_X: 540,
+    ELAPSED_WIDTH: 42
+  },
+
+  // Footer section with signature lines and totals
   FOOTER: {
-    TOTAL_HOURS: { x: 620, y: 50 }
+    TEACHER_SIG_Y: 115,
+    SUPERVISOR_SIG_Y: 90,
+    SIG_LINE_X: 30,
+    SIG_LINE_WIDTH: 270,
+    DATE_X: 450,
+    DATE_WIDTH: 80,
+
+    LABEL_SIZE: 8,
+    OFFSET_Y: -3,
+
+    // Totals box on right
+    TOTALS_X: 540,
+    TOTALS_START_Y: 115,
+    TOTALS_WIDTH: 42,
+    TOTALS_ROW_HEIGHT: 18,
+    TOTALS_FONT_SIZE: 7,
+
+    ACCOUNTING_NOTE_Y: 50,
+    ACCOUNTING_NOTE_SIZE: 7
   }
 };
