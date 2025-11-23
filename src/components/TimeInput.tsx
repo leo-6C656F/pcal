@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { calculateTimeFields } from '../store';
 import type { TimeInputMode } from '../types';
+import { ArrowRight } from 'lucide-react';
 
 interface TimeInputProps {
   startTime: string;
@@ -54,109 +55,96 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
   return (
     <div className="space-y-4">
       {/* Mode Toggle */}
-      <div className="flex gap-2">
+      <div className="flex p-1 bg-slate-100 rounded-lg w-fit">
         <button
           type="button"
           onClick={() => setMode('start-duration')}
-          className={`px-3 py-1 text-sm rounded-md ${
+          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
             mode === 'start-duration'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              ? 'bg-white text-indigo-600 shadow-sm'
+              : 'text-slate-500 hover:text-slate-700'
           }`}
         >
-          Start + Duration
+          Duration Mode
         </button>
         <button
           type="button"
           onClick={() => setMode('start-end')}
-          className={`px-3 py-1 text-sm rounded-md ${
+          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
             mode === 'start-end'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              ? 'bg-white text-indigo-600 shadow-sm'
+              : 'text-slate-500 hover:text-slate-700'
           }`}
         >
-          Start + End
+          Start/End Mode
         </button>
       </div>
 
       {/* Time Inputs */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="flex items-end gap-3">
         {/* Start Time - Always shown */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Start Time
-          </label>
+        <div className="flex-1">
+          <label className="label-text text-xs">Start</label>
           <input
             type="time"
             value={localStart}
             onChange={(e) => handleStartChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="input-field py-2"
           />
         </div>
 
         {/* Mode-dependent input */}
         {mode === 'start-duration' ? (
           <>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Duration (min)
-              </label>
+            <div className="flex-1">
+              <label className="label-text text-xs">Min</label>
               <input
                 type="number"
                 min="0"
                 step="5"
                 value={localDuration}
                 onChange={(e) => handleDurationChange(parseInt(e.target.value) || 0)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="input-field py-2"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                End Time
-                <span className="text-xs text-gray-500 ml-1">(calculated)</span>
-              </label>
+            <div className="pb-3 text-slate-300">
+              <ArrowRight size={16} />
+            </div>
+            <div className="flex-1">
+              <label className="label-text text-xs text-slate-400">End</label>
               <input
                 type="time"
                 value={localEnd}
                 disabled
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-gray-600"
+                className="input-field bg-slate-100 text-slate-500 border-slate-200 py-2"
               />
             </div>
           </>
         ) : (
           <>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                End Time
-              </label>
+            <div className="flex-1">
+              <label className="label-text text-xs">End</label>
               <input
                 type="time"
                 value={localEnd}
                 onChange={(e) => handleEndChange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="input-field py-2"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Duration (min)
-                <span className="text-xs text-gray-500 ml-1">(calculated)</span>
-              </label>
+            <div className="pb-3 text-slate-300">
+              <ArrowRight size={16} />
+            </div>
+            <div className="flex-1">
+              <label className="label-text text-xs text-slate-400">Min</label>
               <input
                 type="number"
                 value={localDuration}
                 disabled
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-gray-600"
+                className="input-field bg-slate-100 text-slate-500 border-slate-200 py-2"
               />
             </div>
           </>
         )}
-      </div>
-
-      {/* Summary */}
-      <div className="bg-gray-50 border border-gray-200 rounded-md p-2">
-        <p className="text-sm text-gray-700">
-          {localStart} to {localEnd} ({localDuration} minutes = {(localDuration / 60).toFixed(2)} hours)
-        </p>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { DailyEntry, ChildContext, Goal } from '../types';
 import { generatePDF } from '../services/pdfGenerator';
-import { Download, FileText } from 'lucide-react';
+import { Download, FileText, Loader2 } from 'lucide-react';
 
 interface PDFPreviewProps {
   entries: DailyEntry[];  // Support multiple entries
@@ -20,6 +20,12 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-generate preview on mount
+  useEffect(() => {
+    generatePreview();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const generatePreview = async () => {
     setIsGenerating(true);
@@ -78,44 +84,67 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={generatePreview}
-          disabled={isGenerating}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-        >
-          <FileText size={16} />
-          {isGenerating ? 'Generating...' : 'Generate Preview'}
-        </button>
+      {error && (
+        <div className="bg-rose-50 border border-rose-200 rounded-xl p-4">
+          <p className="text-sm text-rose-800">Error: {error}</p>
+        </div>
+      )}
 
-        {pdfUrl && (
-          <button
-            type="button"
-            onClick={downloadPDF}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-          >
-            <Download size={16} />
-            Download PDF
-          </button>
-        )}
+      <div className="bg-slate-800 rounded-xl overflow-hidden shadow-lg">
+        <div className="bg-slate-900 p-3 flex justify-between items-center border-b border-slate-700">
+          <span className="text-slate-400 text-xs font-medium uppercase tracking-wider pl-2">
+            Document Preview
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={generatePreview}
+              disabled={isGenerating}
+              className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+              title="Regenerate"
+            >
+              <FileText size={16} />
+            </button>
+            <button
+              onClick={downloadPDF}
+              disabled={!pdfUrl}
+              className="p-1.5 text-emerald-400 hover:text-emerald-300 hover:bg-slate-800 rounded-lg transition-colors"
+              title="Download"
+            >
+              <Download size={16} />
+            </button>
+          </div>
+        </div>
+
+        <div className="relative w-full h-[500px] bg-slate-100">
+          {isGenerating && (
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-50 z-10">
+              <div className="flex flex-col items-center text-slate-500">
+                <Loader2 size={32} className="animate-spin mb-2 text-indigo-600" />
+                <p className="text-sm font-medium">Generating PDF...</p>
+              </div>
+            </div>
+          )}
+
+          {pdfUrl && (
+            <iframe
+              src={`${pdfUrl}#toolbar=0`}
+              className="w-full h-full"
+              title="PDF Preview"
+            />
+          )}
+        </div>
       </div>
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-3">
-          <p className="text-sm text-red-800">Error: {error}</p>
-        </div>
-      )}
-
-      {pdfUrl && (
-        <div className="border border-gray-300 rounded-md overflow-hidden">
-          <iframe
-            src={pdfUrl}
-            className="w-full h-[600px]"
-            title="PDF Preview"
-          />
-        </div>
-      )}
+      <div className="flex justify-center">
+        <button
+          type="button"
+          onClick={downloadPDF}
+          className="btn-primary w-full sm:w-auto"
+        >
+          <Download size={18} className="mr-2" />
+          Download PDF
+        </button>
+      </div>
     </div>
   );
 }

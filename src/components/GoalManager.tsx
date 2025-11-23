@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../store';
 import type { Goal } from '../types';
+import { Plus, Trash2, Edit, Save, X, Target } from 'lucide-react';
 
 /**
  * GoalManager Component
@@ -39,6 +40,7 @@ export function GoalManager() {
   const handleEditGoal = (goal: Goal) => {
     setCurrentGoal(goal);
     setIsEditing(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDeleteGoal = async (code: number) => {
@@ -86,176 +88,177 @@ export function GoalManager() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Manage Goals</h2>
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Goal Management</h1>
+          <p className="text-slate-500 mt-1">Customize developmental goals and activities</p>
+        </div>
         {goals.length > 0 && (
           <button
             onClick={handleClearAll}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="btn-danger bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 hover:border-rose-300"
           >
-            Clear All Goals
+            Reset All Goals
           </button>
         )}
       </div>
 
-      {/* Existing Goals */}
-      {goals.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Current Goals</h3>
-          <div className="space-y-4">
-            {goals.map(goal => (
-              <div key={goal.code} className="border border-gray-200 rounded-md p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900">
-                      Goal {goal.code}: {goal.description}
-                    </h4>
-                    {goal.activities.length > 0 && (
-                      <div className="mt-2">
-                        <p className="text-sm font-medium text-gray-700 mb-1">Activities:</p>
-                        <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                          {goal.activities.map((activity, idx) => (
-                            <li key={idx}>{activity}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleEditGoal(goal)}
-                      className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteGoal(goal.code)}
-                      className="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                    >
-                      Delete
-                    </button>
-                  </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Form Section */}
+        <div className="lg:col-span-1">
+          <div className="card p-6 sticky top-24 border-indigo-100 ring-4 ring-indigo-50/50">
+            <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+              {isEditing ? <Edit size={20} className="text-indigo-600" /> : <Plus size={20} className="text-indigo-600" />}
+              {isEditing ? 'Edit Goal' : 'Add New Goal'}
+            </h3>
+
+            <div className="space-y-5">
+              <div>
+                <label className="label-text">Goal Number</label>
+                <input
+                  type="number"
+                  value={currentGoal.code}
+                  onChange={(e) => setCurrentGoal({ ...currentGoal, code: parseInt(e.target.value) || 1 })}
+                  className="input-field"
+                  min="1"
+                />
+              </div>
+
+              <div>
+                <label className="label-text">Description</label>
+                <textarea
+                  value={currentGoal.description}
+                  onChange={(e) => setCurrentGoal({ ...currentGoal, description: e.target.value })}
+                  rows={4}
+                  className="input-field resize-none"
+                  placeholder="e.g., Child will manage actions and behavior with support of familiar adults"
+                />
+              </div>
+
+              <div>
+                <label className="label-text">Activities</label>
+                <div className="flex gap-2 mb-3">
+                  <input
+                    type="text"
+                    value={newActivity}
+                    onChange={(e) => setNewActivity(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddActivity();
+                      }
+                    }}
+                    className="input-field"
+                    placeholder="Add activity..."
+                  />
+                  <button
+                    onClick={handleAddActivity}
+                    className="btn-secondary px-3"
+                  >
+                    <Plus size={20} />
+                  </button>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
-      {/* Add/Edit Goal Form */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {isEditing ? 'Edit Goal' : 'Add New Goal'}
-        </h3>
-
-        <div className="space-y-4">
-          {/* Goal Code */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Goal Number
-            </label>
-            <input
-              type="number"
-              value={currentGoal.code}
-              onChange={(e) => setCurrentGoal({ ...currentGoal, code: parseInt(e.target.value) || 1 })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              min="1"
-            />
-          </div>
-
-          {/* Goal Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Goal Description
-            </label>
-            <textarea
-              value={currentGoal.description}
-              onChange={(e) => setCurrentGoal({ ...currentGoal, description: e.target.value })}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="e.g., Child will manage actions and behavior with support of familiar adults"
-            />
-          </div>
-
-          {/* Activities */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Activities
-            </label>
-
-            {/* Current Activities */}
-            {currentGoal.activities.length > 0 && (
-              <div className="mb-3 space-y-2">
-                {currentGoal.activities.map((activity, idx) => (
-                  <div key={idx} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-md">
-                    <span className="text-sm text-gray-700">{activity}</span>
-                    <button
-                      onClick={() => handleRemoveActivity(idx)}
-                      className="text-red-600 hover:text-red-800 text-sm font-medium"
-                    >
-                      Remove
-                    </button>
+                {currentGoal.activities.length > 0 && (
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {currentGoal.activities.map((activity, idx) => (
+                      <div key={idx} className="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 text-sm">
+                        <span className="text-slate-700 truncate mr-2">{activity}</span>
+                        <button
+                          onClick={() => handleRemoveActivity(idx)}
+                          className="text-slate-400 hover:text-rose-600 transition-colors"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
-            )}
 
-            {/* Add Activity */}
-            <div className="flex space-x-2">
-              <input
-                type="text"
-                value={newActivity}
-                onChange={(e) => setNewActivity(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddActivity();
-                  }
-                }}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Add an activity (e.g., Visuals)"
-              />
-              <button
-                onClick={handleAddActivity}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                Add
-              </button>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handleSaveGoal}
+                  className="flex-1 btn-primary"
+                >
+                  <Save size={18} className="mr-2" />
+                  {isEditing ? 'Update' : 'Save'}
+                </button>
+                {isEditing && (
+                  <button
+                    onClick={handleCancel}
+                    className="flex-1 btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-
-          {/* Action Buttons */}
-          <div className="flex space-x-3">
-            <button
-              onClick={handleSaveGoal}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {isEditing ? 'Update Goal' : 'Save Goal'}
-            </button>
-            {isEditing && (
-              <button
-                onClick={handleCancel}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
-              >
-                Cancel
-              </button>
-            )}
-          </div>
         </div>
-      </div>
 
-      {/* Instructions */}
-      <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-        <h4 className="font-semibold text-blue-900 mb-2">Instructions</h4>
-        <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-          <li>Add goals that match your child's individual needs</li>
-          <li>Each goal should have a number and description</li>
-          <li>Add activities that support each goal</li>
-          <li>Goals can be edited or deleted at any time</li>
-          <li>Use "Clear All Goals" to start fresh (this cannot be undone)</li>
-        </ul>
+        {/* List Section */}
+        <div className="lg:col-span-2 space-y-6">
+          {goals.length === 0 ? (
+            <div className="card p-12 text-center border-dashed border-2 border-slate-200 bg-slate-50">
+              <div className="mx-auto w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-4">
+                <Target size={32} className="text-indigo-300" />
+              </div>
+              <h3 className="text-slate-900 font-medium text-lg">No Goals Defined</h3>
+              <p className="text-slate-500 mt-2">Add your first developmental goal using the form.</p>
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {goals.map(goal => (
+                <div key={goal.code} className={`card p-5 transition-all duration-200 hover:shadow-md ${isEditing && currentGoal.code === goal.code ? 'ring-2 ring-indigo-500 border-transparent' : ''}`}>
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wide">
+                          Goal {goal.code}
+                        </span>
+                      </div>
+                      <h4 className="text-lg font-semibold text-slate-900 mb-3">
+                        {goal.description}
+                      </h4>
+
+                      {goal.activities.length > 0 && (
+                        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Suggested Activities</p>
+                          <div className="flex flex-wrap gap-2">
+                            {goal.activities.map((activity, idx) => (
+                              <span key={idx} className="inline-flex items-center px-2.5 py-1 rounded-md bg-white border border-slate-200 text-slate-600 text-xs">
+                                {activity}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <button
+                        onClick={() => handleEditGoal(goal)}
+                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        title="Edit"
+                      >
+                        <Edit size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteGoal(goal.code)}
+                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
