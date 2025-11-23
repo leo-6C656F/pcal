@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useStore } from '../store';
 import { format } from 'date-fns';
-import { Plus, Calendar, User } from 'lucide-react';
+import { Plus, Calendar, User, Edit2 } from 'lucide-react';
+import type { ChildContext } from '../types';
 
 /**
  * Dashboard Component
@@ -15,11 +16,13 @@ export function Dashboard() {
     setCurrentChild,
     setCurrentEntry,
     createChild,
+    updateChild,
     createEntry
   } = useStore();
 
   const [showChildForm, setShowChildForm] = useState(false);
   const [showEntryForm, setShowEntryForm] = useState(false);
+  const [editingChild, setEditingChild] = useState<ChildContext | null>(null);
 
   const [newChildData, setNewChildData] = useState({
     name: '',
@@ -41,6 +44,27 @@ export function Dashboard() {
     setCurrentChild(child);
     setShowChildForm(false);
     setNewChildData({ name: '', center: '', teacher: '' });
+  };
+
+  const handleStartEdit = (child: ChildContext, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingChild(child);
+  };
+
+  const handleUpdateChild = async () => {
+    if (!editingChild) return;
+
+    if (!editingChild.name || !editingChild.center || !editingChild.teacher) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    await updateChild(editingChild.id, {
+      name: editingChild.name,
+      center: editingChild.center,
+      teacher: editingChild.teacher
+    });
+    setEditingChild(null);
   };
 
   const handleCreateEntry = async () => {
@@ -138,25 +162,81 @@ export function Dashboard() {
             <p className="text-sm text-gray-500">No children added yet</p>
           )}
           {children.map((child) => (
-            <button
-              key={child.id}
-              onClick={() => setCurrentChild(child)}
-              className={`w-full text-left px-4 py-3 border rounded-md hover:bg-gray-50 ${
-                currentChild?.id === child.id
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <User size={16} className="text-gray-600" />
-                <div>
-                  <p className="font-medium text-gray-900">{child.name}</p>
-                  <p className="text-sm text-gray-600">
-                    {child.center} | {child.teacher}
-                  </p>
+            <div key={child.id}>
+              {editingChild?.id === child.id ? (
+                /* Edit Form */
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Child's Name"
+                    value={editingChild.name}
+                    onChange={(e) => setEditingChild({ ...editingChild, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Center Name"
+                    value={editingChild.center}
+                    onChange={(e) => setEditingChild({ ...editingChild, center: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Teacher Name"
+                    value={editingChild.teacher}
+                    onChange={(e) => setEditingChild({ ...editingChild, teacher: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleUpdateChild}
+                      className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                    >
+                      Save Changes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingChild(null)}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </button>
+              ) : (
+                /* Child Card */
+                <div
+                  className={`w-full text-left px-4 py-3 border rounded-md ${
+                    currentChild?.id === child.id
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <button
+                      onClick={() => setCurrentChild(child)}
+                      className="flex-1 flex items-center gap-2 text-left"
+                    >
+                      <User size={16} className="text-gray-600" />
+                      <div>
+                        <p className="font-medium text-gray-900">{child.name}</p>
+                        <p className="text-sm text-gray-600">
+                          {child.center} | {child.teacher}
+                        </p>
+                      </div>
+                    </button>
+                    <button
+                      onClick={(e) => handleStartEdit(child, e)}
+                      className="ml-2 p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md"
+                      title="Edit child"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>

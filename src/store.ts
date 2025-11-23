@@ -25,6 +25,7 @@ interface AppState {
   loadEntries: () => Promise<void>;
   loadGoals: () => Promise<void>;
   createChild: (child: Omit<ChildContext, 'id'>) => Promise<ChildContext>;
+  updateChild: (id: string, updates: Partial<ChildContext>) => Promise<void>;
   createEntry: (date: string, childId: string) => Promise<DailyEntry>;
   addActivityLine: (entryId: string, line: Omit<ActivityLine, 'id'>) => Promise<void>;
   updateActivityLine: (entryId: string, lineId: string, updates: Partial<ActivityLine>) => Promise<void>;
@@ -77,6 +78,20 @@ export const useStore = create<AppState>((set, get) => ({
     await get().loadChildren();
 
     return child;
+  },
+
+  updateChild: async (id, updates) => {
+    const child = await db.children.get(id);
+    if (child) {
+      const updatedChild = { ...child, ...updates };
+      await db.children.put(updatedChild);
+      await get().loadChildren();
+
+      // Update current child if it's the one being edited
+      if (get().currentChild?.id === id) {
+        get().setCurrentChild(updatedChild);
+      }
+    }
   },
 
   createEntry: async (date, childId) => {
