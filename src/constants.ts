@@ -63,6 +63,7 @@ export const GOALS: Goal[] = [
 /**
  * PDF Coordinate Map - Exact match to Orange County Head Start PCAL form
  * Letter size (612 x 792 points)
+ * Updated to match HTML/CSS design with improved spacing and typography
  */
 export const PDF_COORDINATES = {
   PAGE_WIDTH: 612,
@@ -71,123 +72,153 @@ export const PDF_COORDINATES = {
   // Margins (0.5 inches = 36 points)
   MARGIN: 36,
 
+  // Border styling
+  BORDER_WIDTH: 0.6,
+
+  // Colors
+  COLORS: {
+    BORDER_COLOR: { r: 0, g: 0, b: 0 },
+    TABLE_HEADER_BG: { r: 0.95, g: 0.95, b: 0.95 },  // #f3f3f3
+    TABLE_CELL_SHADE: { r: 0.85, g: 0.9, b: 0.95 },
+    TEXT_DARK: { r: 0, g: 0, b: 0 },
+    TEXT_GRAY: { r: 0.27, g: 0.27, b: 0.27 }  // #444
+  },
+
   // Title section
   TITLE: {
     Y: 735,
-    SIZE: 12,
-    LOGO_AREA_HEIGHT: 50
+    SIZE: 12,  // 12pt as per HTML
+    LOGO_NOTE_Y: 745,
+    LOGO_NOTE_SIZE: 9  // 9pt as per HTML
   },
 
   // Header fields (CENTER, TEACHER, CHILD NAME, PARENT NAME, MONTH/YEAR)
+  // Using CSS grid layout: 3 columns with 12pt gap
   HEADER_FIELDS: {
-    Y_START: 690,
-    LINE_HEIGHT: 15,
-    LABEL_SIZE: 8,
-    VALUE_SIZE: 9,
+    Y_START: 700,
+    LINE_HEIGHT: 18,  // Increased for 10pt font
+    LABEL_SIZE: 10,   // 10pt as per HTML
+    VALUE_SIZE: 10,   // 10pt as per HTML
+    GAP: 12,          // 12pt gap between columns
+
+    // Column widths (evenly distributed with gaps)
+    COL_WIDTH: 180,
 
     CENTER_LABEL_X: 36,
-    CENTER_VALUE_X: 81,
+    CENTER_VALUE_X: 36,
 
-    TEACHER_LABEL_X: 290,
-    TEACHER_VALUE_X: 371,
+    TEACHER_LABEL_X: 228,  // 36 + 180 + 12
+    TEACHER_VALUE_X: 228,
 
-    MONTH_LABEL_X: 490,
-    MONTH_VALUE_X: 545,
+    MONTH_LABEL_X: 420,    // 36 + 180 + 12 + 180 + 12
+    MONTH_VALUE_X: 420,
 
     CHILD_LABEL_X: 36,
-    CHILD_VALUE_X: 101,
+    CHILD_VALUE_X: 36,
 
-    PARENT_LABEL_X: 290,
-    PARENT_VALUE_X: 366
+    PARENT_LABEL_X: 228,
+    PARENT_VALUE_X: 228
   },
 
   // Instruction text below header
   INSTRUCTION_TEXT: {
     Y: 655,
-    SIZE: 9,
+    SIZE: 9,  // 9pt italic as per HTML
     TEXT: "Teacher is to set goals with parent based on child's individual needs and list suggested home activities to meet these goals"
   },
 
   // Goals reference table at top (GOAL 1 through GOAL 6)
   GOALS_TABLE: {
-    Y_START: 630,
-    HEADER_HEIGHT: 15,
-    CELL_HEIGHT: 40,
+    Y_START: 635,
+    HEADER_HEIGHT: 18,  // Increased for 10pt font + padding
+    CELL_HEIGHT: 50,    // Increased for better readability (42pt in HTML)
     GOAL_WIDTH: 90,
     START_X: 36,
-    FONT_SIZE: 7,
-    TITLE_SIZE: 6
+    FONT_SIZE: 10,      // 10pt as per HTML
+    PADDING: 6          // 6pt padding as per HTML
   },
 
   // Activities section header
   ACTIVITIES_SECTION: {
-    Y: 400,
-    HEIGHT: 12,
-    FONT_SIZE: 7
+    Y: 505,
+    HEIGHT: 14,         // Increased for 10pt font
+    FONT_SIZE: 10       // 10pt uppercase as per HTML
   },
 
   // Activities by goal (the list under each goal)
   GOAL_ACTIVITIES: {
-    Y_START: 382,
-    ROW_HEIGHT: 35,
+    Y_START: 490,
+    ROW_HEIGHT: 50,     // Increased for better content fit
     GOAL_WIDTH: 90,
     START_X: 36,
-    FONT_SIZE: 6,
-    TITLE_SIZE: 6
+    FONT_SIZE: 10,      // 10pt as per HTML
+    TITLE_SIZE: 10,     // 10pt bold for titles
+    PADDING: 6          // 6pt padding as per HTML
+  },
+
+  // Guidance note above log table
+  GUIDANCE_NOTE: {
+    Y: 425,
+    SIZE: 9,  // 9pt italic as per HTML
+    TEXT: 'Write down what the parent and child did together to make progress towards this goal. For example: Parent read "Polar Bear, Polar Bear" and discussed animals and animal sounds with the child.'
   },
 
   // Main data entry table
   DATA_TABLE: {
-    Y_START: 330,
-    HEADER_Y: 345,
-    ROW_HEIGHT: 25,
+    Y_START: 400,
+    HEADER_Y: 415,
+    ROW_HEIGHT: 20,     // 20pt height as per HTML
     MAX_ROWS: 8,
-    FONT_SIZE: 8,
-    HEADER_FONT_SIZE: 7,
+    FONT_SIZE: 10,      // 10pt as per HTML
+    HEADER_FONT_SIZE: 10,  // 10pt as per HTML
+    PADDING: 6,         // 6pt padding as per HTML
 
-    // Column X positions and widths
+    // Column X positions and widths (matching HTML table)
     DATE_X: 36,
-    DATE_WIDTH: 50,
+    DATE_WIDTH: 72,     // 1.0in
 
-    ACTIVITY_DESC_X: 86,
-    ACTIVITY_DESC_WIDTH: 235,
+    ACTIVITY_DESC_X: 108,
+    ACTIVITY_DESC_WIDTH: 200,
 
-    GOAL_NUM_X: 321,
-    GOAL_NUM_WIDTH: 40,
+    GOAL_NUM_X: 308,
+    GOAL_NUM_WIDTH: 58,  // 0.8in
 
-    START_TIME_X: 361,
-    START_TIME_WIDTH: 40,
+    START_TIME_X: 366,
+    START_TIME_WIDTH: 65,  // 0.9in
 
-    END_TIME_X: 401,
-    END_TIME_WIDTH: 40,
+    END_TIME_X: 431,
+    END_TIME_WIDTH: 65,  // 0.9in
 
-    SIGNATURE_X: 441,
-    SIGNATURE_WIDTH: 93,
+    SIGNATURE_X: 496,
+    SIGNATURE_WIDTH: 115,  // 1.6in adjusted
 
-    ELAPSED_X: 534,
-    ELAPSED_WIDTH: 42
+    ELAPSED_X: 519,
+    ELAPSED_WIDTH: 65   // 0.9in
   },
 
   // Footer section with signature lines and totals
   FOOTER: {
-    TEACHER_SIG_Y: 115,
+    TEACHER_SIG_Y: 120,
     SUPERVISOR_SIG_Y: 90,
     SIG_LINE_X: 36,
-    SIG_LINE_WIDTH: 270,
-    DATE_X: 450,
-    DATE_WIDTH: 80,
+    SIG_LINE_WIDTH: 320,  // 1.5fr proportion
+    DATE_X: 380,          // Adjusted for grid layout
+    DATE_WIDTH: 100,      // 0.8fr proportion
 
-    LABEL_SIZE: 8,
-    OFFSET_Y: -3,
+    LABEL_SIZE: 10,       // 10pt as per HTML
+    OFFSET_Y: 3,
 
-    // Totals box on right
-    TOTALS_X: 534,
-    TOTALS_START_Y: 115,
-    TOTALS_WIDTH: 42,
-    TOTALS_ROW_HEIGHT: 18,
-    TOTALS_FONT_SIZE: 7,
+    // Totals box on right (absolute positioned)
+    TOTALS_X: 476,        // Right side (1.4in from right = 612 - 36 - 100)
+    TOTALS_START_Y: 150,
+    TOTALS_WIDTH: 100,    // 1.4in width
+    TOTALS_ROW_HEIGHT: 20,
+    TOTALS_LABEL_WIDTH: 65,  // 65% of width
+    TOTALS_VALUE_WIDTH: 35,  // 35% of width
+    TOTALS_FONT_SIZE: 10,    // 10pt as per HTML
+    TOTALS_PADDING: 6,
 
     ACCOUNTING_NOTE_Y: 50,
-    ACCOUNTING_NOTE_SIZE: 7
+    ACCOUNTING_NOTE_SIZE: 9  // 9pt as per HTML
   }
 };
