@@ -81,71 +81,91 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
       </div>
 
       {/* Time Inputs */}
-      <div className="flex items-end gap-3">
-        {/* Start Time - Always shown */}
-        <div className="flex-1">
-          <label className="label-text text-xs">Start</label>
-          <input
-            type="time"
-            value={localStart}
-            onChange={(e) => handleStartChange(e.target.value)}
-            className="input-field py-2"
-          />
-        </div>
+      {mode === 'start-duration' ? (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            {/* Start Time */}
+            <div>
+              <label className="label-text text-xs block mb-1">Start</label>
+              <input
+                type="time"
+                value={localStart}
+                onChange={(e) => handleStartChange(e.target.value)}
+                className="input-field py-2.5 w-full"
+              />
+            </div>
 
-        {/* Mode-dependent input */}
-        {mode === 'start-duration' ? (
-          <>
-            <div className="flex-1">
-              <label className="label-text text-xs">Min</label>
+            {/* Duration */}
+            <div>
+              <label className="label-text text-xs block mb-1">Duration (Min)</label>
               <input
                 type="number"
                 min="0"
                 step="5"
                 value={localDuration}
                 onChange={(e) => handleDurationChange(parseInt(e.target.value) || 0)}
-                className="input-field py-2"
+                className="input-field py-2.5 w-full text-center"
               />
             </div>
-            <div className="pb-3 text-slate-300">
-              <ArrowRight size={16} />
-            </div>
-            <div className="flex-1">
-              <label className="label-text text-xs text-slate-400">End</label>
+          </div>
+
+          <div className="flex items-center justify-center">
+            <ArrowRight size={16} className="text-slate-300" />
+          </div>
+
+          {/* End Time (calculated) */}
+          <div>
+            <label className="label-text text-xs block mb-1 text-slate-400">End Time (Calculated)</label>
+            <input
+              type="time"
+              value={localEnd}
+              disabled
+              className="input-field bg-slate-100 text-slate-500 border-slate-200 py-2.5 w-full"
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            {/* Start Time */}
+            <div>
+              <label className="label-text text-xs block mb-1">Start</label>
               <input
                 type="time"
-                value={localEnd}
-                disabled
-                className="input-field bg-slate-100 text-slate-500 border-slate-200 py-2"
+                value={localStart}
+                onChange={(e) => handleStartChange(e.target.value)}
+                className="input-field py-2.5 w-full"
               />
             </div>
-          </>
-        ) : (
-          <>
-            <div className="flex-1">
-              <label className="label-text text-xs">End</label>
+
+            {/* End Time */}
+            <div>
+              <label className="label-text text-xs block mb-1">End</label>
               <input
                 type="time"
                 value={localEnd}
                 onChange={(e) => handleEndChange(e.target.value)}
-                className="input-field py-2"
+                className="input-field py-2.5 w-full"
               />
             </div>
-            <div className="pb-3 text-slate-300">
-              <ArrowRight size={16} />
-            </div>
-            <div className="flex-1">
-              <label className="label-text text-xs text-slate-400">Min</label>
-              <input
-                type="number"
-                value={localDuration}
-                disabled
-                className="input-field bg-slate-100 text-slate-500 border-slate-200 py-2"
-              />
-            </div>
-          </>
-        )}
-      </div>
+          </div>
+
+          <div className="flex items-center justify-center">
+            <ArrowRight size={16} className="text-slate-300" />
+          </div>
+
+          {/* Duration (calculated) */}
+          <div>
+            <label className="label-text text-xs block mb-1 text-slate-400">Duration (Calculated)</label>
+            <input
+              type="number"
+              value={localDuration}
+              disabled
+              className="input-field bg-slate-100 text-slate-500 border-slate-200 py-2.5 w-full text-center"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

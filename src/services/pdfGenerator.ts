@@ -17,6 +17,111 @@ interface PDFGenerationOptions {
 }
 
 /**
+ * Aggregated daily activity data for PDF display
+ */
+interface AggregatedDailyActivity {
+  date: string;
+  description: string;  // Combined or AI-generated description
+  goalCodes: number[];  // All goals completed this day
+  startTime: string;    // Earliest start time
+  endTime: string;      // Latest end time
+  totalMinutes: number; // Total duration for the day
+  signatureBase64?: string;
+}
+
+/**
+ * Aggregate activities by date and combine descriptions
+ * If AI is available, use it to create a coherent description
+ * Otherwise, combine activity descriptions intelligently
+ */
+async function aggregateDailyActivities(entries: DailyEntry[], goals: Goal[]): Promise<AggregatedDailyActivity[]> {
+  const aggregated: AggregatedDailyActivity[] = [];
+
+  for (const entry of entries) {
+    if (entry.lines.length === 0) continue;
+
+    console.log(`Aggregating entry for ${entry.date} with ${entry.lines.length} activities`);
+
+    // Collect all unique goal codes for this day
+    const goalCodes = Array.from(new Set(entry.lines.map(line => line.goalCode))).sort((a, b) => a - b);
+
+    // Find earliest start and latest end time
+    const startTimes = entry.lines.map(line => line.startTime);
+    const endTimes = entry.lines.map(line => line.endTime);
+    const startTime = startTimes.sort()[0];
+    const endTime = endTimes.sort().reverse()[0];
+
+    // Calculate total minutes for the day
+    const totalMinutes = entry.lines.reduce((sum, line) => sum + line.durationMinutes, 0);
+
+    // Generate combined description
+    const description = await generateDailyDescription(entry, goals);
+
+    console.log(`Aggregated: ${description} (Goals: ${goalCodes.join(', ')}, Total: ${totalMinutes} min)`);
+
+    aggregated.push({
+      date: entry.date,
+      description,
+      goalCodes,
+      startTime,
+      endTime,
+      totalMinutes,
+      signatureBase64: entry.signatureBase64
+    });
+  }
+
+  console.log(`Total aggregated entries: ${aggregated.length}`);
+  return aggregated;
+}
+
+/**
+ * Generate a description for a day's activities
+ * Attempts to use AI if available, otherwise creates a readable summary
+ */
+async function generateDailyDescription(entry: DailyEntry, _goals: Goal[]): Promise<string> {
+  // If there's only one line, use its description
+  if (entry.lines.length === 1) {
+    const line = entry.lines[0];
+    return line.customNarrative || line.selectedActivities.join(', ');
+  }
+
+  // Try to use AI summary if available
+  if (entry.aiSummary) {
+    return entry.aiSummary;
+  }
+
+  // Fallback: Create an intelligent combined description
+  const descriptions: string[] = [];
+  const activitiesByGoal = new Map<number, string[]>();
+
+  // Group activities by goal
+  entry.lines.forEach(line => {
+    const goalCode = line.goalCode;
+    if (!activitiesByGoal.has(goalCode)) {
+      activitiesByGoal.set(goalCode, []);
+    }
+
+    const desc = line.customNarrative || line.selectedActivities.join(', ');
+    if (desc) {
+      activitiesByGoal.get(goalCode)!.push(desc);
+    }
+  });
+
+  // Build description organized by goals
+  activitiesByGoal.forEach((activities) => {
+    // Combine activities for this goal
+    const uniqueActivities = Array.from(new Set(activities));
+    if (uniqueActivities.length === 1) {
+      descriptions.push(uniqueActivities[0]);
+    } else {
+      descriptions.push(uniqueActivities.join('; '));
+    }
+  });
+
+  return descriptions.join('. ');
+}
+
+/**
  * Generate a PDF matching the exact Orange County Head Start PCAL form
  * Supports multiple entries on one page
  * Embeds full JSON state in metadata for "Smart PDF" backup
@@ -27,6 +132,9 @@ export async function generatePDF(options: PDFGenerationOptions): Promise<Uint8A
   if (entries.length === 0) {
     throw new Error('No entries to generate PDF');
   }
+
+  // Aggregate daily activities
+  const aggregatedActivities = await aggregateDailyActivities(entries, goals);
 
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([PDF_COORDINATES.PAGE_WIDTH, PDF_COORDINATES.PAGE_HEIGHT]);
@@ -48,7 +156,7 @@ export async function generatePDF(options: PDFGenerationOptions): Promise<Uint8A
   drawActivitiesSection(page, font, fontBold, goals);
   drawGuidanceNote(page, fontItalic);
   drawDataTableHeader(page, font, fontBold);
-  drawDataTableRows(page, font, entries);
+  drawAggregatedDataTableRows(page, font, aggregatedActivities);
   drawDataTableBorders(page);
   drawFooter(page, font, fontBold, entries);
 
@@ -449,44 +557,32 @@ function drawDataTableHeader(page: any, _font: any, fontBold: any): void {
 }
 
 /**
- * Draw data table rows with activity entries from multiple daily entries
+ * Draw data table rows with aggregated daily activities
+ * Each row represents one day with combined activities and accumulated time
  */
-function drawDataTableRows(page: any, font: any, entries: DailyEntry[]): void {
+function drawAggregatedDataTableRows(page: any, font: any, aggregatedActivities: AggregatedDailyActivity[]): void {
   const { DATA_TABLE: DT, COLORS } = PDF_COORDINATES;
   const startY = DT.Y_START;
   const textColor = rgb(COLORS.TEXT_DARK.r, COLORS.TEXT_DARK.g, COLORS.TEXT_DARK.b);
 
-  // Flatten all lines from all entries
-  const allLines: Array<{ date: string; line: any; signatureBase64?: string }> = [];
-  entries.forEach(entry => {
-    entry.lines.forEach(line => {
-      allLines.push({ date: entry.date, line, signatureBase64: entry.signatureBase64 });
-    });
-  });
-
-  const maxRows = Math.min(allLines.length, DT.MAX_ROWS);
-  let currentDate = '';
+  const maxRows = Math.min(aggregatedActivities.length, DT.MAX_ROWS);
 
   for (let i = 0; i < maxRows; i++) {
-    const { date, line, signatureBase64 } = allLines[i];
+    const activity = aggregatedActivities[i];
     const y = startY - (i * DT.ROW_HEIGHT);
 
-    // Date (only when it changes)
-    if (date !== currentDate) {
-      currentDate = date;
-      const dateText = format(new Date(date), 'MM/dd/yy');
-      page.drawText(dateText, {
-        x: DT.DATE_X + DT.PADDING,
-        y: y - 13,
-        size: DT.FONT_SIZE,
-        font: font,
-        color: textColor
-      });
-    }
+    // Date
+    const dateText = format(new Date(activity.date), 'MM/dd/yy');
+    page.drawText(dateText, {
+      x: DT.DATE_X + DT.PADDING,
+      y: y - 13,
+      size: DT.FONT_SIZE,
+      font: font,
+      color: textColor
+    });
 
-    // Activity description
-    const activities = line.customNarrative || line.selectedActivities.join(', ');
-    const wrapped = wrapText(activities, DT.ACTIVITY_DESC_WIDTH - (DT.PADDING * 2), DT.FONT_SIZE, 2);
+    // Activity description (combined/AI-generated)
+    const wrapped = wrapText(activity.description, DT.ACTIVITY_DESC_WIDTH - (DT.PADDING * 2), DT.FONT_SIZE, 2);
     page.drawText(wrapped, {
       x: DT.ACTIVITY_DESC_X + DT.PADDING,
       y: y - 13,
@@ -496,8 +592,8 @@ function drawDataTableRows(page: any, font: any, entries: DailyEntry[]): void {
       maxWidth: DT.ACTIVITY_DESC_WIDTH - (DT.PADDING * 2)
     });
 
-    // Goal number (centered)
-    const goalText = String(line.goalCode);
+    // Goal numbers (e.g., "1, 2")
+    const goalText = activity.goalCodes.join(', ');
     const goalWidth = font.widthOfTextAtSize(goalText, DT.FONT_SIZE);
     page.drawText(goalText, {
       x: DT.GOAL_NUM_X + (DT.GOAL_NUM_WIDTH - goalWidth) / 2,
@@ -507,8 +603,8 @@ function drawDataTableRows(page: any, font: any, entries: DailyEntry[]): void {
       color: textColor
     });
 
-    // Start time
-    page.drawText(line.startTime, {
+    // Start time (earliest for the day)
+    page.drawText(activity.startTime, {
       x: DT.START_TIME_X + DT.PADDING,
       y: y - 13,
       size: DT.FONT_SIZE,
@@ -516,8 +612,8 @@ function drawDataTableRows(page: any, font: any, entries: DailyEntry[]): void {
       color: textColor
     });
 
-    // End time
-    page.drawText(line.endTime, {
+    // End time (latest for the day)
+    page.drawText(activity.endTime, {
       x: DT.END_TIME_X + DT.PADDING,
       y: y - 13,
       size: DT.FONT_SIZE,
@@ -526,7 +622,7 @@ function drawDataTableRows(page: any, font: any, entries: DailyEntry[]): void {
     });
 
     // Signature (if available)
-    if (signatureBase64) {
+    if (activity.signatureBase64) {
       page.drawText('Signed', {
         x: DT.SIGNATURE_X + DT.PADDING,
         y: y - 13,
@@ -536,8 +632,8 @@ function drawDataTableRows(page: any, font: any, entries: DailyEntry[]): void {
       });
     }
 
-    // Elapsed time (in hours)
-    const hours = (line.durationMinutes / 60).toFixed(2);
+    // Elapsed time (total hours for the day)
+    const hours = (activity.totalMinutes / 60).toFixed(2);
     page.drawText(hours, {
       x: DT.ELAPSED_X + DT.PADDING,
       y: y - 13,
