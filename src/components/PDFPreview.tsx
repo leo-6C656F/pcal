@@ -1,20 +1,22 @@
 import { useState, useEffect } from 'react';
-import type { DailyEntry, ChildContext } from '../types';
+import type { DailyEntry, ChildContext, Goal } from '../types';
 import { generatePDF } from '../services/pdfGenerator';
 import { Download, FileText } from 'lucide-react';
 
 interface PDFPreviewProps {
-  entry: DailyEntry;
+  entries: DailyEntry[];  // Support multiple entries
   child: ChildContext;
   centerName: string;
   teacherName: string;
+  goals: Goal[];
 }
 
 /**
  * PDFPreview Component
  * Generates and displays a PDF preview in an iframe
+ * Supports multiple daily entries on one PDF
  */
-export function PDFPreview({ entry, child, centerName, teacherName }: PDFPreviewProps) {
+export function PDFPreview({ entries, child, centerName, teacherName, goals }: PDFPreviewProps) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +26,7 @@ export function PDFPreview({ entry, child, centerName, teacherName }: PDFPreview
     setError(null);
 
     try {
-      const pdfBytes = await generatePDF({ entry, child, centerName, teacherName });
+      const pdfBytes = await generatePDF({ entries, child, centerName, teacherName, goals });
       const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
 
@@ -44,13 +46,17 @@ export function PDFPreview({ entry, child, centerName, teacherName }: PDFPreview
 
   const downloadPDF = async () => {
     try {
-      const pdfBytes = await generatePDF({ entry, child, centerName, teacherName });
+      const pdfBytes = await generatePDF({ entries, child, centerName, teacherName, goals });
       const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
 
+      const startDate = entries[0]?.date || 'unknown';
+      const endDate = entries[entries.length - 1]?.date || startDate;
+      const dateStr = startDate === endDate ? startDate : `${startDate}_to_${endDate}`;
+
       const link = document.createElement('a');
       link.href = url;
-      link.download = `PCAL-${child.name}-${entry.date}.pdf`;
+      link.download = `PCAL-${child.name}-${dateStr}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

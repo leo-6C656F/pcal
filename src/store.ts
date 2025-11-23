@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { DailyEntry, ChildContext, ActivityLine, AIServiceConfig } from './types';
+import type { DailyEntry, ChildContext, ActivityLine, AIServiceConfig, Goal } from './types';
 import { db, generateId, addJournalEvent } from './db';
 import { generateSummary } from './services/aiService';
 import { add, parse, differenceInMinutes } from 'date-fns';
@@ -14,6 +14,7 @@ interface AppState {
   currentEntry: DailyEntry | null;
   children: ChildContext[];
   entries: DailyEntry[];
+  goals: Goal[];
   aiConfig: AIServiceConfig;
   isGeneratingPDF: boolean;
 
@@ -22,6 +23,7 @@ interface AppState {
   setCurrentEntry: (entry: DailyEntry | null) => void;
   loadChildren: () => Promise<void>;
   loadEntries: () => Promise<void>;
+  loadGoals: () => Promise<void>;
   createChild: (child: Omit<ChildContext, 'id'>) => Promise<ChildContext>;
   createEntry: (date: string, childId: string) => Promise<DailyEntry>;
   addActivityLine: (entryId: string, line: Omit<ActivityLine, 'id'>) => Promise<void>;
@@ -30,6 +32,9 @@ interface AppState {
   saveSignature: (entryId: string, signatureBase64: string) => Promise<void>;
   generateAISummary: (entryId: string) => Promise<void>;
   setAIConfig: (config: AIServiceConfig) => void;
+  saveGoal: (goal: Goal) => Promise<void>;
+  deleteGoal: (code: number) => Promise<void>;
+  clearAllGoals: () => Promise<void>;
 }
 
 export const useStore = create<AppState>((set, get) => ({
@@ -38,6 +43,7 @@ export const useStore = create<AppState>((set, get) => ({
   currentEntry: null,
   children: [],
   entries: [],
+  goals: [],
   aiConfig: {},
   isGeneratingPDF: false,
 
@@ -54,6 +60,11 @@ export const useStore = create<AppState>((set, get) => ({
   loadEntries: async () => {
     const entries = await db.dailyEntries.toArray();
     set({ entries });
+  },
+
+  loadGoals: async () => {
+    const goals = await db.goals.toArray();
+    set({ goals });
   },
 
   createChild: async (childData) => {
@@ -185,7 +196,22 @@ export const useStore = create<AppState>((set, get) => ({
     }
   },
 
-  setAIConfig: (config) => set({ aiConfig: config })
+  setAIConfig: (config) => set({ aiConfig: config }),
+
+  saveGoal: async (goal) => {
+    await db.goals.put(goal);
+    await get().loadGoals();
+  },
+
+  deleteGoal: async (code) => {
+    await db.goals.delete(code);
+    await get().loadGoals();
+  },
+
+  clearAllGoals: async () => {
+    await db.goals.clear();
+    await get().loadGoals();
+  }
 }));
 
 /**

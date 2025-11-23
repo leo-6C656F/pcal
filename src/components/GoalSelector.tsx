@@ -1,15 +1,15 @@
-import { GOALS } from '../constants';
+import { useStore } from '../store';
 
 interface GoalSelectorProps {
-  selectedGoalCode: 1 | 2 | 3 | 4 | 5 | 6;
+  selectedGoalCode: number;
   selectedActivities: string[];
-  onGoalChange: (goalCode: 1 | 2 | 3 | 4 | 5 | 6) => void;
+  onGoalChange: (goalCode: number) => void;
   onActivitiesChange: (activities: string[]) => void;
 }
 
 /**
  * GoalSelector Component
- * Allows user to select a goal and associated activities
+ * Allows user to select a goal and associated activities from custom goals
  */
 export function GoalSelector({
   selectedGoalCode,
@@ -17,7 +17,8 @@ export function GoalSelector({
   onGoalChange,
   onActivitiesChange
 }: GoalSelectorProps) {
-  const selectedGoal = GOALS.find(g => g.code === selectedGoalCode);
+  const goals = useStore(state => state.goals);
+  const selectedGoal = goals.find(g => g.code === selectedGoalCode);
 
   const handleActivityToggle = (activity: string) => {
     if (selectedActivities.includes(activity)) {
@@ -26,6 +27,16 @@ export function GoalSelector({
       onActivitiesChange([...selectedActivities, activity]);
     }
   };
+
+  if (goals.length === 0) {
+    return (
+      <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+        <p className="text-sm text-yellow-900">
+          No goals have been set up yet. Please add goals in the Settings section to begin tracking activities.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -37,12 +48,12 @@ export function GoalSelector({
         <select
           value={selectedGoalCode}
           onChange={(e) => {
-            onGoalChange(parseInt(e.target.value) as 1 | 2 | 3 | 4 | 5 | 6);
+            onGoalChange(parseInt(e.target.value));
             onActivitiesChange([]); // Reset activities when goal changes
           }}
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
-          {GOALS.map(goal => (
+          {goals.map(goal => (
             <option key={goal.code} value={goal.code}>
               Goal {goal.code}: {goal.description}
             </option>

@@ -27,8 +27,8 @@ export interface DailyEntry {
 
 export interface ActivityLine {
   id: string;
-  goalCode: 1 | 2 | 3 | 4 | 5 | 6;
-  selectedActivities: string[]; // From the hardcoded list
+  goalCode: number;
+  selectedActivities: string[]; // From the custom goal's activities
   customNarrative: string;      // User input
   startTime: string;            // "09:00"
   endTime: string;              // "09:30"
@@ -37,7 +37,7 @@ export interface ActivityLine {
 
 // --- 3. Goal Structure ---
 export interface Goal {
-  code: 1 | 2 | 3 | 4 | 5 | 6;
+  code: number;
   description: string;
   activities: string[];
 }

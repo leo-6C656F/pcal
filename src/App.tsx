@@ -3,16 +3,20 @@ import { useStore } from './store';
 import { initializeDatabase } from './services/journalReplay';
 import { Dashboard } from './components/Dashboard';
 import { DailyEntryForm } from './components/DailyEntryForm';
-import { ArrowLeft } from 'lucide-react';
+import { GoalManager } from './components/GoalManager';
+import { ArrowLeft, Settings } from 'lucide-react';
+
+type View = 'dashboard' | 'entry' | 'settings';
 
 /**
  * PCAL - Parent-Child Activity Log
  * Main Application Component
  */
 function App() {
-  const { currentEntry, setCurrentEntry, loadChildren, loadEntries } = useStore();
+  const { currentEntry, setCurrentEntry, loadChildren, loadEntries, loadGoals } = useStore();
   const [isInitialized, setIsInitialized] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
+  const [currentView, setCurrentView] = useState<View>('dashboard');
 
   useEffect(() => {
     const init = async () => {
@@ -25,6 +29,7 @@ function App() {
         // Load data
         await loadChildren();
         await loadEntries();
+        await loadGoals();
 
         setIsInitialized(true);
         console.log('[APP] PCAL initialized successfully');
@@ -35,7 +40,16 @@ function App() {
     };
 
     init();
-  }, [loadChildren, loadEntries]);
+  }, [loadChildren, loadEntries, loadGoals]);
+
+  // Update view when currentEntry changes
+  useEffect(() => {
+    if (currentEntry) {
+      setCurrentView('entry');
+    } else if (currentView === 'entry') {
+      setCurrentView('dashboard');
+    }
+  }, [currentEntry]);
 
   if (initError) {
     return (
@@ -67,26 +81,49 @@ function App() {
     );
   }
 
+  const handleBackToDashboard = () => {
+    setCurrentEntry(null);
+    setCurrentView('dashboard');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
-      {currentEntry && (
-        <div className="bg-white shadow-sm border-b border-gray-200">
-          <div className="max-w-6xl mx-auto px-6 py-3">
-            <button
-              onClick={() => setCurrentEntry(null)}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
-            >
-              <ArrowLeft size={16} />
-              Back to Dashboard
-            </button>
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-6 py-3">
+          <div className="flex justify-between items-center">
+            {currentView !== 'dashboard' && (
+              <button
+                onClick={handleBackToDashboard}
+                className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+              >
+                <ArrowLeft size={16} />
+                Back to Dashboard
+              </button>
+            )}
+            {currentView === 'dashboard' && (
+              <div className="flex-1" />
+            )}
+            {currentView === 'dashboard' && (
+              <button
+                onClick={() => setCurrentView('settings')}
+                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md"
+              >
+                <Settings size={16} />
+                Settings
+              </button>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
       {/* Main Content */}
       <div className="py-6">
-        {currentEntry ? <DailyEntryForm /> : <Dashboard />}
+        <div className="max-w-6xl mx-auto px-6">
+          {currentView === 'dashboard' && <Dashboard />}
+          {currentView === 'entry' && <DailyEntryForm />}
+          {currentView === 'settings' && <GoalManager />}
+        </div>
       </div>
 
       {/* Footer */}

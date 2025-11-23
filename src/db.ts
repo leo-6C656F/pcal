@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { JournalEvent, DailyEntry, ChildContext } from './types';
+import type { JournalEvent, DailyEntry, ChildContext, Goal } from './types';
 
 /**
  * PCAL Database - The Vault
@@ -10,6 +10,7 @@ export class PCALDatabase extends Dexie {
   journal!: Table<JournalEvent, string>;
   dailyEntries!: Table<DailyEntry, string>;
   children!: Table<ChildContext, string>;
+  goals!: Table<Goal, number>;
 
   constructor() {
     super('PCALDatabase');
@@ -18,6 +19,14 @@ export class PCALDatabase extends Dexie {
       journal: 'id, timestamp, type',
       dailyEntries: 'id, date, childId, isLocked',
       children: 'id, name'
+    });
+
+    // Version 2: Add goals table for custom goals
+    this.version(2).stores({
+      journal: 'id, timestamp, type',
+      dailyEntries: 'id, date, childId, isLocked',
+      children: 'id, name',
+      goals: 'code'
     });
   }
 }

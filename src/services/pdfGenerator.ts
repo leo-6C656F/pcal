@@ -1,6 +1,6 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import type { DailyEntry, ChildContext } from '../types';
-import { PDF_COORDINATES, GOALS } from '../constants';
+import type { DailyEntry, ChildContext, Goal } from '../types';
+import { PDF_COORDINATES } from '../constants';
 import { format } from 'date-fns';
 
 /**
@@ -9,47 +9,61 @@ import { format } from 'date-fns';
  */
 
 interface PDFGenerationOptions {
-  entry: DailyEntry;
+  entries: DailyEntry[];  // Support multiple entries
   child: ChildContext;
   centerName: string;
   teacherName: string;
+  goals: Goal[];  // Custom goals from database
 }
 
 /**
  * Generate a PDF matching the exact Orange County Head Start PCAL form
+ * Supports multiple entries on one page
  * Embeds full JSON state in metadata for "Smart PDF" backup
  */
 export async function generatePDF(options: PDFGenerationOptions): Promise<Uint8Array> {
-  const { entry, child, centerName, teacherName } = options;
+  const { entries, child, centerName, teacherName, goals } = options;
+
+  if (entries.length === 0) {
+    throw new Error('No entries to generate PDF');
+  }
 
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([PDF_COORDINATES.PAGE_WIDTH, PDF_COORDINATES.PAGE_HEIGHT]);
 
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const fontItalic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+
+  // Get date range
+  const startDate = entries[0].date;
+  const endDate = entries[entries.length - 1].date;
+  const dateRange = startDate === endDate ? startDate : `${startDate} to ${endDate}`;
 
   // Draw all sections
   drawTitle(page, fontBold);
-  drawHeaderFields(page, font, fontBold, centerName, teacherName, child.name, entry.date);
-  drawGoalsReferenceTable(page, font, fontBold);
-  drawActivitiesSection(page, font, fontBold);
+  drawHeaderFields(page, font, fontBold, centerName, teacherName, child.name, dateRange);
+  drawInstructionText(page, fontItalic);
+  drawGoalsReferenceTable(page, font, fontBold, goals);
+  drawActivitiesSection(page, font, fontBold, goals);
   drawDataTableHeader(page, font, fontBold);
-  drawDataTableRows(page, font, entry);
+  drawDataTableRows(page, font, entries);
   drawDataTableBorders(page);
-  drawFooter(page, font, fontBold, entry);
+  drawFooter(page, font, fontBold, entries);
 
   // Embed JSON metadata (The "Smart PDF" feature)
   const metadata = {
     version: '1.0',
-    entry: entry,
+    entries: entries,
     child: child,
     centerName,
     teacherName,
+    goals,
     exportedAt: new Date().toISOString()
   };
 
   pdfDoc.setSubject(JSON.stringify(metadata));
-  pdfDoc.setTitle(`PCAL - ${child.name} - ${entry.date}`);
+  pdfDoc.setTitle(`PCAL - ${child.name} - ${dateRange}`);
   pdfDoc.setAuthor('PCAL App - Orange County Head Start');
   pdfDoc.setCreationDate(new Date());
 
@@ -214,15 +228,32 @@ function drawHeaderFields(
 }
 
 /**
- * Draw goals reference table (GOAL 1 through GOAL 6)
+ * Draw instruction text below header fields
  */
-function drawGoalsReferenceTable(page: any, font: any, fontBold: any): void {
+function drawInstructionText(page: any, fontItalic: any): void {
+  const { INSTRUCTION_TEXT: IT } = PDF_COORDINATES;
+
+  page.drawText(IT.TEXT, {
+    x: PDF_COORDINATES.MARGIN,
+    y: IT.Y,
+    size: IT.SIZE,
+    font: fontItalic,
+    color: rgb(0, 0, 0),
+    maxWidth: PDF_COORDINATES.PAGE_WIDTH - (PDF_COORDINATES.MARGIN * 2)
+  });
+}
+
+/**
+ * Draw goals reference table (custom goals)
+ */
+function drawGoalsReferenceTable(page: any, font: any, fontBold: any, goals: Goal[]): void {
   const { GOALS_TABLE: GT } = PDF_COORDINATES;
   const y = GT.Y_START;
 
-  // Draw 6 columns for 6 goals
-  for (let i = 0; i < 6; i++) {
-    const goal = GOALS[i];
+  // Draw columns for custom goals (up to 6)
+  const maxGoals = Math.min(goals.length, 6);
+  for (let i = 0; i < maxGoals; i++) {
+    const goal = goals[i];
     const x = GT.START_X + (i * GT.GOAL_WIDTH);
 
     // Header: "GOAL 1", "GOAL 2", etc.
@@ -236,7 +267,7 @@ function drawGoalsReferenceTable(page: any, font: any, fontBold: any): void {
       width: GT.GOAL_WIDTH,
       height: GT.HEADER_HEIGHT,
       borderColor: rgb(0, 0, 0),
-      borderWidth: 1
+      borderWidth: 0.5
     });
 
     page.drawText(headerText, {
@@ -254,7 +285,7 @@ function drawGoalsReferenceTable(page: any, font: any, fontBold: any): void {
       width: GT.GOAL_WIDTH,
       height: GT.CELL_HEIGHT,
       borderColor: rgb(0, 0, 0),
-      borderWidth: 1
+      borderWidth: 0.5
     });
 
     // Wrap and draw description
@@ -266,17 +297,17 @@ function drawGoalsReferenceTable(page: any, font: any, fontBold: any): void {
 /**
  * Draw activities section header
  */
-function drawActivitiesSection(page: any, font: any, fontBold: any): void {
+function drawActivitiesSection(page: any, font: any, fontBold: any, goals: Goal[]): void {
   const { ACTIVITIES_SECTION: AS } = PDF_COORDINATES;
 
   page.drawRectangle({
     x: PDF_COORDINATES.MARGIN,
     y: AS.Y,
-    width: 552,
+    width: PDF_COORDINATES.PAGE_WIDTH - (PDF_COORDINATES.MARGIN * 2),
     height: AS.HEIGHT,
     color: rgb(0.9, 0.9, 0.9),
     borderColor: rgb(0, 0, 0),
-    borderWidth: 1
+    borderWidth: 0.5
   });
 
   page.drawText('ACTIVITIES TO SUPPORT HS/EHS Classroom experience and Child\'s Individual Goals', {
@@ -288,18 +319,19 @@ function drawActivitiesSection(page: any, font: any, fontBold: any): void {
   });
 
   // Draw activities for each goal
-  drawGoalActivities(page, font, fontBold);
+  drawGoalActivities(page, font, fontBold, goals);
 }
 
 /**
  * Draw activities for each goal
  */
-function drawGoalActivities(page: any, font: any, fontBold: any): void {
+function drawGoalActivities(page: any, font: any, fontBold: any, goals: Goal[]): void {
   const { GOAL_ACTIVITIES: GA } = PDF_COORDINATES;
   const y = GA.Y_START;
 
-  for (let i = 0; i < 6; i++) {
-    const goal = GOALS[i];
+  const maxGoals = Math.min(goals.length, 6);
+  for (let i = 0; i < maxGoals; i++) {
+    const goal = goals[i];
     const x = GA.START_X + (i * GA.GOAL_WIDTH);
 
     // Draw cell border
@@ -309,7 +341,7 @@ function drawGoalActivities(page: any, font: any, fontBold: any): void {
       width: GA.GOAL_WIDTH,
       height: GA.ROW_HEIGHT,
       borderColor: rgb(0, 0, 0),
-      borderWidth: 1
+      borderWidth: 0.5
     });
 
     // Draw "Goal X Activities" title
@@ -352,7 +384,7 @@ function drawDataTableHeader(page: any, font: any, fontBold: any): void {
       height: 20,
       color: rgb(0.9, 0.9, 0.9),
       borderColor: rgb(0, 0, 0),
-      borderWidth: 1
+      borderWidth: 0.5
     });
 
     const lines = header.text.split('\n');
@@ -388,21 +420,31 @@ function drawDataTableHeader(page: any, font: any, fontBold: any): void {
 }
 
 /**
- * Draw data table rows with activity entries
+ * Draw data table rows with activity entries from multiple daily entries
  */
-function drawDataTableRows(page: any, font: any, entry: DailyEntry): void {
+function drawDataTableRows(page: any, font: any, entries: DailyEntry[]): void {
   const { DATA_TABLE: DT } = PDF_COORDINATES;
   const startY = DT.Y_START;
 
-  const maxRows = Math.min(entry.lines.length, DT.MAX_ROWS);
+  // Flatten all lines from all entries
+  const allLines: Array<{ date: string; line: any; signatureBase64?: string }> = [];
+  entries.forEach(entry => {
+    entry.lines.forEach(line => {
+      allLines.push({ date: entry.date, line, signatureBase64: entry.signatureBase64 });
+    });
+  });
+
+  const maxRows = Math.min(allLines.length, DT.MAX_ROWS);
+  let currentDate = '';
 
   for (let i = 0; i < maxRows; i++) {
-    const line = entry.lines[i];
+    const { date, line, signatureBase64 } = allLines[i];
     const y = startY - (i * DT.ROW_HEIGHT);
 
-    // Date (only on first row)
-    if (i === 0) {
-      const dateText = format(new Date(entry.date), 'MM/dd/yy');
+    // Date (only when it changes)
+    if (date !== currentDate) {
+      currentDate = date;
+      const dateText = format(new Date(date), 'MM/dd/yy');
       page.drawText(dateText, {
         x: DT.DATE_X + 5,
         y: y - 15,
@@ -452,7 +494,7 @@ function drawDataTableRows(page: any, font: any, entry: DailyEntry): void {
     });
 
     // Signature (if available)
-    if (entry.signatureBase64) {
+    if (signatureBase64) {
       page.drawText('Signed', {
         x: DT.SIGNATURE_X + 25,
         y: y - 15,
@@ -512,9 +554,9 @@ function drawDataTableBorders(page: any): void {
 }
 
 /**
- * Draw footer with signature lines and totals
+ * Draw footer with signature lines and totals from multiple entries
  */
-function drawFooter(page: any, font: any, fontBold: any, entry: DailyEntry): void {
+function drawFooter(page: any, font: any, fontBold: any, entries: DailyEntry[]): void {
   const { FOOTER: F } = PDF_COORDINATES;
 
   // Teacher signature line
@@ -580,8 +622,11 @@ function drawFooter(page: any, font: any, fontBold: any, entry: DailyEntry): voi
     color: rgb(0, 0, 0)
   });
 
-  // Totals box on right
-  const totalMinutes = entry.lines.reduce((sum, line) => sum + line.durationMinutes, 0);
+  // Totals box on right - Calculate from all entries
+  let totalMinutes = 0;
+  entries.forEach(entry => {
+    totalMinutes += entry.lines.reduce((sum, line) => sum + line.durationMinutes, 0);
+  });
   const totalHours = (totalMinutes / 60).toFixed(2);
 
   const totalsLabels = ['TOTAL HRS', 'HRLY RATE', 'TOTAL $'];
@@ -595,7 +640,7 @@ function drawFooter(page: any, font: any, fontBold: any, entry: DailyEntry): voi
       height: F.TOTALS_ROW_HEIGHT,
       color: rgb(0.85, 0.9, 0.95),
       borderColor: rgb(0, 0, 0),
-      borderWidth: 1
+      borderWidth: 0.5
     });
 
     page.drawText(label, {

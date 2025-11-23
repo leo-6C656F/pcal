@@ -15,6 +15,7 @@ export function DailyEntryForm() {
   const {
     currentEntry,
     currentChild,
+    goals,
     addActivityLine,
     deleteActivityLine,
     saveSignature,
@@ -23,7 +24,7 @@ export function DailyEntryForm() {
 
   // Form state for new activity line
   const [newLine, setNewLine] = useState<Partial<ActivityLine>>({
-    goalCode: 1,
+    goalCode: goals[0]?.code || 1,
     selectedActivities: [],
     customNarrative: '',
     startTime: '09:00',
@@ -227,10 +228,11 @@ export function DailyEntryForm() {
 
           {showPDFPreview && (
             <PDFPreview
-              entry={currentEntry}
+              entries={[currentEntry]}
               child={currentChild}
               centerName={currentChild.center}
               teacherName={currentChild.teacher}
+              goals={goals}
             />
           )}
         </div>
