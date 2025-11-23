@@ -121,11 +121,7 @@ function App() {
             {currentView === 'dashboard' && (
               <button
                 onClick={() => setCurrentView('settings')}
-                className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all ${
-                  currentView === 'settings'
-                    ? 'bg-indigo-50 text-indigo-700'
-                    : 'text-slate-600 hover:text-indigo-600 hover:bg-slate-100'
-                }`}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all text-slate-600 hover:text-indigo-600 hover:bg-slate-100"
               >
                 <Settings size={18} />
                 <span className="hidden sm:inline">Settings</span>

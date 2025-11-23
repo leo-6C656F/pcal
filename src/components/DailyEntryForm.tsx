@@ -15,24 +15,37 @@ export function DailyEntryForm() {
   const {
     currentEntry,
     currentChild,
+    children,
     goals,
     addActivityLine,
     deleteActivityLine,
     saveSignature,
-    generateAISummary
+    generateAISummary,
+    setCurrentChild,
+    setCurrentEntry
   } = useStore();
+
+  const getDefaultStartTime = () => {
+    // Auto-suggest: Use the end time of the last activity as the start time for the next one
+    if (currentEntry && currentEntry.lines.length > 0) {
+      const lastLine = currentEntry.lines[currentEntry.lines.length - 1];
+      return lastLine.endTime;
+    }
+    return '09:00';
+  };
 
   const [newLine, setNewLine] = useState<Partial<ActivityLine>>({
     goalCode: goals[0]?.code || 1,
     selectedActivities: [],
     customNarrative: '',
-    startTime: '09:00',
+    startTime: getDefaultStartTime(),
     endTime: '09:30',
     durationMinutes: 30
   });
 
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
+  const [isAddingActivity, setIsAddingActivity] = useState(false);
 
   if (!currentEntry || !currentChild) {
     return (
@@ -45,24 +58,32 @@ export function DailyEntryForm() {
   const handleAddLine = async () => {
     if (!newLine.goalCode) return;
 
-    await addActivityLine(currentEntry.id, {
-      goalCode: newLine.goalCode,
-      selectedActivities: newLine.selectedActivities || [],
-      customNarrative: newLine.customNarrative || '',
-      startTime: newLine.startTime || '09:00',
-      endTime: newLine.endTime || '09:30',
-      durationMinutes: newLine.durationMinutes || 30
-    });
+    setIsAddingActivity(true);
+    try {
+      await addActivityLine(currentEntry.id, {
+        goalCode: newLine.goalCode,
+        selectedActivities: newLine.selectedActivities || [],
+        customNarrative: newLine.customNarrative || '',
+        startTime: newLine.startTime || '09:00',
+        endTime: newLine.endTime || '09:30',
+        durationMinutes: newLine.durationMinutes || 30
+      });
 
-    // Reset form
-    setNewLine({
-      goalCode: 1,
-      selectedActivities: [],
-      customNarrative: '',
-      startTime: '09:00',
-      endTime: '09:30',
-      durationMinutes: 30
-    });
+      // Reset form with smart time suggestion
+      const nextStartTime = newLine.endTime || '09:00';
+      setNewLine({
+        goalCode: 1,
+        selectedActivities: [],
+        customNarrative: '',
+        startTime: nextStartTime,
+        endTime: '09:30',
+        durationMinutes: 30
+      });
+    } catch (error) {
+      console.error('Failed to add activity:', error);
+    } finally {
+      setIsAddingActivity(false);
+    }
   };
 
   const handleGenerateAISummary = async () => {
@@ -77,16 +98,41 @@ export function DailyEntryForm() {
   const totalMinutes = currentEntry.lines.reduce((sum, line) => sum + line.durationMinutes, 0);
   const totalHours = (totalMinutes / 60).toFixed(2);
 
+  const handleChildSwitch = (childId: string) => {
+    const newChild = children.find(c => c.id === childId);
+    if (newChild) {
+      setCurrentChild(newChild);
+      setCurrentEntry(null);
+    }
+  };
+
   return (
     <div className="space-y-8 pb-12">
       {/* Header */}
       <div className="card p-6 border-l-4 border-l-indigo-500">
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">
-              Activity Log: {currentChild.name}
-            </h1>
-            <div className="flex flex-wrap gap-4 mt-2 text-sm text-slate-500">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-2xl font-bold text-slate-900">
+                Activity Log:
+              </h1>
+              {children.length > 1 ? (
+                <select
+                  value={currentChild.id}
+                  onChange={(e) => handleChildSwitch(e.target.value)}
+                  className="text-2xl font-bold text-indigo-600 bg-transparent border-b-2 border-indigo-200 hover:border-indigo-400 focus:outline-none focus:border-indigo-600 cursor-pointer transition-colors px-2 py-1"
+                >
+                  {children.map(child => (
+                    <option key={child.id} value={child.id}>
+                      {child.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span className="text-2xl font-bold text-indigo-600">{currentChild.name}</span>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-4 text-sm text-slate-500">
               <span className="bg-slate-100 px-2.5 py-0.5 rounded-md font-medium text-slate-700">
                 Date: {currentEntry.date}
               </span>
@@ -153,8 +199,16 @@ export function DailyEntryForm() {
                 type="button"
                 onClick={handleAddLine}
                 className="w-full btn-primary py-3 text-base shadow-indigo-200"
+                disabled={isAddingActivity}
               >
-                Add Activity to Log
+                {isAddingActivity ? (
+                  <>
+                    <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                    Adding...
+                  </>
+                ) : (
+                  'Add Activity to Log'
+                )}
               </button>
             </div>
           </div>
@@ -230,7 +284,14 @@ export function DailyEntryForm() {
                   disabled={isGeneratingAI}
                   className="btn-secondary border-purple-200 text-purple-700 hover:bg-purple-50 focus:ring-purple-500"
                 >
-                  {isGeneratingAI ? 'Generating...' : 'Generate Summary'}
+                  {isGeneratingAI ? (
+                    <>
+                      <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-purple-700 border-t-transparent mr-2"></div>
+                      Generating...
+                    </>
+                  ) : (
+                    'Generate Summary'
+                  )}
                 </button>
               </div>
 
@@ -244,44 +305,46 @@ export function DailyEntryForm() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Signature */}
-            <div className="card p-6">
-              <SignaturePad
-                signatureBase64={currentEntry.signatureBase64}
-                onSave={(signature) => saveSignature(currentEntry.id, signature)}
-              />
-            </div>
+          {/* Signature Section */}
+          <div className="card p-6">
+            <SignaturePad
+              signatureBase64={currentEntry.signatureBase64}
+              onSave={(signature) => saveSignature(currentEntry.id, signature)}
+            />
+          </div>
 
-            {/* PDF Export */}
-            {currentEntry.lines.length > 0 && (
-              <div className="card p-6 flex flex-col justify-center">
-                <h2 className="text-lg font-bold text-slate-900 mb-4">Finalize & Export</h2>
-                <p className="text-sm text-slate-500 mb-6">
-                  Review the document and download the official Head Start PDF form.
-                </p>
+          {/* PDF Export Section */}
+          {currentEntry.lines.length > 0 && (
+            <div className="card p-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">Finalize & Export</h2>
+                  <p className="text-sm text-slate-500 mt-1">
+                    Review the document and download the official Head Start PDF form.
+                  </p>
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowPDFPreview(!showPDFPreview)}
-                  className="btn-secondary w-full"
+                  className="btn-secondary whitespace-nowrap"
                 >
                   {showPDFPreview ? 'Hide Preview' : 'Preview PDF'}
                 </button>
-
-                {showPDFPreview && (
-                  <div className="mt-6 animate-in fade-in slide-in-from-bottom-4">
-                    <PDFPreview
-                      entries={[currentEntry]}
-                      child={currentChild}
-                      centerName={currentChild.center}
-                      teacherName={currentChild.teacher}
-                      goals={goals}
-                    />
-                  </div>
-                )}
               </div>
-            )}
-          </div>
+
+              {showPDFPreview && (
+                <div className="animate-in fade-in slide-in-from-bottom-4">
+                  <PDFPreview
+                    entries={[currentEntry]}
+                    child={currentChild}
+                    centerName={currentChild.center}
+                    teacherName={currentChild.teacher}
+                    goals={goals}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
