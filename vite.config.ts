@@ -4,9 +4,8 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig(() => {
-  // When custom domain is configured and DNS is working, use root path
-  // Until then, GitHub Pages serves from /pcal/ subdirectory
-  const base = process.env.GITHUB_PAGES === 'true' ? '/pcal/' : '/'
+  // Custom domain is configured, use root path
+  const base = process.env.GITHUB_PAGES === 'true' ? '/' : '/'
 
   return {
     base,
