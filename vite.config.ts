@@ -4,8 +4,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig(() => {
-  // Use root path for custom domain, /pcal/ for GitHub Pages subdirectory
-  const base = process.env.GITHUB_PAGES === 'true' ? '/' : '/'
+  // When custom domain is configured and DNS is working, use root path
+  // Until then, GitHub Pages serves from /pcal/ subdirectory
+  const base = process.env.GITHUB_PAGES === 'true' ? '/pcal/' : '/'
 
   return {
     base,
@@ -25,12 +26,12 @@ export default defineConfig(() => {
           scope: base,
           icons: [
             {
-              src: `${base}icon-192x192.png`,
+              src: base === '/' ? '/icon-192x192.png' : `${base}icon-192x192.png`,
               sizes: '192x192',
               type: 'image/png'
             },
             {
-              src: `${base}icon-512x512.png`,
+              src: base === '/' ? '/icon-512x512.png' : `${base}icon-512x512.png`,
               sizes: '512x512',
               type: 'image/png'
             }
