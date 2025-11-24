@@ -6,6 +6,7 @@ import { SignaturePad } from './SignaturePad';
 import { PDFPreview } from './PDFPreview';
 import type { ActivityLine } from '../types';
 import { Trash2, Plus, Sparkles, Clock, BookOpen, Edit3 } from 'lucide-react';
+import { getGoalColors, getGoalIcon } from '../utils/goalColors';
 
 /**
  * DailyEntryForm Component
@@ -164,8 +165,26 @@ export function DailyEntryForm() {
                 <GoalSelector
                   selectedGoalCode={newLine.goalCode || 1}
                   selectedActivities={newLine.selectedActivities || []}
-                  onGoalChange={(goalCode) => setNewLine({ ...newLine, goalCode })}
-                  onActivitiesChange={(activities) => setNewLine({ ...newLine, selectedActivities: activities })}
+                  onGoalChange={(goalCode) => {
+                    console.log('=== GOAL CHANGE ===');
+                    console.log('New goal code:', goalCode);
+                    setNewLine(prev => {
+                      console.log('Previous state:', prev);
+                      const newState = { ...prev, goalCode, selectedActivities: [] };
+                      console.log('New state:', newState);
+                      return newState;
+                    });
+                  }}
+                  onActivitiesChange={(activities) => {
+                    console.log('=== ACTIVITIES CHANGE (from parent) ===');
+                    console.log('New activities:', activities);
+                    setNewLine(prev => {
+                      console.log('Previous state:', prev);
+                      const newState = { ...prev, selectedActivities: activities };
+                      console.log('New state:', newState);
+                      return newState;
+                    });
+                  }}
                 />
               </div>
 
@@ -235,37 +254,41 @@ export function DailyEntryForm() {
               </div>
             ) : (
               <div className="space-y-4">
-                {currentEntry.lines.map((line) => (
-                  <div key={line.id} className="group bg-white border border-slate-200 rounded-xl p-4 hover:border-indigo-300 hover:shadow-md transition-all duration-200">
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="flex-1">
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
-                            Goal {line.goalCode}
-                          </span>
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 gap-1">
-                            <Clock size={12} />
-                            {line.startTime} - {line.endTime}
-                          </span>
-                          <span className="text-xs text-slate-400">
-                            ({line.durationMinutes} min)
-                          </span>
+                {currentEntry.lines.map((line) => {
+                  const colors = getGoalColors(line.goalCode);
+                  return (
+                    <div key={line.id} className={`group bg-white border-2 ${colors.border} rounded-xl p-4 hover:shadow-md transition-all duration-200`}>
+                      <div className="flex justify-between items-start gap-4">
+                        <div className="flex-1">
+                          <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold border ${colors.badge} gap-1`}>
+                              <span>{getGoalIcon(line.goalCode)}</span>
+                              Goal {line.goalCode}
+                            </span>
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 gap-1">
+                              <Clock size={12} />
+                              {line.startTime} - {line.endTime}
+                            </span>
+                            <span className="text-xs text-slate-400">
+                              ({line.durationMinutes} min)
+                            </span>
+                          </div>
+                          <p className="text-slate-700 leading-relaxed">
+                            {line.customNarrative || line.selectedActivities.join(', ')}
+                          </p>
                         </div>
-                        <p className="text-slate-700 leading-relaxed">
-                          {line.customNarrative || line.selectedActivities.join(', ')}
-                        </p>
+                        <button
+                          type="button"
+                          onClick={() => deleteActivityLine(currentEntry.id, line.id)}
+                          className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          title="Delete Activity"
+                        >
+                          <Trash2 size={18} />
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => deleteActivityLine(currentEntry.id, line.id)}
-                        className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                        title="Delete Activity"
-                      >
-                        <Trash2 size={18} />
-                      </button>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

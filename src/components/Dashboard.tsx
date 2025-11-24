@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '../store';
 import { Plus, Calendar, User, FileDown } from 'lucide-react';
+import { format } from 'date-fns';
 import { ChildForm } from './ChildForm';
 import { ChildList } from './ChildList';
-import { EntryForm } from './EntryForm';
 import { EntryList } from './EntryList';
 import { PDFExportModal } from './PDFExportModal';
 import { Modal } from './Modal';
+import { WelcomeScreen } from './WelcomeScreen';
 
 /**
  * Dashboard Component
@@ -15,18 +16,75 @@ import { Modal } from './Modal';
 export function Dashboard() {
   const {
     entries,
+    children,
     currentChild,
     setCurrentChild,
     setCurrentEntry,
+    createEntry,
   } = useStore();
 
   const [showChildForm, setShowChildForm] = useState(false);
-  const [showEntryForm, setShowEntryForm] = useState(false);
   const [showPDFExport, setShowPDFExport] = useState(false);
+  const [isCreatingEntry, setIsCreatingEntry] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+
+  // Check if this is first time user
+  useEffect(() => {
+    const hasSeenWelcome = localStorage.getItem('pcal_welcome_seen');
+    if (!hasSeenWelcome && children.length === 0 && entries.length === 0) {
+      setShowWelcome(true);
+    }
+  }, [children.length, entries.length]);
 
   const childEntries = currentChild
     ? entries.filter(e => e.childId === currentChild.id).sort((a, b) => b.date.localeCompare(a.date))
     : [];
+
+  // Handler to create and immediately navigate to new entry with date selection
+  const handleCreateEntryWithDate = async (date: string) => {
+    if (!currentChild) return;
+
+    // Check if entry already exists for this date
+    const existingEntry = entries.find(
+      e => e.childId === currentChild.id && e.date === date
+    );
+
+    if (existingEntry) {
+      setCurrentEntry(existingEntry);
+      setShowDatePicker(false);
+      return;
+    }
+
+    setIsCreatingEntry(true);
+    try {
+      const entry = await createEntry(date, currentChild.id);
+      setCurrentEntry(entry);
+      setShowDatePicker(false);
+    } catch (error) {
+      console.error('Failed to create entry:', error);
+    } finally {
+      setIsCreatingEntry(false);
+    }
+  };
+
+  // Quick handler for today's entry
+  const handleCreateTodayEntry = () => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    handleCreateEntryWithDate(today);
+  };
+
+  const handleGetStarted = () => {
+    localStorage.setItem('pcal_welcome_seen', 'true');
+    setShowWelcome(false);
+    setShowChildForm(true);
+  };
+
+  // Show welcome screen for first-time users
+  if (showWelcome) {
+    return <WelcomeScreen onGetStarted={handleGetStarted} />;
+  }
 
   return (
     <div className="space-y-8">
@@ -36,7 +94,7 @@ export function Dashboard() {
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
           <p className="text-slate-500 mt-1">Manage your children and activity logs</p>
         </div>
-        {!showChildForm && !showEntryForm && (
+        {!showChildForm && !currentChild && (
           <button
             type="button"
             onClick={() => setShowChildForm(true)}
@@ -68,13 +126,13 @@ export function Dashboard() {
         <div className="sm:col-span-2 space-y-4">
           {currentChild ? (
             <>
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
                   <Calendar size={20} className="text-primary" />
                   Activity Logs
                 </h2>
-                <div className="flex gap-2">
-                  {childEntries.length > 0 && !showPDFExport && !showEntryForm && (
+                <div className="flex gap-2 flex-wrap">
+                  {childEntries.length > 0 && !showPDFExport && !showDatePicker && (
                     <button
                       onClick={() => setShowPDFExport(true)}
                       className="btn-secondary"
@@ -83,26 +141,80 @@ export function Dashboard() {
                       Export PDF
                     </button>
                   )}
-                  {!showEntryForm && !showPDFExport && (
-                    <button
-                      onClick={() => setShowEntryForm(true)}
-                      className="btn-primary bg-accent hover:bg-accent/90 focus:ring-accent"
-                    >
-                      <Plus size={18} className="mr-2" />
-                      New Entry
-                    </button>
+                  {!showPDFExport && !showDatePicker && (
+                    <>
+                      <button
+                        onClick={handleCreateTodayEntry}
+                        className="btn-primary bg-accent hover:bg-accent/90 focus:ring-accent"
+                        disabled={isCreatingEntry}
+                      >
+                        {isCreatingEntry ? (
+                          <>
+                            <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                            Creating...
+                          </>
+                        ) : (
+                          <>
+                            <Plus size={18} className="mr-2" />
+                            Log Today
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedDate(format(new Date(), 'yyyy-MM-dd'));
+                          setShowDatePicker(true);
+                        }}
+                        className="btn-secondary"
+                      >
+                        <Calendar size={18} className="mr-2" />
+                        Pick Date
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
 
-              {showEntryForm && (
-                <Modal onClose={() => setShowEntryForm(false)} title="Create New Entry">
-                  <EntryForm
-                    onEntryCreated={(entry) => {
-                      setCurrentEntry(entry);
-                      setShowEntryForm(false);
-                    }}
-                  />
+              {/* Date Picker Modal */}
+              {showDatePicker && (
+                <Modal onClose={() => setShowDatePicker(false)} title="Select Activity Date">
+                  <div className="space-y-6">
+                    <div>
+                      <label className="label-text mb-2">Choose a date to log activities</label>
+                      <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        max={format(new Date(), 'yyyy-MM-dd')}
+                        className="input-field w-full text-lg py-3"
+                      />
+                      <p className="text-xs text-slate-500 mt-2">
+                        You can log activities for today or any past date
+                      </p>
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        onClick={() => setShowDatePicker(false)}
+                        className="btn-secondary flex-1"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => handleCreateEntryWithDate(selectedDate)}
+                        className="btn-primary flex-1 bg-accent hover:bg-accent/90"
+                        disabled={isCreatingEntry}
+                      >
+                        {isCreatingEntry ? (
+                          <>
+                            <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                            Creating...
+                          </>
+                        ) : (
+                          'Create Entry'
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 </Modal>
               )}
 

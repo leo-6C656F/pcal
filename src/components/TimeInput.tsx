@@ -82,7 +82,7 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
 
       {/* Time Inputs */}
       {mode === 'start-duration' ? (
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             {/* Start Time */}
             <div>
@@ -106,6 +106,46 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
                 onChange={(e) => handleDurationChange(parseInt(e.target.value) || 0)}
                 className="input-field py-2.5 w-full text-center"
               />
+            </div>
+          </div>
+
+          {/* Quick Duration Presets */}
+          <div>
+            <label className="label-text text-xs block mb-2">Quick Select</label>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => handleDurationChange(15)}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
+                  localDuration === 15
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50'
+                }`}
+              >
+                15 min
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDurationChange(30)}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
+                  localDuration === 30
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50'
+                }`}
+              >
+                30 min
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDurationChange(60)}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
+                  localDuration === 60
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50'
+                }`}
+              >
+                1 hour
+              </button>
             </div>
           </div>
 

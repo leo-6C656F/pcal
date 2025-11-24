@@ -1,7 +1,6 @@
 import { useStore } from '../store';
 import { User } from 'lucide-react';
 import { ChildListItem } from './ChildListItem';
-import type { ChildContext } from '../types';
 
 interface ChildListProps {
   showChildForm: boolean;

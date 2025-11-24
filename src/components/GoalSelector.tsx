@@ -1,5 +1,6 @@
 import { useStore } from '../store';
 import { CheckCircle2, Circle } from 'lucide-react';
+import { getGoalColors, getGoalIcon } from '../utils/goalColors';
 
 interface GoalSelectorProps {
   selectedGoalCode: number;
@@ -22,10 +23,20 @@ export function GoalSelector({
   const selectedGoal = goals.find(g => g.code === selectedGoalCode);
 
   const handleActivityToggle = (activity: string) => {
+    console.log('=== ACTIVITY TOGGLE ===');
+    console.log('Activity:', activity);
+    console.log('Current selectedActivities:', selectedActivities);
+    console.log('Selected Goal Code:', selectedGoalCode);
+    console.log('Selected Goal:', selectedGoal);
+
     if (selectedActivities.includes(activity)) {
-      onActivitiesChange(selectedActivities.filter(a => a !== activity));
+      const newActivities = selectedActivities.filter(a => a !== activity);
+      console.log('Removing activity, new list:', newActivities);
+      onActivitiesChange(newActivities);
     } else {
-      onActivitiesChange([...selectedActivities, activity]);
+      const newActivities = [...selectedActivities, activity];
+      console.log('Adding activity, new list:', newActivities);
+      onActivitiesChange(newActivities);
     }
   };
 
@@ -33,7 +44,7 @@ export function GoalSelector({
     return (
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
         <p className="text-sm text-amber-800 font-medium">
-          No goals configured. Please add goals in Settings.
+          No goals configured. Please add goals in Goals & Setup.
         </p>
       </div>
     );
@@ -41,71 +52,80 @@ export function GoalSelector({
 
   return (
     <div className="space-y-5">
-      {/* Goal Selection */}
+      {/* Goal Selection - Radio Buttons with Color Coding */}
       <div>
-        <label className="label-text">Select Goal</label>
-        <div className="relative">
-          <select
-            value={selectedGoalCode}
-            onChange={(e) => {
-              onGoalChange(parseInt(e.target.value));
-              onActivitiesChange([]); // Reset activities when goal changes
-            }}
-            className="input-field appearance-none bg-white"
-          >
-            {goals.map(goal => (
-              <option key={goal.code} value={goal.code}>
-                Goal {goal.code}
-              </option>
-            ))}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-            <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
-              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-            </svg>
-          </div>
+        <label className="label-text mb-3">Select Goal</label>
+        <div className="space-y-3">
+          {goals.map(goal => {
+            const isSelected = selectedGoalCode === goal.code;
+            const colors = getGoalColors(goal.code);
+            return (
+              <label
+                key={goal.code}
+                className={`flex items-start gap-3 p-4 rounded-xl cursor-pointer border-2 transition-all duration-200 ${
+                  isSelected
+                    ? `${colors.bg} ${colors.border} shadow-sm`
+                    : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="goal"
+                  value={goal.code}
+                  checked={isSelected}
+                  onChange={(e) => {
+                    onGoalChange(parseInt(e.target.value));
+                    onActivitiesChange([]); // Reset activities when goal changes
+                  }}
+                  className="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl">{getGoalIcon(goal.code)}</span>
+                    <span className={`font-semibold ${isSelected ? colors.text : 'text-slate-700'}`}>
+                      Goal {goal.code}
+                    </span>
+                  </div>
+                  <p className={`text-sm leading-relaxed ${isSelected ? colors.text : 'text-slate-600'}`}>
+                    {goal.description}
+                  </p>
+                </div>
+              </label>
+            );
+          })}
         </div>
       </div>
 
-      {/* Goal Description */}
-      {selectedGoal && (
-        <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 shadow-sm">
-          <p className="text-sm text-indigo-900 font-medium leading-relaxed">
-            {selectedGoal.description}
-          </p>
-        </div>
-      )}
-
-      {/* Activity Selection */}
+      {/* Activity Selection - Checkbox based */}
       {selectedGoal && selectedGoal.activities.length > 0 && (
         <div>
-          <label className="label-text mb-3">Suggested Activities</label>
-          <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+          <div className="label-text mb-3">Activities (Select what you did)</div>
+          <div className="space-y-2.5">
             {selectedGoal.activities.map((activity, index) => {
               const isSelected = selectedActivities.includes(activity);
               return (
                 <label
                   key={index}
-                  className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer border transition-all duration-200 ${
+                  className={`flex items-center gap-4 p-4 rounded-xl cursor-pointer border-2 transition-all duration-200 min-h-[52px] ${
                     isSelected
-                      ? 'bg-indigo-50 border-indigo-200'
-                      : 'bg-white border-slate-200 hover:border-indigo-200 hover:bg-slate-50'
+                      ? 'bg-indigo-50 border-indigo-400 shadow-sm'
+                      : 'bg-white border-slate-200 hover:border-indigo-200 hover:shadow-sm'
                   }`}
                 >
-                  <div className="mt-0.5">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handleActivityToggle(activity)}
-                      className="sr-only"
-                    />
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => handleActivityToggle(activity)}
+                    className="sr-only"
+                  />
+                  <div className="flex-shrink-0">
                     {isSelected ? (
-                      <CheckCircle2 size={18} className="text-indigo-600" />
+                      <CheckCircle2 size={24} className="text-indigo-600" />
                     ) : (
-                      <Circle size={18} className="text-slate-300" />
+                      <Circle size={24} className="text-slate-300" />
                     )}
                   </div>
-                  <span className={`text-sm ${isSelected ? 'text-indigo-900 font-medium' : 'text-slate-600'}`}>
+                  <span className={`text-base flex-1 ${isSelected ? 'text-indigo-900 font-medium' : 'text-slate-700'}`}>
                     {activity}
                   </span>
                 </label>

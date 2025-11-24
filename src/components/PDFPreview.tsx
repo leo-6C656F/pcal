@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import type { DailyEntry, ChildContext, Goal } from '../types';
 import { generatePDF } from '../services/pdfGenerator';
-import { Download, FileText, Loader2 } from 'lucide-react';
+import { printPDF } from '../utils/printPdf';
+import { emailPDF } from '../utils/emailPdf';
+import { Download, FileText, Loader2, Printer, Mail } from 'lucide-react';
 
 interface PDFPreviewProps {
   entries: DailyEntry[];  // Support multiple entries
@@ -73,6 +75,24 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
     }
   };
 
+  const handlePrintPDF = async () => {
+    try {
+      await printPDF({ entries, child, centerName, teacherName, goals });
+    } catch (err) {
+      console.error('Print error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to print PDF');
+    }
+  };
+
+  const handleEmailPDF = async () => {
+    try {
+      await emailPDF({ entries, child, centerName, teacherName, goals });
+    } catch (err) {
+      console.error('Email error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to email PDF');
+    }
+  };
+
   // Clean up blob URL on unmount
   useEffect(() => {
     return () => {
@@ -135,11 +155,27 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
         </div>
       </div>
 
-      <div className="flex justify-center">
+      <div className="flex flex-col sm:flex-row justify-center gap-3">
+        <button
+          type="button"
+          onClick={handleEmailPDF}
+          className="btn-primary w-full sm:w-auto"
+        >
+          <Mail size={18} className="mr-2" />
+          Email PDF
+        </button>
+        <button
+          type="button"
+          onClick={handlePrintPDF}
+          className="btn-secondary w-full sm:w-auto"
+        >
+          <Printer size={18} className="mr-2" />
+          Print to PDF
+        </button>
         <button
           type="button"
           onClick={downloadPDF}
-          className="btn-primary w-full sm:w-auto"
+          className="btn-secondary w-full sm:w-auto"
         >
           <Download size={18} className="mr-2" />
           Download PDF

@@ -13,6 +13,7 @@ interface PDFExportModalProps {
 export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
   const { goals, currentChild } = useStore();
   const [selectedEntryIds, setSelectedEntryIds] = useState<Set<string>>(new Set());
+  const [showPreview, setShowPreview] = useState(false);
 
   const toggleEntrySelection = (entryId: string) => {
     const newSelection = new Set(selectedEntryIds);
@@ -30,6 +31,10 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
     } else {
       setSelectedEntryIds(new Set(childEntries.map(e => e.id)));
     }
+  };
+
+  const handleGeneratePDF = () => {
+    setShowPreview(true);
   };
 
   const selectedEntries = childEntries.filter(e => selectedEntryIds.has(e.id)).sort((a, b) => a.date.localeCompare(b.date));
@@ -81,11 +86,22 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
           </div>
         </div>
 
-        {selectedEntryIds.size > 0 && currentChild && (
+        {selectedEntryIds.size > 0 && currentChild && !showPreview && (
           <div className="pt-4 border-t border-slate-200">
             <p className="text-sm text-slate-600 mb-4">
               {selectedEntryIds.size} {selectedEntryIds.size === 1 ? 'entry' : 'entries'} selected
             </p>
+            <button
+              onClick={handleGeneratePDF}
+              className="btn-primary w-full"
+            >
+              Generate PDF
+            </button>
+          </div>
+        )}
+
+        {showPreview && selectedEntryIds.size > 0 && currentChild && (
+          <div className="pt-4 border-t border-slate-200">
             <PDFPreview
               entries={selectedEntries}
               child={currentChild}
