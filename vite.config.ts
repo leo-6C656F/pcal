@@ -4,7 +4,8 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig(() => {
-  const base = process.env.GITHUB_PAGES === 'true' ? '/pcal/' : '/'
+  // Use root path for custom domain, /pcal/ for GitHub Pages subdirectory
+  const base = process.env.GITHUB_PAGES === 'true' ? '/' : '/'
 
   return {
     base,
@@ -12,7 +13,7 @@ export default defineConfig(() => {
       react(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png', '.nojekyll'],
+        includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png', '.nojekyll', 'CNAME'],
         manifest: {
           name: 'PCAL - Parent-Child Activity Log',
           short_name: 'PCAL',
