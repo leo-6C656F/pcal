@@ -194,7 +194,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
 
         th, td {
             border: 1px solid black;
-            padding: 0 4px 3px 4px;
+            padding: 2px 4px 3px 4px;
             vertical-align: top;
             line-height: 1.3;
         }
