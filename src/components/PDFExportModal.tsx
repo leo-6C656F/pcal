@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { Mail, FileText } from 'lucide-react';
 import { PDFPreview } from './PDFPreview';
 import { Modal } from './Modal';
@@ -116,7 +116,7 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <p className="font-medium text-slate-900">
-                      {format(new Date(entry.date), 'MMMM d, yyyy')}
+                      {format(parse(entry.date, 'yyyy-MM-dd', new Date()), 'MMMM d, yyyy')}
                     </p>
                     {entry.emailedAt && (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-800 rounded-full border border-emerald-300">
