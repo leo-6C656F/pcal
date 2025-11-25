@@ -112,17 +112,23 @@ function App() {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    try {
-      await loadChildren();
-      await loadEntries();
-      await loadGoals();
-      toast.success(t('app.refreshed'));
-    } catch (error) {
-      console.error('[APP] Refresh failed:', error);
-      toast.error(t('app.refreshFailed'));
-    } finally {
-      setIsRefreshing(false);
+
+    // Check for service worker updates (new app version)
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration) {
+        // Check for updates
+        await registration.update();
+
+        // If there's a waiting worker, activate it
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+      }
     }
+
+    // Reload to apply updates (data in IndexedDB will persist)
+    window.location.reload();
   };
 
   return (
