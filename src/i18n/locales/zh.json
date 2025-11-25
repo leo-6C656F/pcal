@@ -132,7 +132,8 @@
   },
   "settings": {
     "goalsTab": "目标",
-    "childrenTab": "管理孩子"
+    "childrenTab": "管理孩子",
+    "dataTab": "数据"
   },
   "childManager": {
     "title": "管理孩子",
@@ -246,5 +247,41 @@
     "emailPdf": "邮件发送 PDF",
     "printToPdf": "打印为 PDF",
     "downloadPdf": "下载 PDF"
+  },
+  "dataManager": {
+    "title": "数据管理",
+    "subtitle": "导出和导入您的 PCAL 数据",
+    "currentData": "当前数据",
+    "children": "孩子",
+    "entries": "条目",
+    "goals": "目标",
+    "events": "事件",
+    "exportTitle": "导出数据",
+    "exportDescription": "下载包含所有孩子、活动日志、目标和事件的备份文件。请妥善保管此文件，以便日后恢复数据。",
+    "exportButton": "导出备份",
+    "exporting": "正在导出...",
+    "exportSuccess": "备份文件下载成功！",
+    "exportError": "导出数据失败。请重试。",
+    "importTitle": "导入数据",
+    "importDescription": "从之前导出的备份文件恢复数据。",
+    "selectFile": "选择备份文件",
+    "invalidFile": "无效的备份文件",
+    "validFile": "有效的备份文件",
+    "exportedOn": "导出于",
+    "tryAgain": "尝试其他文件",
+    "importModeLabel": "您想如何导入？",
+    "mergeMode": "与现有数据合并",
+    "mergeModeDescription": "从备份添加新记录，同时保留现有数据。重复记录将被跳过。",
+    "replaceMode": "替换所有数据",
+    "replaceModeDescription": "删除所有当前数据并替换为备份。用于完全恢复。",
+    "replaceWarning": "警告：这将永久删除您所有的当前数据，并替换为备份文件的内容。",
+    "mergeData": "合并数据",
+    "replaceData": "替换所有数据",
+    "importing": "正在导入...",
+    "importError": "导入数据失败。请重试。",
+    "confirmMergeTitle": "确认合并",
+    "confirmMergeMessage": "这将从备份文件添加新记录，同时保留现有数据。是否继续？",
+    "confirmReplaceTitle": "确认替换所有",
+    "confirmReplaceMessage": "这将永久删除您所有的当前数据，并替换为备份文件。此操作无法撤销。您确定吗？"
   }
 }

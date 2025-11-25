@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Target, Users } from 'lucide-react';
+import { Target, Users, Database } from 'lucide-react';
 import { GoalManager } from './GoalManager';
 import { ChildManager } from './ChildManager';
+import { DataManager } from './DataManager';
 
-type SettingsTab = 'goals' | 'children';
+type SettingsTab = 'goals' | 'children' | 'data';
 
 /**
  * SettingsPage Component
@@ -17,6 +18,7 @@ export function SettingsPage() {
   const tabs = [
     { id: 'goals' as const, label: t('settings.goalsTab'), icon: Target },
     { id: 'children' as const, label: t('settings.childrenTab'), icon: Users },
+    { id: 'data' as const, label: t('settings.dataTab'), icon: Database },
   ];
 
   return (
@@ -57,6 +59,7 @@ export function SettingsPage() {
             <ChildManager />
           </div>
         )}
+        {activeTab === 'data' && <DataManager />}
       </div>
     </div>
   );
