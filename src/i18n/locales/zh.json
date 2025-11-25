@@ -9,7 +9,10 @@
     "initializationError": "初始化错误",
     "reloadApp": "重新加载应用",
     "back": "返回",
-    "goalsAndSetup": "目标与设置"
+    "goalsAndSetup": "目标与设置",
+    "refresh": "刷新",
+    "refreshed": "数据已刷新",
+    "refreshFailed": "刷新数据失败"
   },
   "common": {
     "cancel": "取消",
