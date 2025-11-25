@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { format, parse } from 'date-fns';
-import { Mail, FileText } from 'lucide-react';
+import { Mail, FileText, X, ArrowLeft } from 'lucide-react';
 import { PDFPreview } from './PDFPreview';
 import { Modal } from './Modal';
 import type { DailyEntry } from '../types';
@@ -44,32 +44,44 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
 
   if (showPreview && selectedEntryIds.size > 0 && currentChild) {
     return (
-      <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 animate-in fade-in-0">
+      <div
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in-0"
+        onClick={onClose}
+      >
         <div
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95"
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                <FileText size={20} className="text-indigo-600" />
+          <div className="sticky top-0 bg-white border-b border-slate-200 px-4 sm:px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              <button
+                onClick={() => setShowPreview(false)}
+                className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors flex-shrink-0"
+                aria-label={t('pdfExport.backToSelection')}
+              >
+                <ArrowLeft size={20} />
+              </button>
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <FileText size={16} className="text-indigo-600 sm:hidden" />
+                <FileText size={20} className="text-indigo-600 hidden sm:block" />
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-900">{t('pdfExport.pdfPreview')}</h2>
-                <p className="text-sm text-slate-500">
+              <div className="min-w-0">
+                <h2 className="text-lg sm:text-xl font-bold text-slate-900 truncate">{t('pdfExport.pdfPreview')}</h2>
+                <p className="text-xs sm:text-sm text-slate-500 truncate">
                   {t('pdfExport.entriesSelected', { count: selectedEntries.length, type: selectedEntries.length === 1 ? t('common.entry') : t('common.entriesPlural') })}
                 </p>
               </div>
             </div>
             <button
-              onClick={() => setShowPreview(false)}
-              className="px-4 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg font-medium transition-colors"
+              onClick={onClose}
+              className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors flex-shrink-0 ml-2"
+              aria-label="Close modal"
             >
-              {t('pdfExport.backToSelection')}
+              <X size={24} />
             </button>
           </div>
 
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <PDFPreview
               entries={selectedEntries}
               child={currentChild}
