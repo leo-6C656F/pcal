@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { CheckCircle2, Circle, Target } from 'lucide-react';
 import { getGoalColors, getGoalIcon } from '../utils/goalColors';
@@ -20,6 +21,7 @@ export function GoalSelector({
   onGoalChange,
   onActivitiesChange
 }: GoalSelectorProps) {
+  const { t } = useTranslation();
   const goals = useStore(state => state.goals);
   const selectedGoal = goals.find(g => g.code === selectedGoalCode);
 
@@ -45,7 +47,7 @@ export function GoalSelector({
     return (
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
         <p className="text-sm text-amber-800 font-medium">
-          No goals configured. Please add goals in Goals & Setup.
+          {t('goalSelector.noGoals')}
         </p>
       </div>
     );
@@ -57,8 +59,8 @@ export function GoalSelector({
       <div>
         <label className="label-text mb-3 flex items-center gap-2">
           <Target size={16} className="text-indigo-600" />
-          What did you work on?
-          <HelpTooltip content="Pick the developmental goal you focused on during this activity. Each goal has different learning activities." />
+          {t('goalSelector.whatDidYouWorkOn')}
+          <HelpTooltip content={t('goalSelector.whatDidYouWorkOnTooltip')} />
         </label>
         <div className="space-y-3">
           {goals.map(goal => {
@@ -88,7 +90,7 @@ export function GoalSelector({
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xl">{getGoalIcon(goal.code)}</span>
                     <span className={`font-semibold ${isSelected ? colors.text : 'text-slate-700'}`}>
-                      Goal {goal.code}
+                      {t('common.goal')} {goal.code}
                     </span>
                   </div>
                   <p className={`text-sm leading-relaxed ${isSelected ? colors.text : 'text-slate-600'}`}>
@@ -105,8 +107,8 @@ export function GoalSelector({
       {selectedGoal && selectedGoal.activities.length > 0 && (
         <div>
           <div className="label-text mb-3 flex items-center gap-2">
-            ✅ What activities did you do?
-            <HelpTooltip content="Check all the activities you did together. You can select more than one!" />
+            ✅ {t('goalSelector.whatActivities')}
+            <HelpTooltip content={t('goalSelector.whatActivitiesTooltip')} />
           </div>
           <div className="space-y-2.5">
             {selectedGoal.activities.map((activity, index) => {

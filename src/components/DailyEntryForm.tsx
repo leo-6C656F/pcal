@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { GoalSelector } from './GoalSelector';
 import { TimeInput } from './TimeInput';
@@ -17,6 +18,7 @@ type View = 'list' | 'form' | 'finalize';
  * Main form for creating and editing daily activity logs
  */
 export function DailyEntryForm() {
+  const { t } = useTranslation();
   const {
     currentEntry,
     currentChild,
@@ -34,7 +36,7 @@ export function DailyEntryForm() {
   if (!currentEntry || !currentChild) {
     return (
       <div className="text-center py-20">
-        <p className="text-slate-500">Please select or create a daily entry</p>
+        <p className="text-slate-500">{t('dailyEntryForm.selectEntry')}</p>
       </div>
     );
   }
@@ -56,7 +58,7 @@ export function DailyEntryForm() {
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-2xl font-bold text-slate-900">
-              Activity Log:
+              {t('dailyEntryForm.activityLog')}
             </h1>
             {children.length > 1 ? (
               <select
@@ -76,15 +78,15 @@ export function DailyEntryForm() {
           </div>
           <div className="flex flex-wrap gap-4 text-sm text-slate-500">
             <span className="bg-slate-100 px-2.5 py-0.5 rounded-md font-medium text-slate-700">
-              Date: {currentEntry.date}
+              {t('dailyEntryForm.date')} {currentEntry.date}
             </span>
-            <span>Center: {currentChild.center}</span>
-            <span>Teacher: {currentChild.teacher}</span>
+            <span>{t('dailyEntryForm.center')} {currentChild.center}</span>
+            <span>{t('dailyEntryForm.teacher')} {currentChild.teacher}</span>
           </div>
         </div>
         <div className="text-right space-y-2">
            <div className="text-3xl font-bold text-indigo-600">{totalHours}</div>
-           <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Hours</div>
+           <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t('dailyEntryForm.totalHours')}</div>
            <div className="w-32">
              <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
                <div
@@ -113,14 +115,14 @@ export function DailyEntryForm() {
       <>
         {deleteConfirm && (
           <ConfirmDialog
-            title="Delete Activity?"
-            message={`Are you sure you want to remove "${deleteConfirm.activity}"? This action cannot be undone.`}
-            confirmText="Delete"
-            cancelText="Keep It"
+            title={t('dailyEntryForm.deleteActivityTitle')}
+            message={t('dailyEntryForm.deleteActivityMessage', { activity: deleteConfirm.activity })}
+            confirmText={t('common.delete')}
+            cancelText={t('dailyEntryForm.keepIt')}
             variant="danger"
             onConfirm={() => {
               deleteActivityLine(currentEntry.id, deleteConfirm.lineId);
-              showToast?.info('Activity removed');
+              showToast?.info(t('toast.activityRemoved'));
               setDeleteConfirm(null);
             }}
             onCancel={() => setDeleteConfirm(null)}
@@ -130,7 +132,7 @@ export function DailyEntryForm() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <BookOpen size={20} className="text-indigo-500" />
-              Logged Activities
+              {t('dailyEntryForm.loggedActivities')}
               <span className="ml-2 px-2.5 py-0.5 bg-indigo-100 text-indigo-700 text-xs rounded-full">
                 {currentEntry.lines.length}
               </span>
@@ -142,7 +144,7 @@ export function DailyEntryForm() {
                 className="btn-primary"
               >
                 <Plus size={18} className="mr-2" />
-                Add New Activity
+                {t('dailyEntryForm.addNewActivity')}
               </button>
               <button
                 type="button"
@@ -151,15 +153,15 @@ export function DailyEntryForm() {
                 disabled={currentEntry.lines.length === 0}
               >
                 <CheckCircle size={18} className="mr-2" />
-                Review & Finalize
+                {t('dailyEntryForm.reviewFinalize')}
               </button>
             </div>
           </div>
 
           {currentEntry.lines.length === 0 ? (
             <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-              <p className="text-slate-500">No activities logged yet.</p>
-              <p className="text-sm text-slate-400">Use the form to add your first activity.</p>
+              <p className="text-slate-500">{t('dailyEntryForm.noActivities')}</p>
+              <p className="text-sm text-slate-400">{t('dailyEntryForm.noActivitiesHint')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -172,7 +174,7 @@ export function DailyEntryForm() {
                         <div className="flex flex-wrap items-center gap-2 mb-2">
                           <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold border ${colors.badge} gap-1`}>
                             <span>{getGoalIcon(line.goalCode)}</span>
-                            Goal {line.goalCode}
+                            {t('common.goal')} {line.goalCode}
                           </span>
                           <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 gap-1">
                             <Clock size={12} />
@@ -191,18 +193,18 @@ export function DailyEntryForm() {
                           type="button"
                           onClick={() => onEdit(line)}
                           className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                          title="Edit Activity"
+                          title={t('dailyEntryForm.editActivity')}
                         >
                           <Edit3 size={18} />
                         </button>
                         <button
                           type="button"
                           onClick={() => {
-                            const activityDesc = line.customNarrative || line.selectedActivities.join(', ') || 'this activity';
+                            const activityDesc = line.customNarrative || line.selectedActivities.join(', ') || t('common.activity');
                             setDeleteConfirm({ lineId: line.id, activity: activityDesc });
                           }}
                           className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                          title="Delete Activity"
+                          title={t('dailyEntryForm.deleteActivity')}
                         >
                           <Trash2 size={18} />
                         </button>
@@ -250,7 +252,7 @@ export function DailyEntryForm() {
       try {
         if (activity?.id) { // Editing existing activity
           await updateActivityLine(currentEntry!.id, activity.id, line);
-          showToast?.success('Activity updated successfully!');
+          showToast?.success(t('toast.activityUpdated'));
         } else { // Adding new activity
           await addActivityLine(currentEntry!.id, {
             goalCode: line.goalCode,
@@ -260,12 +262,12 @@ export function DailyEntryForm() {
             endTime: line.endTime || '09:30',
             durationMinutes: line.durationMinutes || 30
           });
-          showToast?.success('Activity added successfully!');
+          showToast?.success(t('toast.activityAdded'));
         }
         onClose();
       } catch (error) {
         console.error('Failed to save activity:', error);
-        showToast?.error('Failed to save activity. Please try again.');
+        showToast?.error(t('toast.activitySaveFailed'));
       } finally {
         setIsSaving(false);
       }
@@ -278,7 +280,7 @@ export function DailyEntryForm() {
             <div className="p-6 border-b border-slate-200">
               <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 {activity ? <Edit3 size={18} /> : <Plus size={18} />}
-                {activity ? 'Edit Activity' : 'Add Activity'}
+                {activity ? t('dailyEntryForm.editActivity') : t('dailyEntryForm.addActivity')}
               </h2>
             </div>
             <div className="p-6 space-y-6 flex-1 overflow-y-auto">
@@ -294,15 +296,15 @@ export function DailyEntryForm() {
               <div>
                 <label className="label-text flex items-center gap-2">
                   <Edit3 size={14} />
-                  Add Your Own Notes (Optional)
-                  <HelpTooltip content="Describe what you did in your own words. This is optional if you already selected activities above." />
+                  {t('dailyEntryForm.addNotes')}
+                  <HelpTooltip content={t('dailyEntryForm.addNotesTooltip')} />
                 </label>
                 <textarea
                   value={line.customNarrative || ''}
                   onChange={(e) => setLine({ ...line, customNarrative: e.target.value })}
                   rows={3}
                   className="input-field resize-none"
-                  placeholder="Example: We read a book about animals and talked about what sounds they make..."
+                  placeholder={t('dailyEntryForm.notesPlaceholder')}
                 />
               </div>
 
@@ -322,7 +324,7 @@ export function DailyEntryForm() {
                 className="btn-secondary flex-1"
                 disabled={isSaving}
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="button"
@@ -333,10 +335,10 @@ export function DailyEntryForm() {
                 {isSaving ? (
                   <>
                     <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                    Saving...
+                    {t('common.saving')}
                   </>
                 ) : (
-                  'Save Activity'
+                  t('dailyEntryForm.saveActivity')
                 )}
               </button>
             </div>
@@ -354,9 +356,9 @@ export function DailyEntryForm() {
       setIsGeneratingAI(true);
       try {
         await generateAISummary(currentEntry.id);
-        showToast?.success('AI summary generated successfully!');
+        showToast?.success(t('toast.summaryGenerated'));
       } catch (error) {
-        showToast?.error('Failed to generate summary. Please try again.');
+        showToast?.error(t('toast.summaryFailed'));
       } finally {
         setIsGeneratingAI(false);
       }
@@ -369,11 +371,11 @@ export function DailyEntryForm() {
             <button
               onClick={onClose}
               className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
-              aria-label="Back to Activity List"
+              aria-label={t('dailyEntryForm.backToActivityList')}
             >
               <ArrowLeft size={20} />
             </button>
-            <h2 className="text-2xl font-bold text-slate-900">Review & Finalize</h2>
+            <h2 className="text-2xl font-bold text-slate-900">{t('dailyEntryForm.reviewFinalize')}</h2>
           </div>
 
           {/* AI Summary */}
@@ -382,8 +384,8 @@ export function DailyEntryForm() {
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                   <Sparkles size={20} className="text-purple-600" />
-                  Day Summary
-                  <HelpTooltip content="This creates a written summary of all your activities for the day. Great for reports and documentation!" />
+                  {t('dailyEntryForm.daySummary')}
+                  <HelpTooltip content={t('dailyEntryForm.daySummaryTooltip')} />
                 </h2>
                 <button
                   type="button"
@@ -394,10 +396,10 @@ export function DailyEntryForm() {
                   {isGeneratingAI ? (
                     <>
                       <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-purple-700 border-t-transparent mr-2"></div>
-                      Writing...
+                      {t('dailyEntryForm.writingSummary')}
                     </>
                   ) : (
-                    '✨ Write Summary'
+                    `✨ ${t('dailyEntryForm.writeSummary')}`
                   )}
                 </button>
               </div>
@@ -409,7 +411,7 @@ export function DailyEntryForm() {
               ) : (
                 <div className="bg-purple-50 border-2 border-dashed border-purple-200 rounded-xl p-4">
                   <p className="text-sm text-purple-700">
-                    💡 <strong>Tip:</strong> Click "Write Summary" to automatically create a professional description of today's activities.
+                    {t('dailyEntryForm.summaryTip')}
                   </p>
                 </div>
               )}

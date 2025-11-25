@@ -1,4 +1,5 @@
 import { useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import SignatureCanvas from 'react-signature-canvas';
 import { PenTool, Trash2, Check } from 'lucide-react';
 
@@ -12,6 +13,7 @@ interface SignaturePadProps {
  * Allows user to draw a signature
  */
 export function SignaturePad({ signatureBase64, onSave }: SignaturePadProps) {
+  const { t } = useTranslation();
   const sigCanvas = useRef<SignatureCanvas>(null);
 
   useEffect(() => {
@@ -45,15 +47,15 @@ export function SignaturePad({ signatureBase64, onSave }: SignaturePadProps) {
         <div>
           <label className="label-text flex items-center gap-2 mb-1">
             <PenTool size={16} className="text-indigo-600" />
-            Parent Signature
+            {t('signaturePad.parentSignature')}
           </label>
           <p className="text-xs text-slate-500">
-            Sign with your finger or mouse in the box below
+            {t('signaturePad.signInstructions')}
           </p>
         </div>
         {signatureBase64 && (
           <span className="text-xs font-medium text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2 py-1 rounded-full">
-            <Check size={12} /> Saved
+            <Check size={12} /> {t('common.saved')}
           </span>
         )}
       </div>
@@ -64,7 +66,7 @@ export function SignaturePad({ signatureBase64, onSave }: SignaturePadProps) {
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
             <div className="text-center">
               <PenTool size={32} className="text-slate-300 mx-auto mb-2" />
-              <p className="text-sm text-slate-400 font-medium">Sign here</p>
+              <p className="text-sm text-slate-400 font-medium">{t('signaturePad.signHere')}</p>
             </div>
           </div>
         )}
@@ -85,7 +87,7 @@ export function SignaturePad({ signatureBase64, onSave }: SignaturePadProps) {
           className="btn-secondary flex-1"
         >
           <Trash2 size={16} className="mr-2 text-slate-500" />
-          Clear
+          {t('common.clear')}
         </button>
         <button
           type="button"
@@ -93,7 +95,7 @@ export function SignaturePad({ signatureBase64, onSave }: SignaturePadProps) {
           className="btn-primary flex-1 bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500"
         >
           <Check size={16} className="mr-2" />
-          Save Signature
+          {t('signaturePad.saveSignature')}
         </button>
       </div>
     </div>

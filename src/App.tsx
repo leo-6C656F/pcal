@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore } from './store';
 import { initializeDatabase } from './services/journalReplay';
 import { Dashboard } from './components/Dashboard';
 import { DailyEntryForm } from './components/DailyEntryForm';
 import { GoalManager } from './components/GoalManager';
 import { ToastContainer } from './components/ToastContainer';
+import { LanguageSelector } from './components/LanguageSelector';
 import { useToast } from './hooks/useToast';
 import { ArrowLeft, Settings, BookOpenCheck } from 'lucide-react';
 
@@ -18,6 +20,7 @@ export let showToast: ReturnType<typeof useToast>;
  * Main Application Component
  */
 function App() {
+  const { t } = useTranslation();
   const { currentEntry, setCurrentEntry, loadChildren, loadEntries, loadGoals } = useStore();
   const [isInitialized, setIsInitialized] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
@@ -69,14 +72,14 @@ function App() {
               <span className="text-2xl">⚠️</span>
             </div>
             <h1 className="text-2xl font-bold text-slate-900 mb-2">
-              Initialization Error
+              {t('app.initializationError')}
             </h1>
             <p className="text-slate-600 mb-6">{initError}</p>
             <button
               onClick={() => window.location.reload()}
               className="btn-primary bg-rose-600 hover:bg-rose-700 focus:ring-rose-500"
             >
-              Reload App
+              {t('app.reloadApp')}
             </button>
           </div>
         </div>
@@ -89,7 +92,7 @@ function App() {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-10 w-10 border-[3px] border-indigo-600 border-t-transparent"></div>
-          <p className="mt-4 text-slate-600 font-medium">Initializing PCAL...</p>
+          <p className="mt-4 text-slate-600 font-medium">{t('app.initializingPcal')}</p>
         </div>
       </div>
     );
@@ -113,7 +116,7 @@ function App() {
               <button
                 onClick={handleBackToDashboard}
                 className="p-2 -ml-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
-                aria-label="Back"
+                aria-label={t('app.back')}
               >
                 <ArrowLeft size={20} />
               </button>
@@ -124,19 +127,20 @@ function App() {
                 <BookOpenCheck size={20} className="text-white" />
               </div>
               <span className="text-lg font-bold text-slate-900 tracking-tight hidden sm:block">
-                PCAL
+                {t('app.name')}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <LanguageSelector />
             {currentView === 'dashboard' && (
               <button
                 onClick={() => setCurrentView('settings')}
                 className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all text-slate-600 hover:text-indigo-600 hover:bg-slate-100"
               >
                 <Settings size={18} />
-                <span className="hidden sm:inline">Goals & Setup</span>
+                <span className="hidden sm:inline">{t('app.goalsAndSetup')}</span>
               </button>
             )}
           </div>
@@ -157,13 +161,13 @@ function App() {
         <div className="max-w-6xl mx-auto px-6 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
             <div className="text-xs text-slate-400">
-              <p className="font-medium text-slate-500">PCAL v1.0</p>
-              <p>Built for Head Start Programs</p>
+              <p className="font-medium text-slate-500">{t('app.version')}</p>
+              <p>{t('app.tagline')}</p>
             </div>
             <div className="flex gap-4 text-xs text-slate-400">
-              <span>✓ Works Offline</span>
+              <span>✓ {t('app.worksOffline')}</span>
               <span>•</span>
-              <span>✓ Your data stays on this device</span>
+              <span>✓ {t('app.dataPrivacy')}</span>
             </div>
           </div>
         </div>

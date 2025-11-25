@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { calculateTimeFields } from '../store';
 import type { TimeInputMode } from '../types';
 import { ArrowRight } from 'lucide-react';
@@ -17,6 +18,7 @@ interface TimeInputProps {
  * 2. Start + End -> Duration (calculated)
  */
 export function TimeInput({ startTime, endTime, durationMinutes, onChange }: TimeInputProps) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<TimeInputMode>('start-duration');
   const [localStart, setLocalStart] = useState(startTime);
   const [localEnd, setLocalEnd] = useState(endTime);
@@ -65,7 +67,7 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
               : 'text-slate-500 hover:text-slate-700'
           }`}
         >
-          Duration Mode
+          {t('timeInput.durationMode')}
         </button>
         <button
           type="button"
@@ -76,7 +78,7 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
               : 'text-slate-500 hover:text-slate-700'
           }`}
         >
-          Start/End Mode
+          {t('timeInput.startEndMode')}
         </button>
       </div>
 
@@ -86,7 +88,7 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
           <div className="grid grid-cols-2 gap-3">
             {/* Start Time */}
             <div>
-              <label className="label-text text-xs block mb-1">Start</label>
+              <label className="label-text text-xs block mb-1">{t('timeInput.start')}</label>
               <input
                 type="time"
                 value={localStart}
@@ -97,7 +99,7 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
 
             {/* Duration */}
             <div>
-              <label className="label-text text-xs block mb-1">Duration (Min)</label>
+              <label className="label-text text-xs block mb-1">{t('timeInput.durationMin')}</label>
               <input
                 type="number"
                 min="0"
@@ -112,7 +114,7 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
           {/* Quick Duration Presets */}
           <div>
             <label className="label-text text-xs block mb-2 flex items-center gap-2">
-              ⚡ Quick Select
+              ⚡ {t('timeInput.quickSelect')}
             </label>
             <div className="grid grid-cols-4 gap-2">
               <button
@@ -124,7 +126,7 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
                     : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-sm'
                 }`}
               >
-                15 min
+                {t('timeInput.fifteenMin')}
               </button>
               <button
                 type="button"
@@ -135,7 +137,7 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
                     : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-sm'
                 }`}
               >
-                30 min
+                {t('timeInput.thirtyMin')}
               </button>
               <button
                 type="button"
@@ -146,7 +148,7 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
                     : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-sm'
                 }`}
               >
-                1 hour
+                {t('timeInput.oneHour')}
               </button>
               <button
                 type="button"
@@ -157,7 +159,7 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
                     : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-sm'
                 }`}
               >
-                2 hours
+                {t('timeInput.twoHours')}
               </button>
             </div>
           </div>
@@ -168,7 +170,7 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
 
           {/* End Time (calculated) */}
           <div>
-            <label className="label-text text-xs block mb-1 text-slate-400">End Time (Calculated)</label>
+            <label className="label-text text-xs block mb-1 text-slate-400">{t('timeInput.endTimeCalculated')}</label>
             <input
               type="time"
               value={localEnd}
@@ -182,7 +184,7 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
           <div className="grid grid-cols-2 gap-3">
             {/* Start Time */}
             <div>
-              <label className="label-text text-xs block mb-1">Start</label>
+              <label className="label-text text-xs block mb-1">{t('timeInput.start')}</label>
               <input
                 type="time"
                 value={localStart}
@@ -193,7 +195,7 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
 
             {/* End Time */}
             <div>
-              <label className="label-text text-xs block mb-1">End</label>
+              <label className="label-text text-xs block mb-1">{t('timeInput.end')}</label>
               <input
                 type="time"
                 value={localEnd}
@@ -209,7 +211,7 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
 
           {/* Duration (calculated) */}
           <div>
-            <label className="label-text text-xs block mb-1 text-slate-400">Duration (Calculated)</label>
+            <label className="label-text text-xs block mb-1 text-slate-400">{t('timeInput.durationCalculated')}</label>
             <input
               type="number"
               value={localDuration}

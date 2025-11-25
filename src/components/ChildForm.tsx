@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import type { ChildContext } from '../types';
 import { showToast } from '../App';
@@ -9,6 +10,7 @@ interface ChildFormProps {
 }
 
 export function ChildForm({ onChildCreated, onCancel }: ChildFormProps) {
+  const { t } = useTranslation();
   const { createChild } = useStore();
 
   const [newChildData, setNewChildData] = useState({
@@ -27,9 +29,9 @@ export function ChildForm({ onChildCreated, onCancel }: ChildFormProps) {
 
   const validateChildForm = () => {
     const errors = {
-      name: newChildData.name.trim() ? '' : 'Child name is required',
-      center: newChildData.center.trim() ? '' : 'Center name is required',
-      teacher: newChildData.teacher.trim() ? '' : 'Teacher name is required'
+      name: newChildData.name.trim() ? '' : t('childForm.childNameRequired'),
+      center: newChildData.center.trim() ? '' : t('childForm.centerRequired'),
+      teacher: newChildData.teacher.trim() ? '' : t('childForm.teacherRequired')
     };
     setChildFormErrors(errors);
     return !errors.name && !errors.center && !errors.teacher;
@@ -46,7 +48,7 @@ export function ChildForm({ onChildCreated, onCancel }: ChildFormProps) {
       onChildCreated(child);
     } catch (error) {
       console.error('Failed to create child:', error);
-      showToast.error('Failed to create child profile.');
+      showToast.error(t('childForm.failedToCreate'));
     } finally {
       setIsCreatingChild(false);
     }
@@ -56,7 +58,7 @@ export function ChildForm({ onChildCreated, onCancel }: ChildFormProps) {
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
         <div>
-          <label className="label-text">Child Name</label>
+          <label className="label-text">{t('childForm.childName')}</label>
           <input
             type="text"
             value={newChildData.name}
@@ -67,7 +69,7 @@ export function ChildForm({ onChildCreated, onCancel }: ChildFormProps) {
               }
             }}
             className={`input-field ${childFormErrors.name ? 'border-rose-500 focus:ring-rose-500' : ''}`}
-            placeholder="e.g. Jane Doe"
+            placeholder={t('childForm.childNamePlaceholder')}
           />
           {childFormErrors.name && (
             <p className="mt-1 text-sm text-rose-600 flex items-center gap-1">
@@ -76,7 +78,7 @@ export function ChildForm({ onChildCreated, onCancel }: ChildFormProps) {
           )}
         </div>
         <div>
-          <label className="label-text">Center</label>
+          <label className="label-text">{t('childForm.center')}</label>
           <input
             type="text"
             value={newChildData.center}
@@ -87,7 +89,7 @@ export function ChildForm({ onChildCreated, onCancel }: ChildFormProps) {
               }
             }}
             className={`input-field ${childFormErrors.center ? 'border-rose-500 focus:ring-rose-500' : ''}`}
-            placeholder="e.g. North Hills Head Start"
+            placeholder={t('childForm.centerPlaceholder')}
           />
           {childFormErrors.center && (
             <p className="mt-1 text-sm text-rose-600 flex items-center gap-1">
@@ -96,7 +98,7 @@ export function ChildForm({ onChildCreated, onCancel }: ChildFormProps) {
           )}
         </div>
         <div>
-          <label className="label-text">Teacher</label>
+          <label className="label-text">{t('childForm.teacher')}</label>
           <input
             type="text"
             value={newChildData.teacher}
@@ -107,7 +109,7 @@ export function ChildForm({ onChildCreated, onCancel }: ChildFormProps) {
               }
             }}
             className={`input-field ${childFormErrors.teacher ? 'border-rose-500 focus:ring-rose-500' : ''}`}
-            placeholder="e.g. Mrs. Smith"
+            placeholder={t('childForm.teacherPlaceholder')}
           />
           {childFormErrors.teacher && (
             <p className="mt-1 text-sm text-rose-600 flex items-center gap-1">
@@ -122,7 +124,7 @@ export function ChildForm({ onChildCreated, onCancel }: ChildFormProps) {
           className="btn-secondary"
           disabled={isCreatingChild}
         >
-          Cancel
+          {t('common.cancel')}
         </button>
         <button
           onClick={handleCreateChild}
@@ -132,10 +134,10 @@ export function ChildForm({ onChildCreated, onCancel }: ChildFormProps) {
           {isCreatingChild ? (
             <>
               <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-              Creating...
+              {t('common.creating')}
             </>
           ) : (
-            'Create Profile'
+            t('childForm.createProfile')
           )}
         </button>
       </div>

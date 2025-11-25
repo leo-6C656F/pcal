@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { format } from 'date-fns';
 import { Mail, FileText } from 'lucide-react';
@@ -12,6 +13,7 @@ interface PDFExportModalProps {
 }
 
 export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
+  const { t } = useTranslation();
   const { goals, currentChild } = useStore();
   const [selectedEntryIds, setSelectedEntryIds] = useState<Set<string>>(new Set());
   const [showPreview, setShowPreview] = useState(false);
@@ -53,9 +55,9 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
                 <FileText size={20} className="text-indigo-600" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-slate-900">PDF Preview</h2>
+                <h2 className="text-xl font-bold text-slate-900">{t('pdfExport.pdfPreview')}</h2>
                 <p className="text-sm text-slate-500">
-                  {selectedEntries.length} {selectedEntries.length === 1 ? 'entry' : 'entries'} selected
+                  {t('pdfExport.entriesSelected', { count: selectedEntries.length, type: selectedEntries.length === 1 ? t('common.entry') : t('common.entriesPlural') })}
                 </p>
               </div>
             </div>
@@ -63,7 +65,7 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
               onClick={() => setShowPreview(false)}
               className="px-4 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg font-medium transition-colors"
             >
-              ← Back to Selection
+              {t('pdfExport.backToSelection')}
             </button>
           </div>
 
@@ -82,16 +84,16 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
   }
 
   return (
-    <Modal title="Export to PDF" onClose={onClose} size="lg">
+    <Modal title={t('pdfExport.title')} onClose={onClose} size="lg">
       <div className="space-y-5">
         <div>
           <div className="flex justify-between items-center mb-4">
-            <p className="text-sm text-slate-600 font-medium">Select entries to include in PDF:</p>
+            <p className="text-sm text-slate-600 font-medium">{t('pdfExport.selectEntries')}</p>
             <button
               onClick={toggleSelectAll}
               className="text-sm text-primary hover:text-primary/90 font-semibold transition-colors"
             >
-              {selectedEntryIds.size === childEntries.length ? 'Deselect All' : 'Select All'}
+              {selectedEntryIds.size === childEntries.length ? t('common.deselectAll') : t('common.selectAll')}
             </button>
           </div>
 
@@ -119,18 +121,18 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
                     {entry.emailedAt && (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-800 rounded-full border border-emerald-300">
                         <Mail size={12} />
-                        Sent
+                        {t('common.sent')}
                       </span>
                     )}
                   </div>
                   <p className="text-sm text-slate-500">
-                    {entry.lines.length} {entry.lines.length === 1 ? 'activity' : 'activities'}
-                    {entry.signatureBase64 && ' • Signed'}
+                    {entry.lines.length} {entry.lines.length === 1 ? t('common.activity') : t('common.activitiesPlural')}
+                    {entry.signatureBase64 && ` • ${t('common.signed')}`}
                     {entry.emailedAt && (
                       <>
                         {' • '}
                         <span className="text-emerald-700 font-medium">
-                          Sent {format(new Date(entry.emailedAt), 'MMM d, h:mm a')}
+                          {t('common.sent')} {format(new Date(entry.emailedAt), 'MMM d, h:mm a')}
                         </span>
                       </>
                     )}
@@ -149,7 +151,7 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
                   <FileText size={16} className="text-indigo-600" />
                 </div>
                 <p className="text-sm font-semibold text-slate-700">
-                  {selectedEntryIds.size} {selectedEntryIds.size === 1 ? 'entry' : 'entries'} selected
+                  {t('pdfExport.entriesSelected', { count: selectedEntryIds.size, type: selectedEntryIds.size === 1 ? t('common.entry') : t('common.entriesPlural') })}
                 </p>
               </div>
             </div>
@@ -158,7 +160,7 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
               className="btn-primary w-full flex items-center justify-center gap-2"
             >
               <FileText size={18} />
-              Review & Generate PDF
+              {t('pdfExport.reviewGenerate')}
             </button>
           </div>
         )}
@@ -166,7 +168,7 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
         {selectedEntryIds.size === 0 && (
           <div className="pt-4 border-t border-slate-200">
             <p className="text-sm text-slate-500 text-center italic">
-              Select at least one entry to generate a PDF
+              {t('pdfExport.selectAtLeastOne')}
             </p>
           </div>
         )}
