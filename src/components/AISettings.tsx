@@ -265,9 +265,11 @@ export function AISettings() {
             <strong>Prompt Template:</strong>
           </p>
           <code className="block whitespace-pre-wrap break-words">
-            {`Summarize these child development activities into one short paragraph in past tense for [Child Name]:
-- [Goal]: [Activities] ([Duration] min) - [Custom Narrative]
-- ...`}
+            {`Write a concise, high-level summary in past tense describing developmental progress. Focus on what skills were developed, not specific activities or durations. Activities listed are examples of what the child did:
+- [Goal]: [Activities] (Custom Notes)
+- ...
+
+Do not include the child's name or time spent. Keep it professional and focused on developmental outcomes.`}
           </code>
           <p className="mt-3 text-slate-600">
             {t('aiSettings.promptDescription')}

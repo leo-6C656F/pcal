@@ -69,14 +69,16 @@ export async function generateSummary(
 /**
  * Build the prompt for summarization
  */
-function buildPrompt(childName: string, lines: ActivityLine[]): string {
+function buildPrompt(_childName: string, lines: ActivityLine[]): string {
   const activitiesText = lines.map(line => {
     const goal = GOALS.find(g => g.code === line.goalCode);
     const activities = line.selectedActivities.join(', ') || 'activities';
-    return `- ${goal?.description || 'Development'}: ${activities} (${line.durationMinutes} min)${line.customNarrative ? ` - ${line.customNarrative}` : ''}`;
+    // Include custom narrative if provided for context
+    const narrative = line.customNarrative ? ` (${line.customNarrative})` : '';
+    return `- ${goal?.description || 'Development'}: ${activities}${narrative}`;
   }).join('\n');
 
-  return `Summarize these child development activities into one short paragraph in past tense for ${childName}:\n${activitiesText}`;
+  return `Write a concise, high-level summary in past tense describing developmental progress. Focus on what skills were developed, not specific activities or durations. Activities listed are examples of what the child did:\n${activitiesText}\n\nDo not include the child's name or time spent. Keep it professional and focused on developmental outcomes.`;
 }
 
 /**
@@ -103,7 +105,7 @@ async function tryTransformersLocal(
  * Tier 2: Try OpenAI API
  */
 async function tryOpenAI(
-  childName: string,
+  _childName: string,
   lines: ActivityLine[],
   apiKey: string
 ): Promise<string> {
@@ -111,8 +113,7 @@ async function tryOpenAI(
     lines.map(line => ({
       goal: GOALS.find(g => g.code === line.goalCode)?.description,
       activities: line.selectedActivities,
-      narrative: line.customNarrative,
-      duration: line.durationMinutes
+      narrative: line.customNarrative
     })),
     null,
     2
@@ -129,14 +130,14 @@ async function tryOpenAI(
       messages: [
         {
           role: 'system',
-          content: 'You are a helpful assistant that writes concise child development summaries in past tense.'
+          content: 'You are a professional early childhood education specialist who writes concise developmental summaries. Write in past tense, focus on developmental outcomes rather than specific activities or durations. Do not include child names or time spent.'
         },
         {
           role: 'user',
-          content: `Summarize these activities into one past-tense paragraph for a child development report. Child's name: ${childName}.\n\nActivities:\n${activitiesJson}`
+          content: `Write a concise, high-level summary describing developmental progress. The activities listed are examples of what the child did. Focus on what skills were developed:\n\n${activitiesJson}`
         }
       ],
-      max_tokens: 200
+      max_tokens: 150
     })
   });
 
@@ -151,17 +152,10 @@ async function tryOpenAI(
 /**
  * Tier 3: Deterministic Fallback (REQUIRED - Always works offline)
  */
-function generateDeterministicSummary(childName: string, lines: ActivityLine[]): string {
+function generateDeterministicSummary(_childName: string, lines: ActivityLine[]): string {
   if (lines.length === 0) {
-    return `Parent worked with ${childName} today.`;
+    return 'Engaged in developmental activities today.';
   }
-
-  const totalMinutes = lines.reduce((sum, line) => sum + line.durationMinutes, 0);
-  const totalHours = Math.floor(totalMinutes / 60);
-  const remainingMinutes = totalMinutes % 60;
-  const timeString = totalHours > 0
-    ? `${totalHours} hour${totalHours > 1 ? 's' : ''} and ${remainingMinutes} minutes`
-    : `${remainingMinutes} minutes`;
 
   const parts: string[] = [];
 
@@ -171,21 +165,17 @@ function generateDeterministicSummary(childName: string, lines: ActivityLine[]):
 
     if (!goal) continue;
 
-    const activities = line.selectedActivities.length > 0
-      ? line.selectedActivities.join(', ')
-      : 'developmental activities';
+    const goalDesc = goal.description.toLowerCase();
 
     if (i === 0) {
-      parts.push(
-        `Parent worked with ${childName} on ${activities} to help ${goal.description.toLowerCase()}`
-      );
+      parts.push(`Focused on ${goalDesc}`);
     } else if (i === lines.length - 1) {
-      parts.push(`They also did ${activities}`);
+      parts.push(`also worked on ${goalDesc}`);
     } else {
-      parts.push(`worked on ${activities}`);
+      parts.push(`developed skills in ${goalDesc}`);
     }
   }
 
-  const narrative = parts.join('. ') + `.`;
-  return `${narrative} Total time was ${timeString}.`;
+  const narrative = parts.join(', ') + '.';
+  return `${narrative} Made progress across multiple developmental areas.`;
 }
