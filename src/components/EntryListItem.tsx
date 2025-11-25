@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { format } from 'date-fns';
 import { Clock, ChevronRight } from 'lucide-react';
@@ -8,6 +9,7 @@ interface EntryListItemProps {
 }
 
 export function EntryListItem({ entry }: EntryListItemProps) {
+  const { t } = useTranslation();
   const { setCurrentEntry } = useStore();
 
   return (
@@ -32,7 +34,7 @@ export function EntryListItem({ entry }: EntryListItemProps) {
                 {format(new Date(entry.date), 'EEEE')}
               </span>
               <span className="text-sm text-slate-500 font-medium px-2 py-0.5 bg-slate-100 rounded-full">
-                {entry.lines.length} Activities
+                {entry.lines.length} {t('entryListItem.activities')}
               </span>
             </div>
           </div>
@@ -41,7 +43,7 @@ export function EntryListItem({ entry }: EntryListItemProps) {
         <div className="flex items-center gap-3">
           {entry.signatureBase64 && (
             <span className="px-2.5 py-1 bg-accent/10 text-accent text-xs font-semibold rounded-full border border-accent/20">
-              Signed
+              {t('common.signed')}
             </span>
           )}
           <ChevronRight size={20} className="text-slate-300 group-hover:text-primary transition-colors" />

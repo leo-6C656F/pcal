@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { Plus, Calendar, User, FileDown } from 'lucide-react';
 import { format } from 'date-fns';
@@ -14,6 +15,7 @@ import { WelcomeScreen } from './WelcomeScreen';
  * Manages children and daily entries
  */
 export function Dashboard() {
+  const { t } = useTranslation();
   const {
     entries,
     children,
@@ -91,8 +93,8 @@ export function Dashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
-          <p className="text-slate-500 mt-1">Manage your children and activity logs</p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{t('dashboard.title')}</h1>
+          <p className="text-slate-500 mt-1">{t('dashboard.subtitle')}</p>
         </div>
         {!showChildForm && !currentChild && (
           <button
@@ -101,14 +103,14 @@ export function Dashboard() {
             className="btn-primary"
           >
             <Plus size={18} className="mr-2" />
-            Add Child
+            {t('dashboard.addChild')}
           </button>
         )}
       </div>
 
       {/* Create Child Modal/Form area */}
       {showChildForm && (
-        <Modal onClose={() => setShowChildForm(false)} title="Add New Child">
+        <Modal onClose={() => setShowChildForm(false)} title={t('dashboard.addNewChild')}>
           <ChildForm
             onChildCreated={(child) => {
               setCurrentChild(child);
@@ -130,7 +132,7 @@ export function Dashboard() {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
                   <Calendar size={20} className="text-primary" />
-                  Activity Logs
+                  {t('dashboard.activityLogs')}
                 </h2>
                 <div className="flex gap-2 flex-wrap">
                   {childEntries.length > 0 && !showPDFExport && !showDatePicker && (
@@ -139,7 +141,7 @@ export function Dashboard() {
                       className="btn-secondary"
                     >
                       <FileDown size={18} className="mr-2" />
-                      Export PDF
+                      {t('dashboard.exportPdf')}
                     </button>
                   )}
                   {!showPDFExport && !showDatePicker && (
@@ -152,12 +154,12 @@ export function Dashboard() {
                         {isCreatingEntry ? (
                           <>
                             <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                            Creating...
+                            {t('common.creating')}
                           </>
                         ) : (
                           <>
                             <Plus size={18} className="mr-2" />
-                            Log Today
+                            {t('dashboard.logToday')}
                           </>
                         )}
                       </button>
@@ -169,7 +171,7 @@ export function Dashboard() {
                         className="btn-secondary"
                       >
                         <Calendar size={18} className="mr-2" />
-                        Pick Date
+                        {t('dashboard.pickDate')}
                       </button>
                     </>
                   )}
@@ -178,10 +180,10 @@ export function Dashboard() {
 
               {/* Date Picker Modal */}
               {showDatePicker && (
-                <Modal onClose={() => setShowDatePicker(false)} title="Select Activity Date">
+                <Modal onClose={() => setShowDatePicker(false)} title={t('dashboard.selectActivityDate')}>
                   <div className="space-y-6">
                     <div>
-                      <label className="label-text mb-2">Choose a date to log activities</label>
+                      <label className="label-text mb-2">{t('dashboard.chooseDate')}</label>
                       <input
                         type="date"
                         value={selectedDate}
@@ -190,7 +192,7 @@ export function Dashboard() {
                         className="input-field w-full text-lg py-3"
                       />
                       <p className="text-xs text-slate-500 mt-2">
-                        You can log activities for today or any past date
+                        {t('dashboard.dateHelperText')}
                       </p>
                     </div>
                     <div className="flex gap-3 pt-2">
@@ -198,7 +200,7 @@ export function Dashboard() {
                         onClick={() => setShowDatePicker(false)}
                         className="btn-secondary flex-1"
                       >
-                        Cancel
+                        {t('common.cancel')}
                       </button>
                       <button
                         onClick={() => handleCreateEntryWithDate(selectedDate)}
@@ -208,10 +210,10 @@ export function Dashboard() {
                         {isCreatingEntry ? (
                           <>
                             <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                            Creating...
+                            {t('common.creating')}
                           </>
                         ) : (
-                          'Create Entry'
+                          t('dashboard.createEntry')
                         )}
                       </button>
                     </div>
@@ -233,9 +235,9 @@ export function Dashboard() {
               <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-4">
                 <User size={32} className="text-indigo-400" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900">Select a Child</h3>
+              <h3 className="text-lg font-semibold text-slate-900">{t('dashboard.selectChild')}</h3>
               <p className="text-slate-500 mt-1 max-w-sm">
-                Select a child from the list on the left or create a new profile to manage activity logs.
+                {t('dashboard.selectChildMessage')}
               </p>
             </div>
           )}

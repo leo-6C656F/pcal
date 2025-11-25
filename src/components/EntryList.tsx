@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { Calendar } from 'lucide-react';
 import { EntryListItem } from './EntryListItem';
 
 export function EntryList() {
+  const { t } = useTranslation();
   const { entries, currentChild } = useStore();
 
   const childEntries = currentChild
@@ -15,8 +17,8 @@ export function EntryList() {
         <div className="mx-auto w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center mb-4 text-slate-400">
           <Calendar size={24} />
         </div>
-        <h3 className="text-slate-900 font-medium">No entries yet</h3>
-        <p className="text-slate-500 text-sm mt-1">Create a new entry to start logging activities.</p>
+        <h3 className="text-slate-900 font-medium">{t('entryList.noEntries')}</h3>
+        <p className="text-slate-500 text-sm mt-1">{t('entryList.noEntriesHint')}</p>
       </div>
     );
   }

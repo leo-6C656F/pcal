@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { DailyEntry, ChildContext, Goal } from '../types';
 import { generatePDF } from '../services/pdfGenerator';
 import { printPDF } from '../utils/printPdf';
@@ -20,6 +21,7 @@ interface PDFPreviewProps {
  * Supports multiple daily entries on one PDF
  */
 export function PDFPreview({ entries, child, centerName, teacherName, goals }: PDFPreviewProps) {
+  const { t } = useTranslation();
   const { markEntriesAsSent } = useStore();
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -129,7 +131,7 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
     <div className="space-y-4">
       {error && (
         <div className="bg-rose-50 border border-rose-200 rounded-xl p-4">
-          <p className="text-sm text-rose-800">Error: {error}</p>
+          <p className="text-sm text-rose-800">{t('common.error')}: {error}</p>
         </div>
       )}
 
@@ -139,21 +141,21 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
             <Mail size={24} className="text-amber-600 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <h4 className="font-semibold text-amber-900 mb-2">
-                Confirm Email PDF
+                {t('pdfPreview.confirmEmailPdf')}
               </h4>
               {hasAnySent && (
                 <div className="bg-amber-100 border border-amber-300 rounded-lg p-3 mb-3">
                   <p className="text-sm text-amber-900 font-medium mb-1">
-                    ⚠️ Warning: Some entries were already sent
+                    ⚠️ {t('pdfPreview.warningAlreadySent')}
                   </p>
                   <p className="text-xs text-amber-800">
-                    {alreadySentCount} of {entries.length} {alreadySentCount === 1 ? 'entry has' : 'entries have'} already been emailed.
-                    You can still send them again if needed.
+                    {t('pdfPreview.alreadySentCount', { sent: alreadySentCount, total: entries.length })}
+                    {' '}{t('pdfPreview.canSendAgain')}
                   </p>
                 </div>
               )}
               <p className="text-sm text-amber-800 mb-4">
-                This will download the PDF and open your email client. You'll need to attach the PDF before sending.
+                {t('pdfPreview.emailInstructions')}
               </p>
               <label className="flex items-start gap-3 p-3 bg-white rounded-lg border-2 border-amber-200 cursor-pointer hover:bg-amber-50 transition-colors">
                 <input
@@ -164,10 +166,10 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
                 />
                 <div className="flex-1">
                   <p className="font-medium text-slate-900">
-                    Mark {entries.length === 1 ? 'this entry' : 'these entries'} as sent
+                    {t('pdfPreview.markAsSent', { count: entries.length })}
                   </p>
                   <p className="text-xs text-slate-600 mt-1">
-                    {entries.length === 1 ? 'This entry' : 'These entries'} will be tagged with a "Sent" badge and timestamp to help you avoid sending duplicates.
+                    {t('pdfPreview.markAsSentDescription', { count: entries.length })}
                   </p>
                 </div>
               </label>
@@ -178,14 +180,14 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
               onClick={cancelEmailPDF}
               className="btn-secondary"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               onClick={confirmEmailPDF}
               className="btn-primary"
             >
               <Mail size={18} className="mr-2" />
-              Continue to Email
+              {t('pdfPreview.continueToEmail')}
             </button>
           </div>
         </div>
@@ -194,14 +196,14 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
       <div className="bg-slate-800 rounded-xl overflow-hidden shadow-lg">
         <div className="bg-slate-900 p-3 flex justify-between items-center border-b border-slate-700">
           <span className="text-slate-400 text-xs font-medium uppercase tracking-wider pl-2">
-            Document Preview
+            {t('pdfPreview.documentPreview')}
           </span>
           <div className="flex gap-2">
             <button
               onClick={generatePreview}
               disabled={isGenerating}
               className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-              title="Regenerate"
+              title={t('pdfPreview.regenerate')}
             >
               <FileText size={16} />
             </button>
@@ -209,7 +211,7 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
               onClick={downloadPDF}
               disabled={!pdfUrl}
               className="p-1.5 text-emerald-400 hover:text-emerald-300 hover:bg-slate-800 rounded-lg transition-colors"
-              title="Download"
+              title={t('common.download')}
             >
               <Download size={16} />
             </button>
@@ -221,7 +223,7 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
             <div className="absolute inset-0 flex items-center justify-center bg-slate-50 z-10">
               <div className="flex flex-col items-center text-slate-500">
                 <Loader2 size={32} className="animate-spin mb-2 text-indigo-600" />
-                <p className="text-sm font-medium">Generating PDF...</p>
+                <p className="text-sm font-medium">{t('pdfPreview.generatingPdf')}</p>
               </div>
             </div>
           )}
@@ -230,7 +232,7 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
             <iframe
               src={`${pdfUrl}#toolbar=0`}
               className="w-full h-full"
-              title="PDF Preview"
+              title={t('pdfPreview.pdfPreviewTitle')}
             />
           )}
         </div>
@@ -243,7 +245,7 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
           className="btn-primary w-full sm:w-auto"
         >
           <Mail size={18} className="mr-2" />
-          Email PDF
+          {t('pdfPreview.emailPdf')}
         </button>
         <button
           type="button"
@@ -251,7 +253,7 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
           className="btn-secondary w-full sm:w-auto"
         >
           <Printer size={18} className="mr-2" />
-          Print to PDF
+          {t('pdfPreview.printToPdf')}
         </button>
         <button
           type="button"
@@ -259,7 +261,7 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
           className="btn-secondary w-full sm:w-auto"
         >
           <Download size={18} className="mr-2" />
-          Download PDF
+          {t('pdfPreview.downloadPdf')}
         </button>
       </div>
     </div>

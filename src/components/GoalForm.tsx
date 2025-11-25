@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Goal } from '../types';
 import { Modal } from './Modal';
 import { Plus, X } from 'lucide-react';
@@ -11,6 +12,7 @@ interface GoalFormProps {
 }
 
 export function GoalForm({ goal, onSave, onClose, existingCodes }: GoalFormProps) {
+  const { t } = useTranslation();
   const [currentGoal, setCurrentGoal] = useState<Goal>({
     code: 1,
     description: '',
@@ -35,11 +37,11 @@ export function GoalForm({ goal, onSave, onClose, existingCodes }: GoalFormProps
 
   const handleSave = () => {
     if (!currentGoal.description.trim()) {
-      alert('Please enter a goal description');
+      alert(t('goalForm.enterDescription'));
       return;
     }
     if (codeError) {
-      alert('Please fix the errors before saving.');
+      alert(t('goalForm.fixErrors'));
       return;
     }
     onSave(currentGoal);
@@ -64,7 +66,7 @@ export function GoalForm({ goal, onSave, onClose, existingCodes }: GoalFormProps
 
   const handleCodeChange = (code: number) => {
     if (existingCodes.includes(code) && code !== goal?.code) {
-      setCodeError(`Goal code ${code} is already in use.`);
+      setCodeError(t('goalForm.goalCodeInUse', { code }));
     } else {
       setCodeError(null);
     }
@@ -72,10 +74,10 @@ export function GoalForm({ goal, onSave, onClose, existingCodes }: GoalFormProps
   }
 
   return (
-    <Modal onClose={onClose} title={goal ? 'Edit Goal' : 'Add New Goal'}>
+    <Modal onClose={onClose} title={goal ? t('goalForm.editGoal') : t('goalForm.addNewGoal')}>
       <div className="space-y-6">
         <div>
-          <label className="label-text">Goal Number</label>
+          <label className="label-text">{t('goalForm.goalNumber')}</label>
           <input
             type="number"
             value={currentGoal.code}
@@ -87,18 +89,18 @@ export function GoalForm({ goal, onSave, onClose, existingCodes }: GoalFormProps
         </div>
 
         <div>
-          <label className="label-text">Description</label>
+          <label className="label-text">{t('goalForm.description')}</label>
           <textarea
             value={currentGoal.description}
             onChange={(e) => setCurrentGoal({ ...currentGoal, description: e.target.value })}
             rows={4}
             className="input-field resize-none"
-            placeholder="e.g., Child will manage actions and behavior..."
+            placeholder={t('goalForm.descriptionPlaceholder')}
           />
         </div>
 
         <div>
-          <label className="label-text">Suggested Activities</label>
+          <label className="label-text">{t('goalForm.suggestedActivities')}</label>
           <div className="flex gap-2 mb-3">
             <input
               type="text"
@@ -111,7 +113,7 @@ export function GoalForm({ goal, onSave, onClose, existingCodes }: GoalFormProps
                 }
               }}
               className="input-field"
-              placeholder="Add activity..."
+              placeholder={t('goalForm.addActivityPlaceholder')}
             />
             <button onClick={handleAddActivity} className="btn-secondary px-3">
               <Plus size={20} />
@@ -137,10 +139,10 @@ export function GoalForm({ goal, onSave, onClose, existingCodes }: GoalFormProps
 
         <div className="flex gap-3 pt-4">
           <button onClick={onClose} className="btn-secondary flex-1">
-            Cancel
+            {t('common.cancel')}
           </button>
           <button onClick={handleSave} className="btn-primary flex-1">
-            {goal ? 'Update Goal' : 'Save Goal'}
+            {goal ? t('goalForm.updateGoal') : t('goalForm.saveGoal')}
           </button>
         </div>
       </div>
