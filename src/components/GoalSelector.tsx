@@ -1,6 +1,7 @@
 import { useStore } from '../store';
-import { CheckCircle2, Circle } from 'lucide-react';
+import { CheckCircle2, Circle, Target } from 'lucide-react';
 import { getGoalColors, getGoalIcon } from '../utils/goalColors';
+import { HelpTooltip } from './HelpTooltip';
 
 interface GoalSelectorProps {
   selectedGoalCode: number;
@@ -54,7 +55,11 @@ export function GoalSelector({
     <div className="space-y-5">
       {/* Goal Selection - Radio Buttons with Color Coding */}
       <div>
-        <label className="label-text mb-3">Select Goal</label>
+        <label className="label-text mb-3 flex items-center gap-2">
+          <Target size={16} className="text-indigo-600" />
+          What did you work on?
+          <HelpTooltip content="Pick the developmental goal you focused on during this activity. Each goal has different learning activities." />
+        </label>
         <div className="space-y-3">
           {goals.map(goal => {
             const isSelected = selectedGoalCode === goal.code;
@@ -99,7 +104,10 @@ export function GoalSelector({
       {/* Activity Selection - Checkbox based */}
       {selectedGoal && selectedGoal.activities.length > 0 && (
         <div>
-          <div className="label-text mb-3">Activities (Select what you did)</div>
+          <div className="label-text mb-3 flex items-center gap-2">
+            ✅ What activities did you do?
+            <HelpTooltip content="Check all the activities you did together. You can select more than one!" />
+          </div>
           <div className="space-y-2.5">
             {selectedGoal.activities.map((activity, index) => {
               const isSelected = selectedActivities.includes(activity);

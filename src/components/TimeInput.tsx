@@ -111,15 +111,17 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
 
           {/* Quick Duration Presets */}
           <div>
-            <label className="label-text text-xs block mb-2">Quick Select</label>
-            <div className="grid grid-cols-3 gap-2">
+            <label className="label-text text-xs block mb-2 flex items-center gap-2">
+              ⚡ Quick Select
+            </label>
+            <div className="grid grid-cols-4 gap-2">
               <button
                 type="button"
                 onClick={() => handleDurationChange(15)}
                 className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
                   localDuration === 15
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50'
+                    ? 'bg-indigo-600 text-white shadow-md scale-105'
+                    : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-sm'
                 }`}
               >
                 15 min
@@ -129,8 +131,8 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
                 onClick={() => handleDurationChange(30)}
                 className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
                   localDuration === 30
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50'
+                    ? 'bg-indigo-600 text-white shadow-md scale-105'
+                    : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-sm'
                 }`}
               >
                 30 min
@@ -140,11 +142,22 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
                 onClick={() => handleDurationChange(60)}
                 className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
                   localDuration === 60
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50'
+                    ? 'bg-indigo-600 text-white shadow-md scale-105'
+                    : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-sm'
                 }`}
               >
                 1 hour
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDurationChange(120)}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
+                  localDuration === 120
+                    ? 'bg-indigo-600 text-white shadow-md scale-105'
+                    : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-sm'
+                }`}
+              >
+                2 hours
               </button>
             </div>
           </div>

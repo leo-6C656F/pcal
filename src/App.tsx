@@ -4,9 +4,14 @@ import { initializeDatabase } from './services/journalReplay';
 import { Dashboard } from './components/Dashboard';
 import { DailyEntryForm } from './components/DailyEntryForm';
 import { GoalManager } from './components/GoalManager';
+import { ToastContainer } from './components/ToastContainer';
+import { useToast } from './hooks/useToast';
 import { ArrowLeft, Settings, BookOpenCheck } from 'lucide-react';
 
 type View = 'dashboard' | 'entry' | 'settings';
+
+// Create a toast context to share across the app
+export let showToast: ReturnType<typeof useToast>;
 
 /**
  * PCAL - Parent-Child Activity Log
@@ -17,6 +22,10 @@ function App() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<View>('dashboard');
+  const toast = useToast();
+
+  // Make toast globally available
+  showToast = toast;
 
   useEffect(() => {
     const init = async () => {
@@ -92,9 +101,12 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-slate-50 font-sans">
+      {/* Toast Container */}
+      <ToastContainer toasts={toast.toasts} onClose={toast.removeToast} />
+
       {/* Navigation */}
-      <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm">
+      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-slate-200/50 shadow-soft">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             {currentView !== 'dashboard' && (
@@ -133,7 +145,7 @@ function App() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="animate-fade-in">
           {currentView === 'dashboard' && <Dashboard />}
           {currentView === 'entry' && <DailyEntryForm />}
           {currentView === 'settings' && <GoalManager />}
