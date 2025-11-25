@@ -9,6 +9,9 @@ export default defineConfig(() => {
 
   return {
     base,
+    optimizeDeps: {
+      exclude: ['@huggingface/transformers'],
+    },
     plugins: [
       react(),
       VitePWA({
