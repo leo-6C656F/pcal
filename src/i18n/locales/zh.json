@@ -107,7 +107,7 @@
     "totalHours": "总小时数",
     "selectEntry": "请选择或创建每日条目",
     "deleteActivityTitle": "删除活动？",
-    "deleteActivityMessage": "您确定要删除"{{activity}}"吗？此操作无法撤销。",
+    "deleteActivityMessage": "您确定要删除「{{activity}}」吗？此操作无法撤销。",
     "keepIt": "保留",
     "loggedActivities": "已记录的活动",
     "noActivities": "还没有记录活动。",
@@ -126,7 +126,7 @@
     "daySummaryTooltip": "这将创建当天所有活动的书面总结。非常适合报告和文档！",
     "writeSummary": "撰写总结",
     "writingSummary": "正在撰写...",
-    "summaryTip": "提示：点击"撰写总结"自动创建今天活动的专业描述。"
+    "summaryTip": "提示：点击「撰写总结」自动创建今天活动的专业描述。"
   },
   "goalManager": {
     "title": "目标管理",
