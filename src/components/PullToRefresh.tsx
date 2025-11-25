@@ -103,13 +103,13 @@ export function PullToRefresh({ onRefresh, children }: PullToRefreshProps) {
           >
             <RefreshCw
               size={24}
-              className={`${shouldTrigger || isRefreshing ? 'text-indigo-600' : 'text-slate-400'}`}
+              className={`${shouldTrigger || isRefreshing ? 'text-primary' : 'text-slate-400'}`}
             />
           </div>
           <span
             className={`text-xs font-medium transition-opacity duration-200 ${
               progress > 0.3 || isRefreshing ? 'opacity-100' : 'opacity-0'
-            } ${shouldTrigger || isRefreshing ? 'text-indigo-600' : 'text-slate-500'}`}
+            } ${shouldTrigger || isRefreshing ? 'text-primary' : 'text-slate-500'}`}
           >
             {isRefreshing
               ? t('pullToRefresh.refreshing')

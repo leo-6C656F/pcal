@@ -20,7 +20,7 @@ export function LanguageSelector() {
         <select
           value={i18n.language}
           onChange={(e) => handleLanguageChange(e.target.value)}
-          className="appearance-none bg-transparent border border-slate-200 rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-slate-700 hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer transition-colors"
+          className="appearance-none bg-transparent border border-slate-200 rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-slate-700 hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer transition-colors"
           aria-label="Select language"
         >
           {languages.map((lang) => (

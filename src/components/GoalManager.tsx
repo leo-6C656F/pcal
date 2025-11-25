@@ -97,8 +97,8 @@ export function GoalManager() {
       <div className="space-y-6">
         {goals.length === 0 ? (
           <div className="card p-12 text-center border-dashed border-2 border-slate-200 bg-slate-50">
-            <div className="mx-auto w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-4">
-              <Target size={32} className="text-indigo-300" />
+            <div className="mx-auto w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
+              <Target size={32} className="text-blue-300" />
             </div>
             <h3 className="text-slate-900 font-medium text-lg">{t('goalManager.noGoals')}</h3>
             <p className="text-slate-500 mt-2">{t('goalManager.noGoalsHint')}</p>
@@ -110,7 +110,7 @@ export function GoalManager() {
                 <div className="flex justify-between items-start gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wide">
+                      <span className="px-2.5 py-1 rounded-md bg-blue-100 text-primary text-xs font-bold uppercase tracking-wide">
                         {t('common.goal')} {goal.code}
                       </span>
                     </div>
@@ -135,7 +135,7 @@ export function GoalManager() {
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <button
                       onClick={() => { setGoalToEdit(goal); setShowGoalForm(true); }}
-                      className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                      className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors"
                       title={t('common.edit')}
                     >
                       <Edit size={18} />

@@ -23,7 +23,7 @@ export function HelpTooltip({ content, position = 'top' }: HelpTooltipProps) {
         onMouseEnter={() => setIsOpen(true)}
         onMouseLeave={() => setIsOpen(false)}
         onClick={() => setIsOpen(!isOpen)}
-        className="text-slate-400 hover:text-indigo-600 transition-colors ml-1.5"
+        className="text-slate-400 hover:text-primary transition-colors ml-1.5"
         aria-label="Help"
       >
         <HelpCircle size={16} />

@@ -52,7 +52,7 @@ export function ChildListItem({ child, isSelected, onSelect }: ChildListItemProp
 
   if (isEditing) {
     return (
-      <div className="card p-4 border-indigo-200 shadow-md space-y-3">
+      <div className="card p-4 border-blue-200 shadow-md space-y-3">
         <input
           type="text"
           value={editedChild.name}

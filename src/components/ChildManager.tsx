@@ -42,8 +42,8 @@ export function ChildManager() {
 
       {children.length === 0 ? (
         <div className="card p-12 text-center border-dashed border-2 border-slate-200 bg-slate-50">
-          <div className="mx-auto w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-4">
-            <Users size={32} className="text-indigo-300" />
+          <div className="mx-auto w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
+            <Users size={32} className="text-blue-300" />
           </div>
           <h3 className="text-slate-900 font-medium text-lg">{t('childManager.noChildren')}</h3>
           <p className="text-slate-500 mt-2">{t('childManager.noChildrenHint')}</p>

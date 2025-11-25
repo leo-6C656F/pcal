@@ -48,7 +48,7 @@ export function GoalSelector({
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <Target size={16} className="text-indigo-600" />
+        <Target size={16} className="text-primary" />
         <span className="label-text">{t('goalSelector.whatDidYouWorkOn')}</span>
         <HelpTooltip content={t('goalSelector.whatDidYouWorkOnTooltip')} />
       </div>
@@ -151,15 +151,15 @@ export function GoalSelector({
 
       {/* Selected activities summary */}
       {selectedActivities.length > 0 && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
-          <p className="text-xs font-medium text-indigo-700 mb-1">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <p className="text-xs font-medium text-primary mb-1">
             ✅ {t('goalSelector.selectedActivities', { count: selectedActivities.length })}
           </p>
           <div className="flex flex-wrap gap-1">
             {selectedActivities.map((activity, index) => (
               <span
                 key={index}
-                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-indigo-100 text-indigo-800"
+                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800"
               >
                 {activity}
               </span>

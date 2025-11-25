@@ -46,7 +46,7 @@ export function SignaturePad({ signatureBase64, onSave }: SignaturePadProps) {
       <div className="flex justify-between items-center">
         <div>
           <label className="label-text flex items-center gap-2 mb-1">
-            <PenTool size={16} className="text-indigo-600" />
+            <PenTool size={16} className="text-primary" />
             {t('signaturePad.parentSignature')}
           </label>
           <p className="text-xs text-slate-500">
@@ -60,7 +60,7 @@ export function SignaturePad({ signatureBase64, onSave }: SignaturePadProps) {
         )}
       </div>
 
-      <div className="relative border-2 border-dashed border-slate-300 rounded-xl overflow-hidden bg-white hover:border-indigo-300 transition-colors">
+      <div className="relative border-2 border-dashed border-slate-300 rounded-xl overflow-hidden bg-white hover:border-blue-300 transition-colors">
         {/* Ghost text when empty */}
         {isEmpty && !signatureBase64 && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">

@@ -213,15 +213,15 @@ Compile this into a brief, professional summary focused on what was actually don
 
         {/* Loading Progress - Compact Inline */}
         {modelLoadingState?.isLoading && (
-          <div className="mb-3 flex items-center gap-3 p-2 bg-indigo-50 border border-indigo-200 rounded-lg">
+          <div className="mb-3 flex items-center gap-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-indigo-900 font-medium">{modelLoadingState.status}</span>
-                <span className="text-xs text-indigo-700">{modelLoadingState.progress}%</span>
+                <span className="text-xs text-blue-900 font-medium">{modelLoadingState.status}</span>
+                <span className="text-xs text-primary">{modelLoadingState.progress}%</span>
               </div>
-              <div className="w-full bg-indigo-200 rounded-full h-1.5">
+              <div className="w-full bg-blue-200 rounded-full h-1.5">
                 <div
-                  className="bg-indigo-600 h-1.5 rounded-full transition-all duration-300"
+                  className="bg-primary h-1.5 rounded-full transition-all duration-300"
                   style={{ width: `${modelLoadingState.progress}%` }}
                 />
               </div>
@@ -234,7 +234,7 @@ Compile this into a brief, professional summary focused on what was actually don
           <button
             onClick={handleRedownload}
             disabled={isRedownloading || isClearing}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isRedownloading ? (
               <>
@@ -293,7 +293,7 @@ Compile this into a brief, professional summary focused on what was actually don
           </h3>
           <button
             onClick={() => setIsEditingPrompt(!isEditingPrompt)}
-            className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+            className="text-sm text-primary hover:text-primary/80 font-medium"
           >
             {isEditingPrompt ? t('common.cancel') : t('common.edit')}
           </button>
@@ -304,13 +304,13 @@ Compile this into a brief, professional summary focused on what was actually don
             <textarea
               value={customPrompt || defaultPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
-              className="w-full h-64 p-3 border border-slate-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full h-64 p-3 border border-slate-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-primary focus:border-primary"
               placeholder={defaultPrompt}
             />
             <div className="flex gap-2">
               <button
                 onClick={handleSavePrompt}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
               >
                 {t('common.save')}
               </button>

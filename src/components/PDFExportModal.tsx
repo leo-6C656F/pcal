@@ -61,9 +61,9 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
               >
                 <ArrowLeft size={20} />
               </button>
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <FileText size={16} className="text-indigo-600 sm:hidden" />
-                <FileText size={20} className="text-indigo-600 hidden sm:block" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <FileText size={16} className="text-primary sm:hidden" />
+                <FileText size={20} className="text-primary hidden sm:block" />
               </div>
               <div className="min-w-0">
                 <h2 className="text-lg sm:text-xl font-bold text-slate-900 truncate">{t('pdfExport.pdfPreview')}</h2>
@@ -160,8 +160,8 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
           <div className="pt-5 border-t border-slate-200">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <FileText size={16} className="text-indigo-600" />
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <FileText size={16} className="text-primary" />
                 </div>
                 <p className="text-sm font-semibold text-slate-700">
                   {t('pdfExport.entriesSelected', { count: selectedEntryIds.size, type: selectedEntryIds.size === 1 ? t('common.entry') : t('common.entriesPlural') })}

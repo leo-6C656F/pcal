@@ -63,7 +63,7 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
           onClick={() => setMode('start-duration')}
           className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
             mode === 'start-duration'
-              ? 'bg-white text-indigo-600 shadow-sm'
+              ? 'bg-white text-primary shadow-sm'
               : 'text-slate-500 hover:text-slate-700'
           }`}
         >
@@ -74,7 +74,7 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
           onClick={() => setMode('start-end')}
           className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
             mode === 'start-end'
-              ? 'bg-white text-indigo-600 shadow-sm'
+              ? 'bg-white text-primary shadow-sm'
               : 'text-slate-500 hover:text-slate-700'
           }`}
         >
@@ -122,8 +122,8 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
                 onClick={() => handleDurationChange(15)}
                 className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
                   localDuration === 15
-                    ? 'bg-indigo-600 text-white shadow-md scale-105'
-                    : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-sm'
+                    ? 'bg-primary text-white shadow-md scale-105'
+                    : 'bg-white border border-slate-300 text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:shadow-sm'
                 }`}
               >
                 {t('timeInput.fifteenMin')}
@@ -133,8 +133,8 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
                 onClick={() => handleDurationChange(30)}
                 className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
                   localDuration === 30
-                    ? 'bg-indigo-600 text-white shadow-md scale-105'
-                    : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-sm'
+                    ? 'bg-primary text-white shadow-md scale-105'
+                    : 'bg-white border border-slate-300 text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:shadow-sm'
                 }`}
               >
                 {t('timeInput.thirtyMin')}
@@ -144,8 +144,8 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
                 onClick={() => handleDurationChange(60)}
                 className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
                   localDuration === 60
-                    ? 'bg-indigo-600 text-white shadow-md scale-105'
-                    : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-sm'
+                    ? 'bg-primary text-white shadow-md scale-105'
+                    : 'bg-white border border-slate-300 text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:shadow-sm'
                 }`}
               >
                 {t('timeInput.oneHour')}
@@ -155,8 +155,8 @@ export function TimeInput({ startTime, endTime, durationMinutes, onChange }: Tim
                 onClick={() => handleDurationChange(120)}
                 className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
                   localDuration === 120
-                    ? 'bg-indigo-600 text-white shadow-md scale-105'
-                    : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-sm'
+                    ? 'bg-primary text-white shadow-md scale-105'
+                    : 'bg-white border border-slate-300 text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:shadow-sm'
                 }`}
               >
                 {t('timeInput.twoHours')}
