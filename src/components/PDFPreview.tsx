@@ -127,13 +127,58 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
   const alreadySentCount = entries.filter(e => e.emailedAt).length;
   const hasAnySent = alreadySentCount > 0;
 
+  // Generate email subject line
+  const startDate = entries[0]?.date || 'unknown';
+  const endDate = entries[entries.length - 1]?.date || startDate;
+  const dateRange = startDate === endDate ? startDate : `${startDate} to ${endDate}`;
+  const emailSubject = `PCAL Report - ${child.name} - ${dateRange}`;
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {error && (
         <div className="bg-rose-50 border border-rose-200 rounded-xl p-4">
           <p className="text-sm text-rose-800">{t('common.error')}: {error}</p>
         </div>
       )}
+
+      {/* Email Subject Line Display */}
+      <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+        <div className="flex items-center gap-2">
+          <Mail size={16} className="text-indigo-600 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <span className="text-xs font-medium text-indigo-600 uppercase tracking-wide">{t('pdfPreview.emailSubject')}</span>
+            <p className="text-sm font-medium text-indigo-900 truncate">{emailSubject}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Buttons - Compact at Top */}
+      <div className="flex flex-wrap justify-center gap-2">
+        <button
+          type="button"
+          onClick={handleEmailPDF}
+          className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
+        >
+          <Mail size={14} className="mr-1.5" />
+          {t('pdfPreview.emailPdf')}
+        </button>
+        <button
+          type="button"
+          onClick={handlePrintPDF}
+          className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors shadow-sm"
+        >
+          <Printer size={14} className="mr-1.5" />
+          {t('pdfPreview.printToPdf')}
+        </button>
+        <button
+          type="button"
+          onClick={downloadPDF}
+          className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors shadow-sm"
+        >
+          <Download size={14} className="mr-1.5" />
+          {t('pdfPreview.downloadPdf')}
+        </button>
+      </div>
 
       {showEmailConfirm && (
         <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-5 shadow-lg">
@@ -236,33 +281,6 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
             />
           )}
         </div>
-      </div>
-
-      <div className="flex flex-col sm:flex-row justify-center gap-3">
-        <button
-          type="button"
-          onClick={handleEmailPDF}
-          className="btn-primary w-full sm:w-auto"
-        >
-          <Mail size={18} className="mr-2" />
-          {t('pdfPreview.emailPdf')}
-        </button>
-        <button
-          type="button"
-          onClick={handlePrintPDF}
-          className="btn-secondary w-full sm:w-auto"
-        >
-          <Printer size={18} className="mr-2" />
-          {t('pdfPreview.printToPdf')}
-        </button>
-        <button
-          type="button"
-          onClick={downloadPDF}
-          className="btn-secondary w-full sm:w-auto"
-        >
-          <Download size={18} className="mr-2" />
-          {t('pdfPreview.downloadPdf')}
-        </button>
       </div>
     </div>
   );
