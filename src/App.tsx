@@ -8,7 +8,9 @@ import { SettingsPage } from './components/SettingsPage';
 import { ToastContainer } from './components/ToastContainer';
 import { LanguageSelector } from './components/LanguageSelector';
 import { useToast } from './hooks/useToast';
-import { ArrowLeft, Settings, BookOpenCheck, RefreshCw } from 'lucide-react';
+import { preWarmModel, isModelReady } from './services/aiService';
+import type { ModelLoadingState } from './types';
+import { ArrowLeft, Settings, BookOpenCheck, RefreshCw, Brain, X } from 'lucide-react';
 
 type View = 'dashboard' | 'entry' | 'settings';
 
@@ -26,6 +28,8 @@ function App() {
   const [initError, setInitError] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [modelLoadingState, setModelLoadingState] = useState<ModelLoadingState | null>(null);
+  const [showModelBanner, setShowModelBanner] = useState(false);
   const toast = useToast();
 
   // Detect if running as PWA (standalone mode)
@@ -69,6 +73,33 @@ function App() {
       setCurrentView('dashboard');
     }
   }, [currentEntry]);
+
+  // Pre-warm AI model after app initializes
+  useEffect(() => {
+    if (!isInitialized) return;
+    if (isModelReady()) return; // Already loaded
+
+    // Small delay to let the UI settle first
+    const timer = setTimeout(() => {
+      console.log('[AI] Starting model pre-warm...');
+      setModelLoadingState({ isLoading: true, progress: 0, status: 'Loading AI model...' });
+      setShowModelBanner(true);
+      preWarmModel((state) => {
+        console.log('[AI] Model progress:', state);
+        setModelLoadingState(state);
+        if (!state.isLoading && state.progress === 100) {
+          // Model loaded, hide banner after a short delay
+          setTimeout(() => setShowModelBanner(false), 1500);
+        }
+        if (state.error) {
+          // Hide banner on error after showing briefly
+          setTimeout(() => setShowModelBanner(false), 3000);
+        }
+      });
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [isInitialized]);
 
   if (initError) {
     return (
@@ -135,6 +166,50 @@ function App() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-slate-50 font-sans">
       {/* Toast Container */}
       <ToastContainer toasts={toast.toasts} onClose={toast.removeToast} />
+
+      {/* AI Model Loading Banner */}
+      {showModelBanner && modelLoadingState && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg animate-fade-in">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="flex-shrink-0">
+                  {modelLoadingState.isLoading ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                  ) : (
+                    <Brain size={20} className="text-purple-200" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">
+                    {modelLoadingState.status || t('app.aiModelReady')}
+                  </p>
+                  {modelLoadingState.isLoading && modelLoadingState.progress > 0 && (
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <div className="flex-1 bg-purple-400/30 rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className="h-full bg-white rounded-full transition-all duration-300"
+                          style={{ width: `${modelLoadingState.progress}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-purple-200 tabular-nums">
+                        {modelLoadingState.progress}%
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => setShowModelBanner(false)}
+                className="flex-shrink-0 p-1 hover:bg-white/10 rounded transition-colors"
+                aria-label={t('common.close')}
+              >
+                <X size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Navigation */}
       <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-slate-200/50 shadow-soft">
