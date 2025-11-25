@@ -14,11 +14,16 @@ import { isModelReady, initializeModel } from '../services/aiService';
 
 type View = 'list' | 'form' | 'finalize';
 
+interface DailyEntryFormProps {
+  subView: View;
+  onSubViewChange: (view: View) => void;
+}
+
 /**
  * DailyEntryForm Component
  * Main form for creating and editing daily activity logs
  */
-export function DailyEntryForm() {
+export function DailyEntryForm({ subView, onSubViewChange }: DailyEntryFormProps) {
   const { t } = useTranslation();
   const {
     currentEntry,
@@ -31,7 +36,9 @@ export function DailyEntryForm() {
     setCurrentEntry
   } = useStore();
 
-  const [view, setView] = useState<View>('list');
+  // Use subView prop from parent for browser history integration
+  const view = subView;
+  const setView = onSubViewChange;
   const [activityToEdit, setActivityToEdit] = useState<ActivityLine | null>(null);
 
   if (!currentEntry || !currentChild) {
