@@ -54,7 +54,7 @@ export function DailyEntryForm() {
   const totalHours = (totalMinutes / 60).toFixed(2);
 
   const Header = () => (
-    <div className="card p-6 border-l-4 border-l-indigo-500">
+    <div className="card p-6 border-l-4 border-l-primary">
       <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
@@ -65,7 +65,7 @@ export function DailyEntryForm() {
               <select
                 value={currentChild.id}
                 onChange={(e) => handleChildSwitch(e.target.value)}
-                className="text-2xl font-bold text-indigo-600 bg-transparent border-b-2 border-indigo-200 hover:border-indigo-400 focus:outline-none focus:border-indigo-600 cursor-pointer transition-colors px-2 py-1"
+                className="text-2xl font-bold text-primary bg-transparent border-b-2 border-blue-200 hover:border-blue-400 focus:outline-none focus:border-primary cursor-pointer transition-colors px-2 py-1"
               >
                 {children.map(child => (
                   <option key={child.id} value={child.id}>
@@ -74,7 +74,7 @@ export function DailyEntryForm() {
                 ))}
               </select>
             ) : (
-              <span className="text-2xl font-bold text-indigo-600">{currentChild.name}</span>
+              <span className="text-2xl font-bold text-primary">{currentChild.name}</span>
             )}
           </div>
           <div className="flex flex-wrap gap-4 text-sm text-slate-500">
@@ -86,13 +86,13 @@ export function DailyEntryForm() {
           </div>
         </div>
         <div className="text-right space-y-2">
-           <div className="text-3xl font-bold text-indigo-600">{totalHours}</div>
+           <div className="text-3xl font-bold text-primary">{totalHours}</div>
            <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t('dailyEntryForm.totalHours')}</div>
            <div className="w-32">
              <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
                <div
                  className={`h-full rounded-full transition-all duration-500 ${
-                   totalMinutes >= 480 ? 'bg-green-500' : totalMinutes >= 240 ? 'bg-indigo-500' : 'bg-amber-500'
+                   totalMinutes >= 480 ? 'bg-green-500' : totalMinutes >= 240 ? 'bg-primary' : 'bg-amber-500'
                  }`}
                  style={{ width: `${Math.min((totalMinutes / 480) * 100, 100)}%` }}
                />
@@ -132,9 +132,9 @@ export function DailyEntryForm() {
         <div className="card p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <BookOpen size={20} className="text-indigo-500" />
+              <BookOpen size={20} className="text-primary" />
               {t('dailyEntryForm.loggedActivities')}
-              <span className="ml-2 px-2.5 py-0.5 bg-indigo-100 text-indigo-700 text-xs rounded-full">
+              <span className="ml-2 px-2.5 py-0.5 bg-blue-100 text-primary text-xs rounded-full">
                 {currentEntry.lines.length}
               </span>
             </h2>
@@ -193,7 +193,7 @@ export function DailyEntryForm() {
                         <button
                           type="button"
                           onClick={() => onEdit(line)}
-                          className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                          className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors"
                           title={t('dailyEntryForm.editActivity')}
                         >
                           <Edit3 size={18} />
@@ -413,7 +413,7 @@ export function DailyEntryForm() {
           <div className="flex items-center gap-4">
             <button
               onClick={onClose}
-              className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+              className="p-2 text-slate-500 hover:text-primary hover:bg-blue-50 rounded-full transition-colors"
               aria-label={t('dailyEntryForm.backToActivityList')}
             >
               <ArrowLeft size={20} />

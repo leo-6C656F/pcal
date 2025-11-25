@@ -241,8 +241,8 @@ export function Dashboard() {
             </>
           ) : (
             <div className="h-full flex flex-col items-center justify-center p-12 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-              <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-4">
-                <User size={32} className="text-indigo-400" />
+              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
+                <User size={32} className="text-blue-400" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900">{t('dashboard.selectChild')}</h3>
               <p className="text-slate-500 mt-1 max-w-sm">

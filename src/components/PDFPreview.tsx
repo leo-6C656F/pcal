@@ -143,12 +143,12 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals, onC
       )}
 
       {/* Email Subject Line Display */}
-      <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
         <div className="flex items-center gap-2">
-          <Mail size={16} className="text-indigo-600 flex-shrink-0" />
+          <Mail size={16} className="text-primary flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <span className="text-xs font-medium text-indigo-600 uppercase tracking-wide">{t('pdfPreview.emailSubject')}</span>
-            <p className="text-sm font-medium text-indigo-900 truncate">{emailSubject}</p>
+            <span className="text-xs font-medium text-primary uppercase tracking-wide">{t('pdfPreview.emailSubject')}</span>
+            <p className="text-sm font-medium text-blue-900 truncate">{emailSubject}</p>
           </div>
         </div>
       </div>
@@ -158,7 +158,7 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals, onC
         <button
           type="button"
           onClick={handleEmailPDF}
-          className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
+          className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors shadow-sm"
         >
           <Mail size={14} className="mr-1.5" />
           {t('pdfPreview.emailPdf')}
@@ -281,7 +281,7 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals, onC
           {isGenerating && (
             <div className="absolute inset-0 flex items-center justify-center bg-slate-50 z-10">
               <div className="flex flex-col items-center text-slate-500">
-                <Loader2 size={32} className="animate-spin mb-2 text-indigo-600" />
+                <Loader2 size={32} className="animate-spin mb-2 text-primary" />
                 <p className="text-sm font-medium">{t('pdfPreview.generatingPdf')}</p>
               </div>
             </div>

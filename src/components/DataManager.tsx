@@ -140,8 +140,8 @@ export function DataManager() {
       {/* Current Data Stats */}
       <div className="card p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-indigo-100 rounded-lg">
-            <Database size={20} className="text-indigo-600" />
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <Database size={20} className="text-primary" />
           </div>
           <h2 className="text-lg font-semibold text-slate-900">{t('dataManager.currentData')}</h2>
         </div>
@@ -288,7 +288,7 @@ export function DataManager() {
             <div className="space-y-3">
               <p className="text-sm font-medium text-slate-700">{t('dataManager.importModeLabel')}</p>
 
-              <label className="flex items-start gap-3 p-4 border border-slate-200 rounded-lg cursor-pointer hover:border-indigo-300 transition-colors">
+              <label className="flex items-start gap-3 p-4 border border-slate-200 rounded-lg cursor-pointer hover:border-blue-300 transition-colors">
                 <input
                   type="radio"
                   name="importMode"

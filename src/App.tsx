@@ -129,7 +129,7 @@ function App() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-10 w-10 border-[3px] border-indigo-600 border-t-transparent"></div>
+          <div className="inline-block animate-spin rounded-full h-10 w-10 border-[3px] border-primary border-t-transparent"></div>
           <p className="mt-4 text-slate-600 font-medium">{t('app.initializingPcal')}</p>
         </div>
       </div>
@@ -163,7 +163,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-slate-50 font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 font-sans">
       {/* Toast Container */}
       <ToastContainer toasts={toast.toasts} onClose={toast.removeToast} />
 
@@ -172,7 +172,7 @@ function App() {
         <div className="fixed bottom-4 right-4 z-50 animate-fade-in">
           <div className="group relative">
             {/* Small circular indicator */}
-            <div className="relative w-10 h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+            <div className="relative w-10 h-10 bg-gradient-to-br from-primary to-ochs-blue rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
               {/* Progress ring */}
               <svg className="absolute inset-0 w-10 h-10 -rotate-90">
                 <circle
@@ -224,7 +224,7 @@ function App() {
             {currentView !== 'dashboard' && (
               <button
                 onClick={handleBackToDashboard}
-                className="p-2 -ml-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+                className="p-2 -ml-2 text-slate-500 hover:text-primary hover:bg-blue-50 rounded-full transition-colors"
                 aria-label={t('app.back')}
               >
                 <ArrowLeft size={20} />
@@ -232,7 +232,7 @@ function App() {
             )}
 
             <div className="flex items-center gap-2.5">
-              <div className="bg-indigo-600 p-1.5 rounded-lg">
+              <div className="bg-primary p-1.5 rounded-lg">
                 <BookOpenCheck size={20} className="text-white" />
               </div>
               <span className="text-lg font-bold text-slate-900 tracking-tight hidden sm:block">
@@ -246,7 +246,7 @@ function App() {
               <button
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors disabled:opacity-50"
+                className="p-2 text-slate-500 hover:text-primary hover:bg-blue-50 rounded-full transition-colors disabled:opacity-50"
                 aria-label={t('app.refresh')}
                 title={t('app.refresh')}
               >
@@ -257,7 +257,7 @@ function App() {
             {currentView === 'dashboard' && (
               <button
                 onClick={() => setCurrentView('settings')}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all text-slate-600 hover:text-indigo-600 hover:bg-slate-100"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all text-slate-600 hover:text-primary hover:bg-slate-100"
               >
                 <Settings size={18} />
                 <span className="hidden sm:inline">{t('app.goalsAndSetup')}</span>

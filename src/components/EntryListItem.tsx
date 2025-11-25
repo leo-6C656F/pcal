@@ -15,7 +15,7 @@ export function EntryListItem({ entry }: EntryListItemProps) {
   return (
     <button
       onClick={() => setCurrentEntry(entry)}
-      className="w-full text-left card p-5 hover:shadow-md hover:border-indigo-200 transition-all duration-200 group"
+      className="w-full text-left card p-5 hover:shadow-md hover:border-blue-200 transition-all duration-200 group"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

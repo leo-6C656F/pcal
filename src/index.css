@@ -43,7 +43,7 @@
   }
 
   .card-interactive {
-    @apply card cursor-pointer hover:border-indigo-200 hover:shadow-indigo-100/50;
+    @apply card cursor-pointer hover:border-blue-200 hover:shadow-blue-100/50;
   }
 
   .input-field {
