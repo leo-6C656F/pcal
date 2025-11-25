@@ -12,7 +12,8 @@
     "goalsAndSetup": "Goals & Setup",
     "refresh": "Refresh",
     "refreshed": "Data refreshed",
-    "refreshFailed": "Failed to refresh data"
+    "refreshFailed": "Failed to refresh data",
+    "aiModelReady": "AI model ready"
   },
   "common": {
     "cancel": "Cancel",
