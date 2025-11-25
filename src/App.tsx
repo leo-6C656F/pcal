@@ -81,12 +81,19 @@ function App() {
 
     // Small delay to let the UI settle first
     const timer = setTimeout(() => {
+      console.log('[AI] Starting model pre-warm...');
+      setModelLoadingState({ isLoading: true, progress: 0, status: 'Loading AI model...' });
       setShowModelBanner(true);
       preWarmModel((state) => {
+        console.log('[AI] Model progress:', state);
         setModelLoadingState(state);
         if (!state.isLoading && state.progress === 100) {
           // Model loaded, hide banner after a short delay
           setTimeout(() => setShowModelBanner(false), 1500);
+        }
+        if (state.error) {
+          // Hide banner on error after showing briefly
+          setTimeout(() => setShowModelBanner(false), 3000);
         }
       });
     }, 1000);
