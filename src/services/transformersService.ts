@@ -162,3 +162,63 @@ export async function preWarmModel(onProgress?: ProgressCallback): Promise<void>
   console.log('[Transformers.js] Pre-warming model...');
   await initializeModel(onProgress);
 }
+
+/**
+ * Clear the cached model from IndexedDB
+ * This will force a fresh download on next initialization
+ */
+export async function clearModelCache(): Promise<void> {
+  try {
+    // Reset in-memory pipeline
+    generatorPipeline = null;
+    loadError = null;
+    isLoading = false;
+
+    // Clear IndexedDB cache (Transformers.js uses 'transformers-cache' database)
+    const databases = await indexedDB.databases();
+    const transformersDBs = databases.filter(db =>
+      db.name?.includes('transformers') || db.name?.includes('huggingface')
+    );
+
+    for (const db of transformersDBs) {
+      if (db.name) {
+        await new Promise<void>((resolve, reject) => {
+          const request = indexedDB.deleteDatabase(db.name!);
+          request.onsuccess = () => resolve();
+          request.onerror = () => reject(request.error);
+        });
+        console.log(`[Transformers.js] Cleared cache: ${db.name}`);
+      }
+    }
+
+    console.log('[Transformers.js] Model cache cleared successfully');
+  } catch (error) {
+    console.error('[Transformers.js] Failed to clear cache:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get estimated cache size (approximation based on model size)
+ */
+export async function getModelCacheSize(): Promise<number> {
+  try {
+    if ('storage' in navigator && 'estimate' in navigator.storage) {
+      const estimate = await navigator.storage.estimate();
+      // Model is approximately 21MB (based on build output)
+      return estimate.usage || 0;
+    }
+    return 0;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Unload the model from memory (doesn't clear cache)
+ */
+export function unloadModel(): void {
+  generatorPipeline = null;
+  loadError = null;
+  console.log('[Transformers.js] Model unloaded from memory');
+}

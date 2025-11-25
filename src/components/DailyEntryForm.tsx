@@ -7,7 +7,7 @@ import { SignaturePad } from './SignaturePad';
 import { ConfirmDialog } from './ConfirmDialog';
 import { HelpTooltip } from './HelpTooltip';
 import type { ActivityLine, ModelLoadingState } from '../types';
-import { Trash2, Plus, Sparkles, Clock, BookOpen, Edit3, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Trash2, Plus, Sparkles, Clock, BookOpen, Edit3, ArrowLeft, CheckCircle, RefreshCw } from 'lucide-react';
 import { getGoalColors, getGoalIcon } from '../utils/goalColors';
 import { showToast } from '../App';
 
@@ -395,12 +395,31 @@ export function DailyEntryForm() {
           {/* AI Summary */}
           {currentEntry && currentEntry.lines.length > 0 && (
             <div className="card p-6 bg-gradient-to-br from-white to-purple-50 border-purple-100">
-              <div className="mb-4">
+              <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                   <Sparkles size={20} className="text-purple-600" />
                   {t('dailyEntryForm.daySummary')}
                   <HelpTooltip content={t('dailyEntryForm.daySummaryTooltip')} />
                 </h2>
+                {currentEntry.aiSummary && !isGeneratingAI && (
+                  <button
+                    onClick={async () => {
+                      setIsGeneratingAI(true);
+                      try {
+                        await generateAISummary(currentEntry.id, setModelLoadingState);
+                      } catch (error) {
+                        console.error('Failed to regenerate summary:', error);
+                      } finally {
+                        setIsGeneratingAI(false);
+                        setModelLoadingState({ isLoading: false, progress: 100, status: '' });
+                      }
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    <RefreshCw size={16} />
+                    {t('dailyEntryForm.regenerate')}
+                  </button>
+                )}
               </div>
 
               {isGeneratingAI ? (

@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Target, Users, Database } from 'lucide-react';
+import { Target, Users, Database, Brain } from 'lucide-react';
 import { GoalManager } from './GoalManager';
 import { ChildManager } from './ChildManager';
 import { DataManager } from './DataManager';
+import { AISettings } from './AISettings';
 
-type SettingsTab = 'goals' | 'children' | 'data';
+type SettingsTab = 'goals' | 'children' | 'data' | 'ai';
 
 /**
  * SettingsPage Component
@@ -18,6 +19,7 @@ export function SettingsPage() {
   const tabs = [
     { id: 'goals' as const, label: t('settings.goalsTab'), icon: Target },
     { id: 'children' as const, label: t('settings.childrenTab'), icon: Users },
+    { id: 'ai' as const, label: t('settings.aiTab'), icon: Brain },
     { id: 'data' as const, label: t('settings.dataTab'), icon: Database },
   ];
 
@@ -59,6 +61,7 @@ export function SettingsPage() {
             <ChildManager />
           </div>
         )}
+        {activeTab === 'ai' && <AISettings />}
         {activeTab === 'data' && <DataManager />}
       </div>
     </div>

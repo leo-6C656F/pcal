@@ -4,7 +4,11 @@ import {
   generateLocalSummary,
   initializeModel,
   isModelReady,
-  preWarmModel
+  preWarmModel,
+  clearModelCache,
+  getModelCacheSize,
+  unloadModel,
+  getLoadError
 } from './transformersService';
 
 /**
@@ -15,7 +19,15 @@ import {
  */
 
 // Re-export for convenience
-export { preWarmModel, isModelReady, initializeModel };
+export {
+  preWarmModel,
+  isModelReady,
+  initializeModel,
+  clearModelCache,
+  getModelCacheSize,
+  unloadModel,
+  getLoadError
+};
 
 /**
  * Generate a summary paragraph from activity lines

@@ -130,6 +130,7 @@
     "daySummaryTooltip": "This creates a written summary of all your activities for the day. Great for reports and documentation!",
     "writeSummary": "Write Summary",
     "writingSummary": "Writing...",
+    "regenerate": "Regenerate",
     "summaryTip": "Tip: Click \"Write Summary\" to automatically create a professional description of today's activities.",
     "generatingSummary": "Generating summary...",
     "summaryUnavailable": "Summary could not be generated. Please check your connection and try again."
@@ -137,7 +138,33 @@
   "settings": {
     "goalsTab": "Goals",
     "childrenTab": "Manage Children",
+    "aiTab": "AI Settings",
     "dataTab": "Data"
+  },
+  "aiSettings": {
+    "title": "AI Model Settings",
+    "subtitle": "Manage the local Transformers.js AI model for summary generation",
+    "transformersModel": "Transformers.js Model",
+    "loaded": "Loaded",
+    "notLoaded": "Not Loaded",
+    "error": "Error",
+    "errorLabel": "Error",
+    "cacheSize": "Storage Used",
+    "downloading": "Downloading...",
+    "clearing": "Clearing...",
+    "redownload": "Redownload Model",
+    "clearCache": "Clear Cache",
+    "unload": "Unload from Memory",
+    "confirmClear": "Are you sure you want to clear the AI model cache? You will need to redownload the model (21MB) next time you use it.",
+    "cacheCleared": "AI model cache cleared successfully!",
+    "clearFailed": "Failed to clear cache",
+    "redownloadSuccess": "AI model redownloaded successfully!",
+    "redownloadFailed": "Failed to redownload model",
+    "modelUnloaded": "Model unloaded from memory. It will reload automatically when needed.",
+    "note": "Note",
+    "noteText": "The AI model is downloaded once and cached in your browser. It works completely offline after the initial download. The model is approximately 21MB.",
+    "promptTitle": "Prompt Information",
+    "promptDescription": "This is the prompt template used to generate summaries from your activity logs. The AI model processes this locally without sending data to any server."
   },
   "childManager": {
     "title": "Manage Children",
