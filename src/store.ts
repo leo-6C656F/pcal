@@ -26,6 +26,7 @@ interface AppState {
   loadGoals: () => Promise<void>;
   createChild: (child: Omit<ChildContext, 'id'>) => Promise<ChildContext>;
   updateChild: (id: string, updates: Partial<ChildContext>) => Promise<void>;
+  deleteChild: (id: string) => Promise<void>;
   createEntry: (date: string, childId: string) => Promise<DailyEntry>;
   addActivityLine: (entryId: string, line: Omit<ActivityLine, 'id'>) => Promise<void>;
   updateActivityLine: (entryId: string, lineId: string, updates: Partial<ActivityLine>) => Promise<void>;
@@ -92,6 +93,24 @@ export const useStore = create<AppState>((set, get) => ({
       if (get().currentChild?.id === id) {
         get().setCurrentChild(updatedChild);
       }
+    }
+  },
+
+  deleteChild: async (id) => {
+    // Delete all entries for this child
+    await db.dailyEntries.where('childId').equals(id).delete();
+
+    // Delete the child
+    await db.children.delete(id);
+
+    // Reload data
+    await get().loadChildren();
+    await get().loadEntries();
+
+    // Clear current child if it's the one being deleted
+    if (get().currentChild?.id === id) {
+      get().setCurrentChild(null);
+      get().setCurrentEntry(null);
     }
   },
 

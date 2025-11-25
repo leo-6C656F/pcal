@@ -4,7 +4,7 @@ import { useStore } from './store';
 import { initializeDatabase } from './services/journalReplay';
 import { Dashboard } from './components/Dashboard';
 import { DailyEntryForm } from './components/DailyEntryForm';
-import { GoalManager } from './components/GoalManager';
+import { SettingsPage } from './components/SettingsPage';
 import { ToastContainer } from './components/ToastContainer';
 import { LanguageSelector } from './components/LanguageSelector';
 import { useToast } from './hooks/useToast';
@@ -152,7 +152,7 @@ function App() {
         <div className="animate-fade-in">
           {currentView === 'dashboard' && <Dashboard />}
           {currentView === 'entry' && <DailyEntryForm />}
-          {currentView === 'settings' && <GoalManager />}
+          {currentView === 'settings' && <SettingsPage />}
         </div>
       </main>
 
