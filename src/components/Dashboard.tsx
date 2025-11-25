@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { Plus, Calendar, User, FileDown } from 'lucide-react';
@@ -9,6 +9,7 @@ import { EntryList } from './EntryList';
 import { PDFExportModal } from './PDFExportModal';
 import { Modal } from './Modal';
 import { WelcomeScreen } from './WelcomeScreen';
+import { PullToRefresh } from './PullToRefresh';
 
 /**
  * Dashboard Component
@@ -23,7 +24,14 @@ export function Dashboard() {
     setCurrentChild,
     setCurrentEntry,
     createEntry,
+    loadChildren,
+    loadEntries,
   } = useStore();
+
+  // Pull-to-refresh handler
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([loadChildren(), loadEntries()]);
+  }, [loadChildren, loadEntries]);
 
   const [showChildForm, setShowChildForm] = useState(false);
   const [showPDFExport, setShowPDFExport] = useState(false);
@@ -89,6 +97,7 @@ export function Dashboard() {
   }
 
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -244,5 +253,6 @@ export function Dashboard() {
         </div>
       </div>
     </div>
+    </PullToRefresh>
   );
 }

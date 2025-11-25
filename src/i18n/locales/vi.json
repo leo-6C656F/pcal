@@ -229,6 +229,11 @@
     "summaryGenerated": "Tạo tóm tắt AI thành công!",
     "summaryFailed": "Không thể tạo tóm tắt. Vui lòng thử lại."
   },
+  "pullToRefresh": {
+    "pull": "Kéo xuống để làm mới",
+    "release": "Thả để làm mới",
+    "refreshing": "Đang làm mới..."
+  },
   "pdfPreview": {
     "emailSubject": "Tiêu đề Email",
     "confirmEmailPdf": "Xác nhận Gửi PDF qua Email",

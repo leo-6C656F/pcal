@@ -229,6 +229,11 @@
     "summaryGenerated": "AI 总结生成成功！",
     "summaryFailed": "生成总结失败。请重试。"
   },
+  "pullToRefresh": {
+    "pull": "下拉刷新",
+    "release": "释放刷新",
+    "refreshing": "正在刷新..."
+  },
   "pdfPreview": {
     "emailSubject": "邮件主题",
     "confirmEmailPdf": "确认发送 PDF 邮件",
