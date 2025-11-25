@@ -1,4 +1,4 @@
-import { db, generateChecksum } from '../db';
+import { db } from '../db';
 import type { ChildContext, DailyEntry, Goal, JournalEvent } from '../types';
 
 /**
