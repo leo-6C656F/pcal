@@ -114,6 +114,7 @@ export function Dashboard() {
               setCurrentChild(child);
               setShowChildForm(false);
             }}
+            onCancel={() => setShowChildForm(false)}
           />
         </Modal>
       )}

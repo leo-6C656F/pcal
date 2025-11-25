@@ -21,12 +21,9 @@ export function DailyEntryForm() {
     currentEntry,
     currentChild,
     children,
-    goals,
     addActivityLine,
     updateActivityLine,
     deleteActivityLine,
-    saveSignature,
-    generateAISummary,
     setCurrentChild,
     setCurrentEntry
   } = useStore();
@@ -103,9 +100,14 @@ export function DailyEntryForm() {
     </div>
   );
 
-  const ActivityList = ({ onAdd, onEdit, onFinalize }) => {
-    const { currentEntry } = useStore();
+  const ActivityList = ({ onAdd, onEdit, onFinalize }: {
+    onAdd: () => void;
+    onEdit: (activity: ActivityLine) => void;
+    onFinalize: () => void;
+  }) => {
     const [deleteConfirm, setDeleteConfirm] = useState<{ lineId: string; activity: string } | null>(null);
+
+    if (!currentEntry) return null;
 
     return (
       <>
@@ -117,7 +119,7 @@ export function DailyEntryForm() {
             cancelText="Keep It"
             variant="danger"
             onConfirm={() => {
-              deleteActivityLine(currentEntry!.id, deleteConfirm.lineId);
+              deleteActivityLine(currentEntry.id, deleteConfirm.lineId);
               showToast?.info('Activity removed');
               setDeleteConfirm(null);
             }}
@@ -215,7 +217,10 @@ export function DailyEntryForm() {
       </>
     );
   };
-  const ActivityForm = ({ activity, onClose }) => {
+  const ActivityForm = ({ activity, onClose }: {
+    activity: ActivityLine | null;
+    onClose: () => void;
+  }) => {
     const { currentEntry, goals } = useStore();
 
     const getDefaultStartTime = () => {
@@ -244,7 +249,7 @@ export function DailyEntryForm() {
       setIsSaving(true);
       try {
         if (activity?.id) { // Editing existing activity
-          await updateActivityLine(currentEntry!.id, { ...activity, ...line, id: activity.id });
+          await updateActivityLine(currentEntry!.id, activity.id, line);
           showToast?.success('Activity updated successfully!');
         } else { // Adding new activity
           await addActivityLine(currentEntry!.id, {
@@ -340,8 +345,8 @@ export function DailyEntryForm() {
       </div>
     );
   };
-  const FinalizeSheet = ({ onClose }) => {
-    const { currentEntry, currentChild, saveSignature, generateAISummary } = useStore();
+  const FinalizeSheet = ({ onClose }: { onClose: () => void }) => {
+    const { currentEntry, saveSignature, generateAISummary } = useStore();
     const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
     const handleGenerateAISummary = async () => {
