@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { DailyEntry, ChildContext, ActivityLine, AIServiceConfig, Goal } from './types';
+import type { DailyEntry, ChildContext, ActivityLine, AIServiceConfig, Goal, ModelLoadingState } from './types';
 import { db, generateId, addJournalEvent } from './db';
 import { generateSummary } from './services/aiService';
 import { add, parse, differenceInMinutes } from 'date-fns';
@@ -32,7 +32,7 @@ interface AppState {
   updateActivityLine: (entryId: string, lineId: string, updates: Partial<ActivityLine>) => Promise<void>;
   deleteActivityLine: (entryId: string, lineId: string) => Promise<void>;
   saveSignature: (entryId: string, signatureBase64: string) => Promise<void>;
-  generateAISummary: (entryId: string) => Promise<void>;
+  generateAISummary: (entryId: string, onModelProgress?: (state: ModelLoadingState) => void) => Promise<void>;
   setAIConfig: (config: AIServiceConfig) => void;
   saveGoal: (goal: Goal) => Promise<void>;
   deleteGoal: (code: number) => Promise<void>;
@@ -213,13 +213,13 @@ export const useStore = create<AppState>((set, get) => ({
     }
   },
 
-  generateAISummary: async (entryId) => {
+  generateAISummary: async (entryId, onModelProgress) => {
     const entry = await db.dailyEntries.get(entryId);
     const child = get().currentChild;
 
     if (!entry || !child) return;
 
-    const { summary } = await generateSummary(child.name, entry.lines, get().aiConfig);
+    const { summary } = await generateSummary(child.name, entry.lines, get().aiConfig, onModelProgress);
 
     entry.aiSummary = summary;
     await db.dailyEntries.put(entry);

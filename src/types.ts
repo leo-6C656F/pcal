@@ -51,4 +51,12 @@ export interface AIServiceConfig {
   openAIKey?: string;
 }
 
-export type AIProvider = 'browser-native' | 'openai-api' | 'fallback';
+export type AIProvider = 'transformers-local' | 'openai-api' | 'fallback';
+
+// --- 6. Model Loading State ---
+export interface ModelLoadingState {
+  isLoading: boolean;
+  progress: number; // 0-100
+  status: string;
+  error?: string;
+}
