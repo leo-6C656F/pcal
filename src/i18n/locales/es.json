@@ -12,7 +12,10 @@
     "goalsAndSetup": "Metas y Configuración",
     "refresh": "Actualizar",
     "refreshed": "Datos actualizados",
-    "refreshFailed": "Error al actualizar datos"
+    "refreshFailed": "Error al actualizar datos",
+    "aiModelReady": "Modelo de IA listo",
+    "loadingAI": "Cargando modelo de IA...",
+    "complete": "completado"
   },
   "common": {
     "cancel": "Cancelar",
@@ -131,7 +134,13 @@
     "writingSummary": "Escribiendo...",
     "summaryTip": "Consejo: Haga clic en \"Escribir Resumen\" para crear automáticamente una descripción profesional de las actividades de hoy.",
     "generatingSummary": "Generando resumen...",
-    "summaryUnavailable": "No se pudo generar el resumen. Verifique su conexión e intente nuevamente."
+    "summaryUnavailable": "No se pudo generar el resumen. Verifique su conexión e intente nuevamente.",
+    "downloadModelPrompt": "Descargar Modelo de IA para Generar Resumen",
+    "downloadModelSize": "~21MB descarga única, funciona sin conexión después",
+    "downloadingModel": "Descargando modelo de IA...",
+    "generateSummary": "Clic para Generar Resumen",
+    "modelDownloaded": "¡Modelo de IA descargado! Ahora puede generar resúmenes.",
+    "modelDownloadFailed": "Error al descargar el modelo de IA. Intente de nuevo."
   },
   "settings": {
     "goalsTab": "Metas",
