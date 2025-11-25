@@ -3,14 +3,14 @@ import { useStore } from '../store';
 import { GoalSelector } from './GoalSelector';
 import { TimeInput } from './TimeInput';
 import { SignaturePad } from './SignaturePad';
-import { PDFPreview } from './PDFPreview';
 import { ConfirmDialog } from './ConfirmDialog';
 import { HelpTooltip } from './HelpTooltip';
-import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import type { ActivityLine } from '../types';
-import { Trash2, Plus, Sparkles, Clock, BookOpen, Edit3, Keyboard, Lightbulb } from 'lucide-react';
+import { Trash2, Plus, Sparkles, Clock, BookOpen, Edit3, ArrowLeft, CheckCircle } from 'lucide-react';
 import { getGoalColors, getGoalIcon } from '../utils/goalColors';
 import { showToast } from '../App';
+
+type View = 'list' | 'form' | 'finalize';
 
 /**
  * DailyEntryForm Component
@@ -23,6 +23,7 @@ export function DailyEntryForm() {
     children,
     goals,
     addActivityLine,
+    updateActivityLine,
     deleteActivityLine,
     saveSignature,
     generateAISummary,
@@ -30,29 +31,8 @@ export function DailyEntryForm() {
     setCurrentEntry
   } = useStore();
 
-  const getDefaultStartTime = () => {
-    // Auto-suggest: Use the end time of the last activity as the start time for the next one
-    if (currentEntry && currentEntry.lines.length > 0) {
-      const lastLine = currentEntry.lines[currentEntry.lines.length - 1];
-      return lastLine.endTime;
-    }
-    return '09:00';
-  };
-
-  const [newLine, setNewLine] = useState<Partial<ActivityLine>>({
-    goalCode: goals[0]?.code || 1,
-    selectedActivities: [],
-    customNarrative: '',
-    startTime: getDefaultStartTime(),
-    endTime: '09:30',
-    durationMinutes: 30
-  });
-
-  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
-  const [showPDFPreview, setShowPDFPreview] = useState(false);
-  const [isAddingActivity, setIsAddingActivity] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState<{ lineId: string; activity: string } | null>(null);
-  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [view, setView] = useState<View>('list');
+  const [activityToEdit, setActivityToEdit] = useState<ActivityLine | null>(null);
 
   if (!currentEntry || !currentChild) {
     return (
@@ -62,55 +42,6 @@ export function DailyEntryForm() {
     );
   }
 
-  const handleAddLine = async () => {
-    if (!newLine.goalCode) return;
-
-    setIsAddingActivity(true);
-    try {
-      await addActivityLine(currentEntry.id, {
-        goalCode: newLine.goalCode,
-        selectedActivities: newLine.selectedActivities || [],
-        customNarrative: newLine.customNarrative || '',
-        startTime: newLine.startTime || '09:00',
-        endTime: newLine.endTime || '09:30',
-        durationMinutes: newLine.durationMinutes || 30
-      });
-
-      // Reset form with smart time suggestion
-      const nextStartTime = newLine.endTime || '09:00';
-      setNewLine({
-        goalCode: 1,
-        selectedActivities: [],
-        customNarrative: '',
-        startTime: nextStartTime,
-        endTime: '09:30',
-        durationMinutes: 30
-      });
-
-      showToast?.success('Activity added successfully!');
-    } catch (error) {
-      console.error('Failed to add activity:', error);
-      showToast?.error('Failed to add activity. Please try again.');
-    } finally {
-      setIsAddingActivity(false);
-    }
-  };
-
-  const handleGenerateAISummary = async () => {
-    setIsGeneratingAI(true);
-    try {
-      await generateAISummary(currentEntry.id);
-      showToast?.success('AI summary generated successfully!');
-    } catch (error) {
-      showToast?.error('Failed to generate summary. Please try again.');
-    } finally {
-      setIsGeneratingAI(false);
-    }
-  };
-
-  const totalMinutes = currentEntry.lines.reduce((sum, line) => sum + line.durationMinutes, 0);
-  const totalHours = (totalMinutes / 60).toFixed(2);
-
   const handleChildSwitch = (childId: string) => {
     const newChild = children.find(c => c.id === childId);
     if (newChild) {
@@ -119,195 +50,242 @@ export function DailyEntryForm() {
     }
   };
 
-  // Keyboard shortcuts
-  useKeyboardShortcuts([
-    {
-      key: 'Enter',
-      ctrl: true,
-      action: handleAddLine,
-      description: 'Add activity (Ctrl+Enter)',
-    },
-    {
-      key: 'Escape',
-      action: () => {
-        if (showShortcuts) setShowShortcuts(false);
-        else if (deleteConfirm) setDeleteConfirm(null);
-      },
-      description: 'Close dialog (Esc)',
-    },
-    {
-      key: '?',
-      shift: true,
-      action: () => setShowShortcuts(!showShortcuts),
-      description: 'Show shortcuts (Shift+?)',
-    },
-  ]);
+  const totalMinutes = currentEntry.lines.reduce((sum, line) => sum + line.durationMinutes, 0);
+  const totalHours = (totalMinutes / 60).toFixed(2);
 
-  return (
-    <div className="space-y-8 pb-12">
-      {/* Keyboard Shortcuts Help */}
-      {showShortcuts && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={() => setShowShortcuts(false)}>
-          <div className="bg-white rounded-2xl shadow-soft-lg max-w-md w-full p-6 animate-bounce-in" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                <Keyboard size={20} className="text-indigo-600" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900">Keyboard Shortcuts</h3>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                <span className="text-slate-600">Add Activity</span>
-                <kbd className="px-2 py-1 bg-slate-100 text-slate-700 rounded text-sm font-mono">Ctrl + Enter</kbd>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                <span className="text-slate-600">Close Dialog</span>
-                <kbd className="px-2 py-1 bg-slate-100 text-slate-700 rounded text-sm font-mono">Esc</kbd>
-              </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="text-slate-600">Show This Help</span>
-                <kbd className="px-2 py-1 bg-slate-100 text-slate-700 rounded text-sm font-mono">Shift + ?</kbd>
-              </div>
-            </div>
-            <button onClick={() => setShowShortcuts(false)} className="btn-primary w-full mt-4">
-              Got It
-            </button>
+  const Header = () => (
+    <div className="card p-6 border-l-4 border-l-indigo-500">
+      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-2xl font-bold text-slate-900">
+              Activity Log:
+            </h1>
+            {children.length > 1 ? (
+              <select
+                value={currentChild.id}
+                onChange={(e) => handleChildSwitch(e.target.value)}
+                className="text-2xl font-bold text-indigo-600 bg-transparent border-b-2 border-indigo-200 hover:border-indigo-400 focus:outline-none focus:border-indigo-600 cursor-pointer transition-colors px-2 py-1"
+              >
+                {children.map(child => (
+                  <option key={child.id} value={child.id}>
+                    {child.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="text-2xl font-bold text-indigo-600">{currentChild.name}</span>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-4 text-sm text-slate-500">
+            <span className="bg-slate-100 px-2.5 py-0.5 rounded-md font-medium text-slate-700">
+              Date: {currentEntry.date}
+            </span>
+            <span>Center: {currentChild.center}</span>
+            <span>Teacher: {currentChild.teacher}</span>
           </div>
         </div>
-      )}
-
-      {/* Delete Confirmation Dialog */}
-      {deleteConfirm && (
-        <ConfirmDialog
-          title="Delete Activity?"
-          message={`Are you sure you want to remove "${deleteConfirm.activity}"? This action cannot be undone.`}
-          confirmText="Delete"
-          cancelText="Keep It"
-          variant="danger"
-          onConfirm={() => {
-            deleteActivityLine(currentEntry.id, deleteConfirm.lineId);
-            showToast?.info('Activity removed');
-            setDeleteConfirm(null);
-          }}
-          onCancel={() => setDeleteConfirm(null)}
-        />
-      )}
-
-      {/* Header */}
-      <div className="card p-6 border-l-4 border-l-indigo-500">
-        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl font-bold text-slate-900">
-                Activity Log:
-              </h1>
-              {children.length > 1 ? (
-                <select
-                  value={currentChild.id}
-                  onChange={(e) => handleChildSwitch(e.target.value)}
-                  className="text-2xl font-bold text-indigo-600 bg-transparent border-b-2 border-indigo-200 hover:border-indigo-400 focus:outline-none focus:border-indigo-600 cursor-pointer transition-colors px-2 py-1"
-                >
-                  {children.map(child => (
-                    <option key={child.id} value={child.id}>
-                      {child.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <span className="text-2xl font-bold text-indigo-600">{currentChild.name}</span>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-4 text-sm text-slate-500">
-              <span className="bg-slate-100 px-2.5 py-0.5 rounded-md font-medium text-slate-700">
-                Date: {currentEntry.date}
-              </span>
-              <span>Center: {currentChild.center}</span>
-              <span>Teacher: {currentChild.teacher}</span>
-            </div>
-          </div>
-          <div className="text-right space-y-2">
-             <div className="text-3xl font-bold text-indigo-600">{totalHours}</div>
-             <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Hours</div>
-             {/* Visual Progress Bar */}
-             <div className="w-32">
-               <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
-                 <div
-                   className={`h-full rounded-full transition-all duration-500 ${
-                     totalMinutes >= 480 ? 'bg-green-500' : totalMinutes >= 240 ? 'bg-indigo-500' : 'bg-amber-500'
-                   }`}
-                   style={{ width: `${Math.min((totalMinutes / 480) * 100, 100)}%` }}
-                 />
-               </div>
-               <div className="text-xs text-slate-400 mt-1 text-center">
-                 {Math.round((totalMinutes / 480) * 100)}% of 8hrs
-               </div>
+        <div className="text-right space-y-2">
+           <div className="text-3xl font-bold text-indigo-600">{totalHours}</div>
+           <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Hours</div>
+           <div className="w-32">
+             <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+               <div
+                 className={`h-full rounded-full transition-all duration-500 ${
+                   totalMinutes >= 480 ? 'bg-green-500' : totalMinutes >= 240 ? 'bg-indigo-500' : 'bg-amber-500'
+                 }`}
+                 style={{ width: `${Math.min((totalMinutes / 480) * 100, 100)}%` }}
+               />
              </div>
-          </div>
+           </div>
         </div>
       </div>
+    </div>
+  );
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Left Column: Add Activity Form */}
-        <div className="xl:col-span-1 space-y-6">
-          {/* Quick Tips for First Entry */}
-          {currentEntry.lines.length === 0 && (
-            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-4 animate-bounce-in">
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
-                  <Lightbulb size={18} className="text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-amber-900 mb-1">Quick Tips</h3>
-                  <ul className="text-sm text-amber-800 space-y-1">
-                    <li>1️⃣ Pick a <strong>goal</strong> you worked on</li>
-                    <li>2️⃣ Choose <strong>activities</strong> you did</li>
-                    <li>3️⃣ Add <strong>time spent</strong> together</li>
-                    <li>4️⃣ Click "Add Activity" to save!</li>
-                  </ul>
-                </div>
-              </div>
+  const ActivityList = ({ onAdd, onEdit, onFinalize }) => {
+    const { currentEntry } = useStore();
+    const [deleteConfirm, setDeleteConfirm] = useState<{ lineId: string; activity: string } | null>(null);
+
+    return (
+      <>
+        {deleteConfirm && (
+          <ConfirmDialog
+            title="Delete Activity?"
+            message={`Are you sure you want to remove "${deleteConfirm.activity}"? This action cannot be undone.`}
+            confirmText="Delete"
+            cancelText="Keep It"
+            variant="danger"
+            onConfirm={() => {
+              deleteActivityLine(currentEntry!.id, deleteConfirm.lineId);
+              showToast?.info('Activity removed');
+              setDeleteConfirm(null);
+            }}
+            onCancel={() => setDeleteConfirm(null)}
+          />
+        )}
+        <div className="card p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <BookOpen size={20} className="text-indigo-500" />
+              Logged Activities
+              <span className="ml-2 px-2.5 py-0.5 bg-indigo-100 text-indigo-700 text-xs rounded-full">
+                {currentEntry.lines.length}
+              </span>
+            </h2>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={onAdd}
+                className="btn-primary"
+              >
+                <Plus size={18} className="mr-2" />
+                Add New Activity
+              </button>
+              <button
+                type="button"
+                onClick={onFinalize}
+                className="btn-secondary"
+                disabled={currentEntry.lines.length === 0}
+              >
+                <CheckCircle size={18} className="mr-2" />
+                Review & Finalize
+              </button>
+            </div>
+          </div>
+
+          {currentEntry.lines.length === 0 ? (
+            <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+              <p className="text-slate-500">No activities logged yet.</p>
+              <p className="text-sm text-slate-400">Use the form to add your first activity.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {currentEntry.lines.map((line) => {
+                const colors = getGoalColors(line.goalCode);
+                return (
+                  <div key={line.id} className={`group bg-white border-2 ${colors.border} rounded-xl p-4 hover:shadow-md transition-all duration-200`}>
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold border ${colors.badge} gap-1`}>
+                            <span>{getGoalIcon(line.goalCode)}</span>
+                            Goal {line.goalCode}
+                          </span>
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 gap-1">
+                            <Clock size={12} />
+                            {line.startTime} - {line.endTime}
+                          </span>
+                          <span className="text-xs text-slate-400">
+                            ({line.durationMinutes} min)
+                          </span>
+                        </div>
+                        <p className="text-slate-700 leading-relaxed">
+                          {line.customNarrative || line.selectedActivities.join(', ')}
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0 flex gap-1">
+                        <button
+                          type="button"
+                          onClick={() => onEdit(line)}
+                          className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                          title="Edit Activity"
+                        >
+                          <Edit3 size={18} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const activityDesc = line.customNarrative || line.selectedActivities.join(', ') || 'this activity';
+                            setDeleteConfirm({ lineId: line.id, activity: activityDesc });
+                          }}
+                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          title="Delete Activity"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
+        </div>
+      </>
+    );
+  };
+  const ActivityForm = ({ activity, onClose }) => {
+    const { currentEntry, goals } = useStore();
 
-          <div className="card p-6 shadow-md border-indigo-100 sticky top-24">
-            <h2 className="text-lg font-bold text-slate-900 mb-5 flex items-center gap-2">
-              <div className="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg">
-                <Plus size={18} />
-              </div>
-              Log Activity
-              <HelpTooltip content="Record what you and your child did together. You can add multiple activities for the same day!" />
-            </h2>
+    const getDefaultStartTime = () => {
+      if (currentEntry && currentEntry.lines.length > 0) {
+        const lastLine = currentEntry.lines[currentEntry.lines.length - 1];
+        return lastLine.endTime;
+      }
+      return '09:00';
+    };
 
-            <div className="space-y-6">
-              {/* Goal Selector */}
+    const [line, setLine] = useState<Partial<ActivityLine>>(
+      activity || {
+        goalCode: goals[0]?.code || 1,
+        selectedActivities: [],
+        customNarrative: '',
+        startTime: getDefaultStartTime(),
+        endTime: '09:30',
+        durationMinutes: 30
+      }
+    );
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSave = async () => {
+      if (!line.goalCode) return;
+
+      setIsSaving(true);
+      try {
+        if (activity?.id) { // Editing existing activity
+          await updateActivityLine(currentEntry!.id, { ...activity, ...line, id: activity.id });
+          showToast?.success('Activity updated successfully!');
+        } else { // Adding new activity
+          await addActivityLine(currentEntry!.id, {
+            goalCode: line.goalCode,
+            selectedActivities: line.selectedActivities || [],
+            customNarrative: line.customNarrative || '',
+            startTime: line.startTime || '09:00',
+            endTime: line.endTime || '09:30',
+            durationMinutes: line.durationMinutes || 30
+          });
+          showToast?.success('Activity added successfully!');
+        }
+        onClose();
+      } catch (error) {
+        console.error('Failed to save activity:', error);
+        showToast?.error('Failed to save activity. Please try again.');
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+        <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-white shadow-lg animate-slide-in-from-right" onClick={(e) => e.stopPropagation()}>
+          <div className="flex flex-col h-full">
+            <div className="p-6 border-b border-slate-200">
+              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                {activity ? <Edit3 size={18} /> : <Plus size={18} />}
+                {activity ? 'Edit Activity' : 'Add Activity'}
+              </h2>
+            </div>
+            <div className="p-6 space-y-6 flex-1 overflow-y-auto">
               <div className="space-y-2">
                 <GoalSelector
-                  selectedGoalCode={newLine.goalCode || 1}
-                  selectedActivities={newLine.selectedActivities || []}
-                  onGoalChange={(goalCode) => {
-                    console.log('=== GOAL CHANGE ===');
-                    console.log('New goal code:', goalCode);
-                    setNewLine(prev => {
-                      console.log('Previous state:', prev);
-                      const newState = { ...prev, goalCode, selectedActivities: [] };
-                      console.log('New state:', newState);
-                      return newState;
-                    });
-                  }}
-                  onActivitiesChange={(activities) => {
-                    console.log('=== ACTIVITIES CHANGE (from parent) ===');
-                    console.log('New activities:', activities);
-                    setNewLine(prev => {
-                      console.log('Previous state:', prev);
-                      const newState = { ...prev, selectedActivities: activities };
-                      console.log('New state:', newState);
-                      return newState;
-                    });
-                  }}
+                  selectedGoalCode={line.goalCode || 1}
+                  selectedActivities={line.selectedActivities || []}
+                  onGoalChange={(goalCode) => setLine(prev => ({ ...prev, goalCode, selectedActivities: [] }))}
+                  onActivitiesChange={(activities) => setLine(prev => ({ ...prev, selectedActivities: activities }))}
                 />
               </div>
 
-              {/* Custom Narrative */}
               <div>
                 <label className="label-text flex items-center gap-2">
                   <Edit3 size={14} />
@@ -315,109 +293,86 @@ export function DailyEntryForm() {
                   <HelpTooltip content="Describe what you did in your own words. This is optional if you already selected activities above." />
                 </label>
                 <textarea
-                  value={newLine.customNarrative || ''}
-                  onChange={(e) => setNewLine({ ...newLine, customNarrative: e.target.value })}
+                  value={line.customNarrative || ''}
+                  onChange={(e) => setLine({ ...line, customNarrative: e.target.value })}
                   rows={3}
                   className="input-field resize-none"
                   placeholder="Example: We read a book about animals and talked about what sounds they make..."
                 />
               </div>
 
-              {/* Time Input */}
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <TimeInput
-                  startTime={newLine.startTime || '09:00'}
-                  endTime={newLine.endTime || '09:30'}
-                  durationMinutes={newLine.durationMinutes || 30}
-                  onChange={(data) => setNewLine({ ...newLine, ...data })}
+                  startTime={line.startTime || '09:00'}
+                  endTime={line.endTime || '09:30'}
+                  durationMinutes={line.durationMinutes || 30}
+                  onChange={(data) => setLine({ ...line, ...data })}
                 />
               </div>
-
-              {/* Add Button */}
+            </div>
+            <div className="p-6 border-t border-slate-200 bg-slate-50 flex gap-3">
               <button
                 type="button"
-                onClick={handleAddLine}
-                className="w-full btn-primary py-3 text-base shadow-indigo-200"
-                disabled={isAddingActivity}
+                onClick={onClose}
+                className="btn-secondary flex-1"
+                disabled={isSaving}
               >
-                {isAddingActivity ? (
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                className="btn-primary flex-1"
+                disabled={isSaving}
+              >
+                {isSaving ? (
                   <>
                     <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                    Adding...
+                    Saving...
                   </>
                 ) : (
-                  'Add Activity to Log'
+                  'Save Activity'
                 )}
               </button>
             </div>
           </div>
         </div>
+      </div>
+    );
+  };
+  const FinalizeSheet = ({ onClose }) => {
+    const { currentEntry, currentChild, saveSignature, generateAISummary } = useStore();
+    const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
-        {/* Right Column: List & Actions */}
-        <div className="xl:col-span-2 space-y-8">
-          {/* Activity Lines List */}
-          <div className="card p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <BookOpen size={20} className="text-indigo-500" />
-                Logged Activities
-                <span className="ml-2 px-2.5 py-0.5 bg-indigo-100 text-indigo-700 text-xs rounded-full">
-                  {currentEntry.lines.length}
-                </span>
-              </h2>
-            </div>
+    const handleGenerateAISummary = async () => {
+      if (!currentEntry) return;
+      setIsGeneratingAI(true);
+      try {
+        await generateAISummary(currentEntry.id);
+        showToast?.success('AI summary generated successfully!');
+      } catch (error) {
+        showToast?.error('Failed to generate summary. Please try again.');
+      } finally {
+        setIsGeneratingAI(false);
+      }
+    };
 
-            {currentEntry.lines.length === 0 ? (
-              <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                <p className="text-slate-500">No activities logged yet.</p>
-                <p className="text-sm text-slate-400">Use the form to add your first activity.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {currentEntry.lines.map((line) => {
-                  const colors = getGoalColors(line.goalCode);
-                  return (
-                    <div key={line.id} className={`group bg-white border-2 ${colors.border} rounded-xl p-4 hover:shadow-md transition-all duration-200`}>
-                      <div className="flex justify-between items-start gap-4">
-                        <div className="flex-1">
-                          <div className="flex flex-wrap items-center gap-2 mb-2">
-                            <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold border ${colors.badge} gap-1`}>
-                              <span>{getGoalIcon(line.goalCode)}</span>
-                              Goal {line.goalCode}
-                            </span>
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 gap-1">
-                              <Clock size={12} />
-                              {line.startTime} - {line.endTime}
-                            </span>
-                            <span className="text-xs text-slate-400">
-                              ({line.durationMinutes} min)
-                            </span>
-                          </div>
-                          <p className="text-slate-700 leading-relaxed">
-                            {line.customNarrative || line.selectedActivities.join(', ')}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const activityDesc = line.customNarrative || line.selectedActivities.join(', ') || 'this activity';
-                            setDeleteConfirm({ lineId: line.id, activity: activityDesc });
-                          }}
-                          className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                          title="Delete Activity"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+    return (
+      <div className="fixed inset-0 z-30 bg-white animate-fade-in">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={onClose}
+              className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+              aria-label="Back to Activity List"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <h2 className="text-2xl font-bold text-slate-900">Review & Finalize</h2>
           </div>
 
           {/* AI Summary */}
-          {currentEntry.lines.length > 0 && (
+          {currentEntry && currentEntry.lines.length > 0 && (
             <div className="card p-6 bg-gradient-to-br from-white to-purple-50 border-purple-100">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -459,45 +414,37 @@ export function DailyEntryForm() {
           {/* Signature Section */}
           <div className="card p-6">
             <SignaturePad
-              signatureBase64={currentEntry.signatureBase64}
-              onSave={(signature) => saveSignature(currentEntry.id, signature)}
+              signatureBase64={currentEntry?.signatureBase64}
+              onSave={(signature) => currentEntry && saveSignature(currentEntry.id, signature)}
             />
           </div>
-
-          {/* PDF Export Section */}
-          {currentEntry.lines.length > 0 && (
-            <div className="card p-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900">Finalize & Export</h2>
-                  <p className="text-sm text-slate-500 mt-1">
-                    Review the document and download the official Head Start PDF form.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowPDFPreview(!showPDFPreview)}
-                  className="btn-secondary whitespace-nowrap"
-                >
-                  {showPDFPreview ? 'Hide Preview' : 'Preview PDF'}
-                </button>
-              </div>
-
-              {showPDFPreview && (
-                <div className="animate-in fade-in slide-in-from-bottom-4">
-                  <PDFPreview
-                    entries={[currentEntry]}
-                    child={currentChild}
-                    centerName={currentChild.center}
-                    teacherName={currentChild.teacher}
-                    goals={goals}
-                  />
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
+    );
+  };
+
+  return (
+    <div className="space-y-8 pb-12">
+      <Header />
+
+      {view === 'list' && (
+        <ActivityList
+          onAdd={() => { setActivityToEdit(null); setView('form'); }}
+          onEdit={(activity) => { setActivityToEdit(activity); setView('form'); }}
+          onFinalize={() => setView('finalize')}
+        />
+      )}
+
+      {view === 'form' && (
+        <ActivityForm
+          activity={activityToEdit}
+          onClose={() => setView('list')}
+        />
+      )}
+
+      {view === 'finalize' && (
+        <FinalizeSheet onClose={() => setView('list')} />
+      )}
     </div>
   );
 }

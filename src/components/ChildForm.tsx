@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useStore } from '../store';
 import type { ChildContext } from '../types';
+import { showToast } from '../App';
 
 interface ChildFormProps {
   onChildCreated: (child: ChildContext) => void;
+  onCancel: () => void;
 }
 
-export function ChildForm({ onChildCreated }: ChildFormProps) {
+export function ChildForm({ onChildCreated, onCancel }: ChildFormProps) {
   const { createChild } = useStore();
 
   const [newChildData, setNewChildData] = useState({
@@ -44,7 +46,7 @@ export function ChildForm({ onChildCreated }: ChildFormProps) {
       onChildCreated(child);
     } catch (error) {
       console.error('Failed to create child:', error);
-      // Optionally, show an error message to the user
+      showToast.error('Failed to create child profile.');
     } finally {
       setIsCreatingChild(false);
     }
@@ -52,7 +54,7 @@ export function ChildForm({ onChildCreated }: ChildFormProps) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
         <div>
           <label className="label-text">Child Name</label>
           <input
@@ -115,6 +117,13 @@ export function ChildForm({ onChildCreated }: ChildFormProps) {
         </div>
       </div>
       <div className="mt-6 flex justify-end gap-3">
+        <button
+          onClick={onCancel}
+          className="btn-secondary"
+          disabled={isCreatingChild}
+        >
+          Cancel
+        </button>
         <button
           onClick={handleCreateChild}
           className="btn-primary"

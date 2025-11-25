@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useStore } from '../store';
 import { format } from 'date-fns';
-import { X } from 'lucide-react';
+import { Mail, FileText } from 'lucide-react';
 import { PDFPreview } from './PDFPreview';
+import { Modal } from './Modal';
 import type { DailyEntry } from '../types';
 
 interface PDFExportModalProps {
@@ -39,69 +40,34 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
 
   const selectedEntries = childEntries.filter(e => selectedEntryIds.has(e.id)).sort((a, b) => a.date.localeCompare(b.date));
 
-  return (
-    <div className="card p-6 border-primary/20 ring-4 ring-primary/10 animate-in slide-in-from-top-4 duration-200">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-slate-900">Export to PDF</h3>
-        <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
-          <X size={20} />
-        </button>
-      </div>
-
-      <div className="space-y-4">
-        <div>
-          <div className="flex justify-between items-center mb-3">
-            <p className="text-sm text-slate-600">Select entries to include in PDF:</p>
+  if (showPreview && selectedEntryIds.size > 0 && currentChild) {
+    return (
+      <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 animate-in fade-in-0">
+        <div
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                <FileText size={20} className="text-indigo-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">PDF Preview</h2>
+                <p className="text-sm text-slate-500">
+                  {selectedEntries.length} {selectedEntries.length === 1 ? 'entry' : 'entries'} selected
+                </p>
+              </div>
+            </div>
             <button
-              onClick={toggleSelectAll}
-              className="text-sm text-primary hover:text-primary/90 font-medium"
+              onClick={() => setShowPreview(false)}
+              className="px-4 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg font-medium transition-colors"
             >
-              {selectedEntryIds.size === childEntries.length ? 'Deselect All' : 'Select All'}
+              ← Back to Selection
             </button>
           </div>
 
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {childEntries.map((entry) => (
-              <label
-                key={entry.id}
-                className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedEntryIds.has(entry.id)}
-                  onChange={() => toggleEntrySelection(entry.id)}
-                  className="w-4 h-4 text-primary rounded focus:ring-primary"
-                />
-                <div className="flex-1">
-                  <p className="font-medium text-slate-900">
-                    {format(new Date(entry.date), 'MMMM d, yyyy')}
-                  </p>
-                  <p className="text-sm text-slate-500">
-                    {entry.lines.length} {entry.lines.length === 1 ? 'activity' : 'activities'}
-                    {entry.signatureBase64 && ' • Signed'}
-                  </p>
-                </div>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {selectedEntryIds.size > 0 && currentChild && !showPreview && (
-          <div className="pt-4 border-t border-slate-200">
-            <p className="text-sm text-slate-600 mb-4">
-              {selectedEntryIds.size} {selectedEntryIds.size === 1 ? 'entry' : 'entries'} selected
-            </p>
-            <button
-              onClick={handleGeneratePDF}
-              className="btn-primary w-full"
-            >
-              Generate PDF
-            </button>
-          </div>
-        )}
-
-        {showPreview && selectedEntryIds.size > 0 && currentChild && (
-          <div className="pt-4 border-t border-slate-200">
+          <div className="p-6">
             <PDFPreview
               entries={selectedEntries}
               child={currentChild}
@@ -110,8 +76,101 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
               goals={goals}
             />
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Modal title="Export to PDF" onClose={onClose} size="lg">
+      <div className="space-y-5">
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <p className="text-sm text-slate-600 font-medium">Select entries to include in PDF:</p>
+            <button
+              onClick={toggleSelectAll}
+              className="text-sm text-primary hover:text-primary/90 font-semibold transition-colors"
+            >
+              {selectedEntryIds.size === childEntries.length ? 'Deselect All' : 'Select All'}
+            </button>
+          </div>
+
+          <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+            {childEntries.map((entry) => (
+              <label
+                key={entry.id}
+                className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+                  entry.emailedAt
+                    ? 'border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50'
+                    : 'border-slate-200 hover:bg-slate-50'
+                } cursor-pointer`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedEntryIds.has(entry.id)}
+                  onChange={() => toggleEntrySelection(entry.id)}
+                  className="w-4 h-4 text-primary rounded focus:ring-primary"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-slate-900">
+                      {format(new Date(entry.date), 'MMMM d, yyyy')}
+                    </p>
+                    {entry.emailedAt && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-800 rounded-full border border-emerald-300">
+                        <Mail size={12} />
+                        Sent
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-slate-500">
+                    {entry.lines.length} {entry.lines.length === 1 ? 'activity' : 'activities'}
+                    {entry.signatureBase64 && ' • Signed'}
+                    {entry.emailedAt && (
+                      <>
+                        {' • '}
+                        <span className="text-emerald-700 font-medium">
+                          Sent {format(new Date(entry.emailedAt), 'MMM d, h:mm a')}
+                        </span>
+                      </>
+                    )}
+                  </p>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {selectedEntryIds.size > 0 && (
+          <div className="pt-5 border-t border-slate-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                  <FileText size={16} className="text-indigo-600" />
+                </div>
+                <p className="text-sm font-semibold text-slate-700">
+                  {selectedEntryIds.size} {selectedEntryIds.size === 1 ? 'entry' : 'entries'} selected
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleGeneratePDF}
+              className="btn-primary w-full flex items-center justify-center gap-2"
+            >
+              <FileText size={18} />
+              Review & Generate PDF
+            </button>
+          </div>
+        )}
+
+        {selectedEntryIds.size === 0 && (
+          <div className="pt-4 border-t border-slate-200">
+            <p className="text-sm text-slate-500 text-center italic">
+              Select at least one entry to generate a PDF
+            </p>
+          </div>
         )}
       </div>
-    </div>
+    </Modal>
   );
 }

@@ -8,7 +8,6 @@ import { EntryList } from './EntryList';
 import { PDFExportModal } from './PDFExportModal';
 import { Modal } from './Modal';
 import { WelcomeScreen } from './WelcomeScreen';
-import { showToast } from '../App';
 
 /**
  * Dashboard Component
@@ -55,7 +54,6 @@ export function Dashboard() {
     if (existingEntry) {
       setCurrentEntry(existingEntry);
       setShowDatePicker(false);
-      showToast?.info('Opening existing entry for ' + date);
       return;
     }
 
@@ -64,10 +62,8 @@ export function Dashboard() {
       const entry = await createEntry(date, currentChild.id);
       setCurrentEntry(entry);
       setShowDatePicker(false);
-      showToast?.success('Activity log created for ' + date);
     } catch (error) {
       console.error('Failed to create entry:', error);
-      showToast?.error('Failed to create entry. Please try again.');
     } finally {
       setIsCreatingEntry(false);
     }
@@ -117,7 +113,6 @@ export function Dashboard() {
             onChildCreated={(child) => {
               setCurrentChild(child);
               setShowChildForm(false);
-              showToast?.success(`${child.name} has been added!`);
             }}
           />
         </Modal>

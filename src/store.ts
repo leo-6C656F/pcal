@@ -36,6 +36,7 @@ interface AppState {
   saveGoal: (goal: Goal) => Promise<void>;
   deleteGoal: (code: number) => Promise<void>;
   clearAllGoals: () => Promise<void>;
+  markEntriesAsSent: (entryIds: string[]) => Promise<void>;
 }
 
 export const useStore = create<AppState>((set, get) => ({
@@ -226,6 +227,29 @@ export const useStore = create<AppState>((set, get) => ({
   clearAllGoals: async () => {
     await db.goals.clear();
     await get().loadGoals();
+  },
+
+  markEntriesAsSent: async (entryIds) => {
+    const timestamp = Date.now();
+
+    for (const entryId of entryIds) {
+      const entry = await db.dailyEntries.get(entryId);
+      if (entry) {
+        entry.emailedAt = timestamp;
+        await db.dailyEntries.put(entry);
+      }
+    }
+
+    await get().loadEntries();
+
+    // Update current entry if it's one of the marked entries
+    const currentEntry = get().currentEntry;
+    if (currentEntry && entryIds.includes(currentEntry.id)) {
+      const updatedEntry = await db.dailyEntries.get(currentEntry.id);
+      if (updatedEntry) {
+        set({ currentEntry: updatedEntry });
+      }
+    }
   }
 }));
 

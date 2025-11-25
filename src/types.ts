@@ -23,6 +23,7 @@ export interface DailyEntry {
   signatureBase64?: string; // PNG Data URL
   aiSummary?: string;       // Generated narrative
   isLocked: boolean;
+  emailedAt?: number;       // Timestamp when PDF was emailed
 }
 
 export interface ActivityLine {

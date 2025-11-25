@@ -4,6 +4,7 @@ import { generatePDF } from '../services/pdfGenerator';
 import { printPDF } from '../utils/printPdf';
 import { emailPDF } from '../utils/emailPdf';
 import { Download, FileText, Loader2, Printer, Mail } from 'lucide-react';
+import { useStore } from '../store';
 
 interface PDFPreviewProps {
   entries: DailyEntry[];  // Support multiple entries
@@ -19,9 +20,12 @@ interface PDFPreviewProps {
  * Supports multiple daily entries on one PDF
  */
 export function PDFPreview({ entries, child, centerName, teacherName, goals }: PDFPreviewProps) {
+  const { markEntriesAsSent } = useStore();
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showEmailConfirm, setShowEmailConfirm] = useState(false);
+  const [markAsSent, setMarkAsSent] = useState(true);
 
   // Auto-generate preview on mount
   useEffect(() => {
@@ -84,13 +88,28 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
     }
   };
 
-  const handleEmailPDF = async () => {
+  const handleEmailPDF = () => {
+    setShowEmailConfirm(true);
+  };
+
+  const confirmEmailPDF = async () => {
     try {
+      setShowEmailConfirm(false);
       await emailPDF({ entries, child, centerName, teacherName, goals });
+
+      // Mark entries as sent if checkbox is checked
+      if (markAsSent) {
+        await markEntriesAsSent(entries.map(e => e.id));
+      }
     } catch (err) {
       console.error('Email error:', err);
       setError(err instanceof Error ? err.message : 'Failed to email PDF');
     }
+  };
+
+  const cancelEmailPDF = () => {
+    setShowEmailConfirm(false);
+    setMarkAsSent(true); // Reset to default
   };
 
   // Clean up blob URL on unmount
@@ -102,11 +121,73 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
     };
   }, [pdfUrl]);
 
+  // Count how many entries have already been sent
+  const alreadySentCount = entries.filter(e => e.emailedAt).length;
+  const hasAnySent = alreadySentCount > 0;
+
   return (
     <div className="space-y-4">
       {error && (
         <div className="bg-rose-50 border border-rose-200 rounded-xl p-4">
           <p className="text-sm text-rose-800">Error: {error}</p>
+        </div>
+      )}
+
+      {showEmailConfirm && (
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-5 shadow-lg">
+          <div className="flex items-start gap-3 mb-4">
+            <Mail size={24} className="text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="font-semibold text-amber-900 mb-2">
+                Confirm Email PDF
+              </h4>
+              {hasAnySent && (
+                <div className="bg-amber-100 border border-amber-300 rounded-lg p-3 mb-3">
+                  <p className="text-sm text-amber-900 font-medium mb-1">
+                    ⚠️ Warning: Some entries were already sent
+                  </p>
+                  <p className="text-xs text-amber-800">
+                    {alreadySentCount} of {entries.length} {alreadySentCount === 1 ? 'entry has' : 'entries have'} already been emailed.
+                    You can still send them again if needed.
+                  </p>
+                </div>
+              )}
+              <p className="text-sm text-amber-800 mb-4">
+                This will download the PDF and open your email client. You'll need to attach the PDF before sending.
+              </p>
+              <label className="flex items-start gap-3 p-3 bg-white rounded-lg border-2 border-amber-200 cursor-pointer hover:bg-amber-50 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={markAsSent}
+                  onChange={(e) => setMarkAsSent(e.target.checked)}
+                  className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500 mt-0.5 flex-shrink-0"
+                />
+                <div className="flex-1">
+                  <p className="font-medium text-slate-900">
+                    Mark {entries.length === 1 ? 'this entry' : 'these entries'} as sent
+                  </p>
+                  <p className="text-xs text-slate-600 mt-1">
+                    {entries.length === 1 ? 'This entry' : 'These entries'} will be tagged with a "Sent" badge and timestamp to help you avoid sending duplicates.
+                  </p>
+                </div>
+              </label>
+            </div>
+          </div>
+          <div className="flex gap-3 justify-end">
+            <button
+              onClick={cancelEmailPDF}
+              className="btn-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmEmailPDF}
+              className="btn-primary"
+            >
+              <Mail size={18} className="mr-2" />
+              Continue to Email
+            </button>
+          </div>
         </div>
       )}
 
