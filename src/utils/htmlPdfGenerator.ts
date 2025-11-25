@@ -1,5 +1,5 @@
 import type { DailyEntry, ChildContext, Goal } from '../types';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 
 /**
  * HTML-based PDF Generator
@@ -82,7 +82,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
 
   // Get date range
   const startDate = entries[0].date;
-  const monthYear = format(new Date(startDate), 'yyyy');
+  const monthYear = format(parse(startDate, 'yyyy-MM-dd', new Date()), 'yyyy');
 
   // Ensure we have exactly 6 goals (pad with empty if needed)
   const sixGoals = [...goals];
@@ -475,7 +475,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
                     const topOffset = offsets[index % offsets.length];
                     return `
                     <tr>
-                        <td>${format(new Date(activity.date), 'MM/dd/yy')}</td>
+                        <td>${format(parse(activity.date, 'yyyy-MM-dd', new Date()), 'MM/dd/yy')}</td>
                         <td>${activity.description}</td>
                         <td style="text-align: center;">${activity.goalCodes.join(', ')}</td>
                         <td>${activity.startTime}</td>

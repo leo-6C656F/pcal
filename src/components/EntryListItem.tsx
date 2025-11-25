@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { Clock, ChevronRight } from 'lucide-react';
 import type { DailyEntry } from '../types';
 
@@ -22,16 +22,16 @@ export function EntryListItem({ entry }: EntryListItemProps) {
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold ${
             entry.signatureBase64 ? 'bg-accent/10 text-accent' : 'bg-primary/10 text-primary'
           }`}>
-            {format(new Date(entry.date), 'dd')}
+            {format(parse(entry.date, 'yyyy-MM-dd', new Date()), 'dd')}
           </div>
           <div>
             <p className="font-bold text-slate-900 text-lg">
-              {format(new Date(entry.date), 'MMMM yyyy')}
+              {format(parse(entry.date, 'yyyy-MM-dd', new Date()), 'MMMM yyyy')}
             </p>
             <div className="flex items-center gap-4 mt-1">
               <span className="text-sm text-slate-500 flex items-center gap-1">
                 <Clock size={14} />
-                {format(new Date(entry.date), 'EEEE')}
+                {format(parse(entry.date, 'yyyy-MM-dd', new Date()), 'EEEE')}
               </span>
               <span className="text-sm text-slate-500 font-medium px-2 py-0.5 bg-slate-100 rounded-full">
                 {entry.lines.length} {t('entryListItem.activities')}
