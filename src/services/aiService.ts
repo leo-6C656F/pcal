@@ -1,20 +1,21 @@
-import type { ActivityLine, AIServiceConfig, AIProvider } from '../types';
+import type { ActivityLine, AIServiceConfig, AIProvider, ModelLoadingState } from '../types';
 import { GOALS } from '../constants';
+import {
+  generateLocalSummary,
+  initializeModel,
+  isModelReady,
+  preWarmModel
+} from './transformersService';
 
 /**
  * AI Service - Waterfall Logic
- * Tier 1: Browser Native AI (window.ai)
+ * Tier 1: Transformers.js (local, works offline)
  * Tier 2: User's OpenAI API Key
  * Tier 3: Deterministic Fallback
  */
 
-interface WindowWithAI extends Window {
-  ai?: {
-    createTextSession(): Promise<{
-      prompt(text: string): Promise<string>;
-    }>;
-  };
-}
+// Re-export for convenience
+export { preWarmModel, isModelReady, initializeModel };
 
 /**
  * Generate a summary paragraph from activity lines
@@ -22,17 +23,18 @@ interface WindowWithAI extends Window {
 export async function generateSummary(
   childName: string,
   lines: ActivityLine[],
-  config: AIServiceConfig = {}
+  config: AIServiceConfig = {},
+  onModelProgress?: (state: ModelLoadingState) => void
 ): Promise<{ summary: string; provider: AIProvider }> {
-  // Tier 1: Browser Native AI
+  // Tier 1: Transformers.js (Local)
   try {
-    const summary = await tryBrowserNativeAI(childName, lines);
+    const summary = await tryTransformersLocal(childName, lines, onModelProgress);
     if (summary) {
-      console.log('[AI] Used Browser Native AI');
-      return { summary, provider: 'browser-native' };
+      console.log('[AI] Used Transformers.js (local)');
+      return { summary, provider: 'transformers-local' };
     }
   } catch (error) {
-    console.log('[AI] Browser Native AI not available:', error);
+    console.log('[AI] Transformers.js not available:', error);
   }
 
   // Tier 2: OpenAI API
@@ -53,34 +55,36 @@ export async function generateSummary(
 }
 
 /**
- * Tier 1: Try Browser Native AI (Chrome's window.ai)
+ * Build the prompt for summarization
  */
-async function tryBrowserNativeAI(
-  childName: string,
-  lines: ActivityLine[]
-): Promise<string | null> {
-  const windowWithAI = window as WindowWithAI;
+function buildPrompt(childName: string, lines: ActivityLine[]): string {
+  const activitiesText = lines.map(line => {
+    const goal = GOALS.find(g => g.code === line.goalCode);
+    const activities = line.selectedActivities.join(', ') || 'activities';
+    return `- ${goal?.description || 'Development'}: ${activities} (${line.durationMinutes} min)${line.customNarrative ? ` - ${line.customNarrative}` : ''}`;
+  }).join('\n');
 
-  if (!windowWithAI.ai) {
-    return null;
+  return `Summarize these child development activities into one short paragraph in past tense for ${childName}:\n${activitiesText}`;
+}
+
+/**
+ * Tier 1: Try Transformers.js (Local Model)
+ */
+async function tryTransformersLocal(
+  childName: string,
+  lines: ActivityLine[],
+  onProgress?: (state: ModelLoadingState) => void
+): Promise<string | null> {
+  // Initialize model if needed (will use cached model if available)
+  if (!isModelReady()) {
+    const initialized = await initializeModel(onProgress);
+    if (!initialized) {
+      return null;
+    }
   }
 
-  const session = await windowWithAI.ai.createTextSession();
-  const activitiesJson = JSON.stringify(
-    lines.map(line => ({
-      goal: GOALS.find(g => g.code === line.goalCode)?.description,
-      activities: line.selectedActivities,
-      narrative: line.customNarrative,
-      duration: line.durationMinutes
-    })),
-    null,
-    2
-  );
-
-  const prompt = `Summarize these activities into one past-tense paragraph for a child development report. Child's name: ${childName}.\n\nActivities:\n${activitiesJson}`;
-
-  const result = await session.prompt(prompt);
-  return result.trim();
+  const prompt = buildPrompt(childName, lines);
+  return await generateLocalSummary(prompt);
 }
 
 /**
