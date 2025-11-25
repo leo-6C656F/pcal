@@ -12,7 +12,10 @@
     "goalsAndSetup": "目标与设置",
     "refresh": "刷新",
     "refreshed": "数据已刷新",
-    "refreshFailed": "刷新数据失败"
+    "refreshFailed": "刷新数据失败",
+    "aiModelReady": "AI 模型已就绪",
+    "loadingAI": "正在加载 AI 模型...",
+    "complete": "完成"
   },
   "common": {
     "cancel": "取消",
@@ -131,7 +134,13 @@
     "writingSummary": "正在撰写...",
     "summaryTip": "提示：点击「撰写总结」自动创建今天活动的专业描述。",
     "generatingSummary": "正在生成总结...",
-    "summaryUnavailable": "无法生成总结。请检查网络连接后重试。"
+    "summaryUnavailable": "无法生成总结。请检查网络连接后重试。",
+    "downloadModelPrompt": "下载 AI 模型以生成总结",
+    "downloadModelSize": "约 21MB 一次性下载，之后可离线使用",
+    "downloadingModel": "正在下载 AI 模型...",
+    "generateSummary": "点击生成总结",
+    "modelDownloaded": "AI 模型下载完成！现在可以生成总结了。",
+    "modelDownloadFailed": "AI 模型下载失败。请重试。"
   },
   "settings": {
     "goalsTab": "目标",

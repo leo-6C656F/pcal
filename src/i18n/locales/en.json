@@ -13,7 +13,9 @@
     "refresh": "Refresh",
     "refreshed": "Data refreshed",
     "refreshFailed": "Failed to refresh data",
-    "aiModelReady": "AI model ready"
+    "aiModelReady": "AI model ready",
+    "loadingAI": "Loading AI model...",
+    "complete": "complete"
   },
   "common": {
     "cancel": "Cancel",
@@ -133,7 +135,13 @@
     "regenerate": "Regenerate",
     "summaryTip": "Tip: Click \"Write Summary\" to automatically create a professional description of today's activities.",
     "generatingSummary": "Generating summary...",
-    "summaryUnavailable": "Summary could not be generated. Please check your connection and try again."
+    "summaryUnavailable": "Summary could not be generated. Please check your connection and try again.",
+    "downloadModelPrompt": "Download AI Model to Generate Summary",
+    "downloadModelSize": "~21MB one-time download, works offline after",
+    "downloadingModel": "Downloading AI model...",
+    "generateSummary": "Click to Generate Summary",
+    "modelDownloaded": "AI model downloaded! You can now generate summaries.",
+    "modelDownloadFailed": "Failed to download AI model. Please try again."
   },
   "settings": {
     "goalsTab": "Goals",

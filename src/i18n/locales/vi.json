@@ -12,7 +12,10 @@
     "goalsAndSetup": "Mục tiêu & Cài đặt",
     "refresh": "Làm mới",
     "refreshed": "Đã làm mới dữ liệu",
-    "refreshFailed": "Không thể làm mới dữ liệu"
+    "refreshFailed": "Không thể làm mới dữ liệu",
+    "aiModelReady": "Mô hình AI sẵn sàng",
+    "loadingAI": "Đang tải mô hình AI...",
+    "complete": "hoàn thành"
   },
   "common": {
     "cancel": "Hủy",
@@ -131,7 +134,13 @@
     "writingSummary": "Đang viết...",
     "summaryTip": "Mẹo: Nhấp \"Viết Tóm tắt\" để tự động tạo mô tả chuyên nghiệp về hoạt động hôm nay.",
     "generatingSummary": "Đang tạo tóm tắt...",
-    "summaryUnavailable": "Không thể tạo tóm tắt. Vui lòng kiểm tra kết nối và thử lại."
+    "summaryUnavailable": "Không thể tạo tóm tắt. Vui lòng kiểm tra kết nối và thử lại.",
+    "downloadModelPrompt": "Tải Mô hình AI để Tạo Tóm tắt",
+    "downloadModelSize": "~21MB tải một lần, hoạt động ngoại tuyến sau đó",
+    "downloadingModel": "Đang tải mô hình AI...",
+    "generateSummary": "Nhấn để Tạo Tóm tắt",
+    "modelDownloaded": "Đã tải mô hình AI! Bạn có thể tạo tóm tắt ngay.",
+    "modelDownloadFailed": "Không thể tải mô hình AI. Vui lòng thử lại."
   },
   "settings": {
     "goalsTab": "Mục tiêu",

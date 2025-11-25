@@ -167,45 +167,51 @@ function App() {
       {/* Toast Container */}
       <ToastContainer toasts={toast.toasts} onClose={toast.removeToast} />
 
-      {/* AI Model Loading Banner */}
-      {showModelBanner && modelLoadingState && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg animate-fade-in">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="flex-shrink-0">
-                  {modelLoadingState.isLoading ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-                  ) : (
-                    <Brain size={20} className="text-purple-200" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">
-                    {modelLoadingState.status || t('app.aiModelReady')}
-                  </p>
-                  {modelLoadingState.isLoading && modelLoadingState.progress > 0 && (
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <div className="flex-1 bg-purple-400/30 rounded-full h-1.5 overflow-hidden">
-                        <div
-                          className="h-full bg-white rounded-full transition-all duration-300"
-                          style={{ width: `${modelLoadingState.progress}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-purple-200 tabular-nums">
-                        {modelLoadingState.progress}%
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
+      {/* AI Model Loading Indicator - Small floating circle */}
+      {showModelBanner && modelLoadingState && modelLoadingState.isLoading && (
+        <div className="fixed bottom-4 right-4 z-50 animate-fade-in">
+          <div className="group relative">
+            {/* Small circular indicator */}
+            <div className="relative w-10 h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+              {/* Progress ring */}
+              <svg className="absolute inset-0 w-10 h-10 -rotate-90">
+                <circle
+                  cx="20"
+                  cy="20"
+                  r="16"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.2)"
+                  strokeWidth="3"
+                />
+                <circle
+                  cx="20"
+                  cy="20"
+                  r="16"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeDasharray={`${modelLoadingState.progress} 100`}
+                  className="transition-all duration-300"
+                />
+              </svg>
+              {/* Center icon */}
+              <Brain size={16} className="text-white relative z-10" />
+              {/* Close button on hover */}
               <button
                 onClick={() => setShowModelBanner(false)}
-                className="flex-shrink-0 p-1 hover:bg-white/10 rounded transition-colors"
+                className="absolute -top-1 -right-1 w-4 h-4 bg-slate-700 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                 aria-label={t('common.close')}
               >
-                <X size={18} />
+                <X size={10} className="text-white" />
               </button>
+            </div>
+            {/* Tooltip on hover */}
+            <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <div className="bg-slate-900 text-white text-xs px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
+                <p className="font-medium">{modelLoadingState.status || t('app.loadingAI')}</p>
+                <p className="text-slate-300 mt-0.5">{modelLoadingState.progress}% {t('app.complete')}</p>
+              </div>
             </div>
           </div>
         </div>
