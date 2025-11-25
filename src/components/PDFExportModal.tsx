@@ -88,6 +88,7 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
               centerName={currentChild.center}
               teacherName={currentChild.teacher}
               goals={goals}
+              onClose={onClose}
             />
           </div>
         </div>
