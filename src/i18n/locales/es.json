@@ -9,7 +9,10 @@
     "initializationError": "Error de Inicialización",
     "reloadApp": "Recargar Aplicación",
     "back": "Atrás",
-    "goalsAndSetup": "Metas y Configuración"
+    "goalsAndSetup": "Metas y Configuración",
+    "refresh": "Actualizar",
+    "refreshed": "Datos actualizados",
+    "refreshFailed": "Error al actualizar datos"
   },
   "common": {
     "cancel": "Cancelar",

@@ -9,7 +9,10 @@
     "initializationError": "Initialization Error",
     "reloadApp": "Reload App",
     "back": "Back",
-    "goalsAndSetup": "Goals & Setup"
+    "goalsAndSetup": "Goals & Setup",
+    "refresh": "Refresh",
+    "refreshed": "Data refreshed",
+    "refreshFailed": "Failed to refresh data"
   },
   "common": {
     "cancel": "Cancel",

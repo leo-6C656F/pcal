@@ -9,7 +9,10 @@
     "initializationError": "Lỗi Khởi tạo",
     "reloadApp": "Tải lại Ứng dụng",
     "back": "Quay lại",
-    "goalsAndSetup": "Mục tiêu & Cài đặt"
+    "goalsAndSetup": "Mục tiêu & Cài đặt",
+    "refresh": "Làm mới",
+    "refreshed": "Đã làm mới dữ liệu",
+    "refreshFailed": "Không thể làm mới dữ liệu"
   },
   "common": {
     "cancel": "Hủy",

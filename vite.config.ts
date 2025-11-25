@@ -13,12 +13,12 @@ export default defineConfig(() => {
       react(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png', '.nojekyll', 'CNAME'],
+        includeAssets: ['favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'robots.txt', 'apple-touch-icon.png', 'icon.svg', '.nojekyll', 'CNAME'],
         manifest: {
           name: 'PCAL - Parent-Child Activity Log',
           short_name: 'PCAL',
           description: '100% Offline Parent-Child Activity Tracking for Head Start Programs',
-          theme_color: '#2563eb',
+          theme_color: '#4F46E5',
           background_color: '#ffffff',
           display: 'standalone',
           start_url: base,

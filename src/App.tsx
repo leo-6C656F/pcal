@@ -8,7 +8,7 @@ import { SettingsPage } from './components/SettingsPage';
 import { ToastContainer } from './components/ToastContainer';
 import { LanguageSelector } from './components/LanguageSelector';
 import { useToast } from './hooks/useToast';
-import { ArrowLeft, Settings, BookOpenCheck } from 'lucide-react';
+import { ArrowLeft, Settings, BookOpenCheck, RefreshCw } from 'lucide-react';
 
 type View = 'dashboard' | 'entry' | 'settings';
 
@@ -25,7 +25,14 @@ function App() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<View>('dashboard');
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const toast = useToast();
+
+  // Detect if running as PWA (standalone mode)
+  const isPWA = typeof window !== 'undefined' && (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as { standalone?: boolean }).standalone === true
+  );
 
   // Make toast globally available
   showToast = toast;
@@ -103,6 +110,21 @@ function App() {
     setCurrentView('dashboard');
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await loadChildren();
+      await loadEntries();
+      await loadGoals();
+      toast.success(t('app.refreshed'));
+    } catch (error) {
+      console.error('[APP] Refresh failed:', error);
+      toast.error(t('app.refreshFailed'));
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-slate-50 font-sans">
       {/* Toast Container */}
@@ -133,6 +155,17 @@ function App() {
           </div>
 
           <div className="flex items-center gap-3">
+            {isPWA && (
+              <button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors disabled:opacity-50"
+                aria-label={t('app.refresh')}
+                title={t('app.refresh')}
+              >
+                <RefreshCw size={18} className={isRefreshing ? 'animate-spin' : ''} />
+              </button>
+            )}
             <LanguageSelector />
             {currentView === 'dashboard' && (
               <button
