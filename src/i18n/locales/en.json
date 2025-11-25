@@ -187,7 +187,8 @@
     "whatDidYouWorkOn": "What did you work on?",
     "whatDidYouWorkOnTooltip": "Pick the developmental goal you focused on during this activity. Each goal has different learning activities.",
     "whatActivities": "What activities did you do?",
-    "whatActivitiesTooltip": "Check all the activities you did together. You can select more than one!"
+    "whatActivitiesTooltip": "Check all the activities you did together. You can select more than one!",
+    "selectedActivities": "Selected activities ({{count}})"
   },
   "timeInput": {
     "durationMode": "Duration Mode",
