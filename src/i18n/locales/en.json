@@ -126,7 +126,28 @@
     "daySummaryTooltip": "This creates a written summary of all your activities for the day. Great for reports and documentation!",
     "writeSummary": "Write Summary",
     "writingSummary": "Writing...",
-    "summaryTip": "Tip: Click \"Write Summary\" to automatically create a professional description of today's activities."
+    "summaryTip": "Tip: Click \"Write Summary\" to automatically create a professional description of today's activities.",
+    "generatingSummary": "Generating summary...",
+    "summaryUnavailable": "Summary could not be generated. Please check your connection and try again."
+  },
+  "settings": {
+    "goalsTab": "Goals",
+    "childrenTab": "Manage Children"
+  },
+  "childManager": {
+    "title": "Manage Children",
+    "subtitle": "View and remove child profiles",
+    "noChildren": "No Children Added",
+    "noChildrenHint": "Add children from the dashboard to see them here.",
+    "warningTitle": "Careful - Deletion is Permanent",
+    "warningMessage": "Deleting a child will also delete all their activity logs. This action cannot be undone.",
+    "center": "Center",
+    "teacher": "Teacher",
+    "deleteChild": "Delete Child",
+    "deleteChildTitle": "Delete Child Profile?",
+    "deleteChildMessage": "Are you sure you want to delete {{name}} and all their activity logs? This action cannot be undone.",
+    "deleteChildConfirm": "Yes, Delete",
+    "childDeleted": "Child profile deleted."
   },
   "goalManager": {
     "title": "Goal Management",

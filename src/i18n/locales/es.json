@@ -126,7 +126,28 @@
     "daySummaryTooltip": "Esto crea un resumen escrito de todas sus actividades del día. ¡Excelente para informes y documentación!",
     "writeSummary": "Escribir Resumen",
     "writingSummary": "Escribiendo...",
-    "summaryTip": "Consejo: Haga clic en \"Escribir Resumen\" para crear automáticamente una descripción profesional de las actividades de hoy."
+    "summaryTip": "Consejo: Haga clic en \"Escribir Resumen\" para crear automáticamente una descripción profesional de las actividades de hoy.",
+    "generatingSummary": "Generando resumen...",
+    "summaryUnavailable": "No se pudo generar el resumen. Verifique su conexión e intente nuevamente."
+  },
+  "settings": {
+    "goalsTab": "Metas",
+    "childrenTab": "Administrar Niños"
+  },
+  "childManager": {
+    "title": "Administrar Niños",
+    "subtitle": "Ver y eliminar perfiles de niños",
+    "noChildren": "No Hay Niños Agregados",
+    "noChildrenHint": "Agregue niños desde el panel principal para verlos aquí.",
+    "warningTitle": "Cuidado - La Eliminación es Permanente",
+    "warningMessage": "Eliminar un niño también eliminará todos sus registros de actividades. Esta acción no se puede deshacer.",
+    "center": "Centro",
+    "teacher": "Maestro",
+    "deleteChild": "Eliminar Niño",
+    "deleteChildTitle": "¿Eliminar Perfil del Niño?",
+    "deleteChildMessage": "¿Está seguro de que desea eliminar a {{name}} y todos sus registros de actividades? Esta acción no se puede deshacer.",
+    "deleteChildConfirm": "Sí, Eliminar",
+    "childDeleted": "Perfil del niño eliminado."
   },
   "goalManager": {
     "title": "Gestión de Metas",

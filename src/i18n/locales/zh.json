@@ -126,7 +126,28 @@
     "daySummaryTooltip": "这将创建当天所有活动的书面总结。非常适合报告和文档！",
     "writeSummary": "撰写总结",
     "writingSummary": "正在撰写...",
-    "summaryTip": "提示：点击「撰写总结」自动创建今天活动的专业描述。"
+    "summaryTip": "提示：点击「撰写总结」自动创建今天活动的专业描述。",
+    "generatingSummary": "正在生成总结...",
+    "summaryUnavailable": "无法生成总结。请检查网络连接后重试。"
+  },
+  "settings": {
+    "goalsTab": "目标",
+    "childrenTab": "管理孩子"
+  },
+  "childManager": {
+    "title": "管理孩子",
+    "subtitle": "查看和删除孩子档案",
+    "noChildren": "还没有添加孩子",
+    "noChildrenHint": "从仪表板添加孩子后可在此查看。",
+    "warningTitle": "注意 - 删除是永久性的",
+    "warningMessage": "删除孩子也将删除其所有活动记录。此操作无法撤销。",
+    "center": "中心",
+    "teacher": "教师",
+    "deleteChild": "删除孩子",
+    "deleteChildTitle": "删除孩子档案？",
+    "deleteChildMessage": "您确定要删除 {{name}} 及其所有活动记录吗？此操作无法撤销。",
+    "deleteChildConfirm": "是的，删除",
+    "childDeleted": "孩子档案已删除。"
   },
   "goalManager": {
     "title": "目标管理",

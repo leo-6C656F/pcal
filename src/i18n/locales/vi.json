@@ -126,7 +126,28 @@
     "daySummaryTooltip": "Tạo bản tóm tắt bằng văn bản về tất cả hoạt động trong ngày. Tuyệt vời cho báo cáo và tài liệu!",
     "writeSummary": "Viết Tóm tắt",
     "writingSummary": "Đang viết...",
-    "summaryTip": "Mẹo: Nhấp \"Viết Tóm tắt\" để tự động tạo mô tả chuyên nghiệp về hoạt động hôm nay."
+    "summaryTip": "Mẹo: Nhấp \"Viết Tóm tắt\" để tự động tạo mô tả chuyên nghiệp về hoạt động hôm nay.",
+    "generatingSummary": "Đang tạo tóm tắt...",
+    "summaryUnavailable": "Không thể tạo tóm tắt. Vui lòng kiểm tra kết nối và thử lại."
+  },
+  "settings": {
+    "goalsTab": "Mục tiêu",
+    "childrenTab": "Quản lý Trẻ em"
+  },
+  "childManager": {
+    "title": "Quản lý Trẻ em",
+    "subtitle": "Xem và xóa hồ sơ trẻ em",
+    "noChildren": "Chưa Có Trẻ Nào",
+    "noChildrenHint": "Thêm trẻ từ bảng điều khiển để xem ở đây.",
+    "warningTitle": "Cẩn thận - Xóa là Vĩnh viễn",
+    "warningMessage": "Xóa trẻ cũng sẽ xóa tất cả nhật ký hoạt động của trẻ. Hành động này không thể hoàn tác.",
+    "center": "Trung tâm",
+    "teacher": "Giáo viên",
+    "deleteChild": "Xóa Trẻ",
+    "deleteChildTitle": "Xóa Hồ sơ Trẻ?",
+    "deleteChildMessage": "Bạn có chắc muốn xóa {{name}} và tất cả nhật ký hoạt động của trẻ? Hành động này không thể hoàn tác.",
+    "deleteChildConfirm": "Có, Xóa",
+    "childDeleted": "Đã xóa hồ sơ trẻ."
   },
   "goalManager": {
     "title": "Quản lý Mục tiêu",
