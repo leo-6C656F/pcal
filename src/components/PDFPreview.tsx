@@ -4,7 +4,7 @@ import type { DailyEntry, ChildContext, Goal } from '../types';
 import { generatePDF } from '../services/pdfGenerator';
 import { printPDF } from '../utils/printPdf';
 import { emailPDF } from '../utils/emailPdf';
-import { Download, FileText, Loader2, Printer, Mail } from 'lucide-react';
+import { Download, FileText, Loader2, Printer, Mail, X } from 'lucide-react';
 import { useStore } from '../store';
 
 interface PDFPreviewProps {
@@ -13,6 +13,7 @@ interface PDFPreviewProps {
   centerName: string;
   teacherName: string;
   goals: Goal[];
+  onClose?: () => void;  // Optional close handler
 }
 
 /**
@@ -20,7 +21,7 @@ interface PDFPreviewProps {
  * Generates and displays a PDF preview in an iframe
  * Supports multiple daily entries on one PDF
  */
-export function PDFPreview({ entries, child, centerName, teacherName, goals }: PDFPreviewProps) {
+export function PDFPreview({ entries, child, centerName, teacherName, goals, onClose }: PDFPreviewProps) {
   const { t } = useTranslation();
   const { markEntriesAsSent } = useStore();
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -243,7 +244,7 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
           <span className="text-slate-400 text-xs font-medium uppercase tracking-wider pl-2">
             {t('pdfPreview.documentPreview')}
           </span>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <button
               onClick={generatePreview}
               disabled={isGenerating}
@@ -260,6 +261,19 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals }: P
             >
               <Download size={16} />
             </button>
+            {onClose && (
+              <>
+                <div className="w-px h-5 bg-slate-700 mx-1" />
+                <button
+                  onClick={onClose}
+                  className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                  title={t('common.close')}
+                  aria-label="Close modal"
+                >
+                  <X size={18} />
+                </button>
+              </>
+            )}
           </div>
         </div>
 
