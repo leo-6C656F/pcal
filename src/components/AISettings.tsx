@@ -28,9 +28,16 @@ export function AISettings() {
   const [isRedownloading, setIsRedownloading] = useState(false);
   const [modelLoadingState, setModelLoadingState] = useState<ModelLoadingState | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [customPrompt, setCustomPrompt] = useState<string>('');
+  const [isEditingPrompt, setIsEditingPrompt] = useState(false);
 
   useEffect(() => {
     updateStatus();
+    // Load custom prompt from localStorage
+    const saved = localStorage.getItem('aiPromptTemplate');
+    if (saved) {
+      setCustomPrompt(saved);
+    }
   }, []);
 
   const updateStatus = async () => {
@@ -111,6 +118,27 @@ export function AISettings() {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
+
+  const handleSavePrompt = () => {
+    if (customPrompt.trim()) {
+      localStorage.setItem('aiPromptTemplate', customPrompt.trim());
+      alert(t('aiSettings.promptSaved'));
+    }
+    setIsEditingPrompt(false);
+  };
+
+  const handleResetPrompt = () => {
+    localStorage.removeItem('aiPromptTemplate');
+    setCustomPrompt('');
+    setIsEditingPrompt(false);
+    alert(t('aiSettings.promptReset'));
+  };
+
+  const defaultPrompt = `Write one concise paragraph in past tense. Use ONLY the information provided below. Do not make up or infer activities. If custom notes are provided, integrate them naturally into a well-formed sentence. Do not include child's name or time spent:
+
+{activities}
+
+Compile this into a brief, professional summary focused on what was actually done.`;
 
   return (
     <div className="space-y-6">
@@ -255,26 +283,59 @@ export function AISettings() {
         </div>
       </div>
 
-      {/* Prompt Information */}
+      {/* Prompt Editor */}
       <div className="card">
-        <h3 className="text-lg font-semibold text-slate-900 mb-3">
-          {t('aiSettings.promptTitle')}
-        </h3>
-        <div className="p-4 bg-slate-50 rounded-lg font-mono text-sm text-slate-700">
-          <p className="mb-2">
-            <strong>Prompt Template:</strong>
-          </p>
-          <code className="block whitespace-pre-wrap break-words">
-            {`Write a concise, high-level summary in past tense describing developmental progress. Focus on what skills were developed, not specific activities or durations. Activities listed are examples of what the child did:
-- [Goal]: [Activities] (Custom Notes)
-- ...
-
-Do not include the child's name or time spent. Keep it professional and focused on developmental outcomes.`}
-          </code>
-          <p className="mt-3 text-slate-600">
-            {t('aiSettings.promptDescription')}
-          </p>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-semibold text-slate-900">
+            {t('aiSettings.promptTitle')}
+          </h3>
+          <button
+            onClick={() => setIsEditingPrompt(!isEditingPrompt)}
+            className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+          >
+            {isEditingPrompt ? t('common.cancel') : t('common.edit')}
+          </button>
         </div>
+
+        {isEditingPrompt ? (
+          <div className="space-y-3">
+            <textarea
+              value={customPrompt || defaultPrompt}
+              onChange={(e) => setCustomPrompt(e.target.value)}
+              className="w-full h-64 p-3 border border-slate-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder={defaultPrompt}
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={handleSavePrompt}
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              >
+                {t('common.save')}
+              </button>
+              <button
+                onClick={handleResetPrompt}
+                className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300"
+              >
+                {t('aiSettings.resetToDefault')}
+              </button>
+            </div>
+            <p className="text-sm text-slate-600">
+              <strong>{t('aiSettings.note')}:</strong> Use <code className="bg-slate-100 px-1 rounded">{'{activities}'}</code> as a placeholder where the activity list should be inserted.
+            </p>
+          </div>
+        ) : (
+          <div className="p-4 bg-slate-50 rounded-lg">
+            <p className="mb-2 text-sm font-semibold text-slate-700">
+              {customPrompt ? t('aiSettings.customPrompt') : t('aiSettings.defaultPrompt')}:
+            </p>
+            <pre className="whitespace-pre-wrap text-sm text-slate-600 font-mono">
+              {customPrompt || defaultPrompt}
+            </pre>
+            <p className="mt-3 text-sm text-slate-600">
+              {t('aiSettings.promptDescription')}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

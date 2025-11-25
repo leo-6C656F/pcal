@@ -74,11 +74,21 @@ function buildPrompt(_childName: string, lines: ActivityLine[]): string {
     const goal = GOALS.find(g => g.code === line.goalCode);
     const activities = line.selectedActivities.join(', ') || 'activities';
     // Include custom narrative if provided for context
-    const narrative = line.customNarrative ? ` (${line.customNarrative})` : '';
+    const narrative = line.customNarrative ? ` - ${line.customNarrative}` : '';
     return `- ${goal?.description || 'Development'}: ${activities}${narrative}`;
   }).join('\n');
 
-  return `Write a concise, high-level summary in past tense describing developmental progress. Focus on what skills were developed, not specific activities or durations. Activities listed are examples of what the child did:\n${activitiesText}\n\nDo not include the child's name or time spent. Keep it professional and focused on developmental outcomes.`;
+  // Get custom prompt from localStorage or use default
+  const customPrompt = typeof window !== 'undefined'
+    ? localStorage.getItem('aiPromptTemplate')
+    : null;
+
+  if (customPrompt) {
+    return customPrompt.replace('{activities}', activitiesText);
+  }
+
+  // Default prompt
+  return `Write one concise paragraph in past tense. Use ONLY the information provided below. Do not make up or infer activities. If custom notes are provided, integrate them naturally into a well-formed sentence. Do not include child's name or time spent:\n\n${activitiesText}\n\nCompile this into a brief, professional summary focused on what was actually done.`;
 }
 
 /**
@@ -130,11 +140,11 @@ async function tryOpenAI(
       messages: [
         {
           role: 'system',
-          content: 'You are a professional early childhood education specialist who writes concise developmental summaries. Write in past tense, focus on developmental outcomes rather than specific activities or durations. Do not include child names or time spent.'
+          content: 'You are a professional early childhood education specialist. Write concise summaries in past tense using ONLY the information provided. Do not make up or infer activities. Do not include child names or time spent. If custom notes are provided, integrate them naturally.'
         },
         {
           role: 'user',
-          content: `Write a concise, high-level summary describing developmental progress. The activities listed are examples of what the child did. Focus on what skills were developed:\n\n${activitiesJson}`
+          content: `Write one brief paragraph summarizing what was actually done. Use only the provided information:\n\n${activitiesJson}`
         }
       ],
       max_tokens: 150
@@ -154,7 +164,7 @@ async function tryOpenAI(
  */
 function generateDeterministicSummary(_childName: string, lines: ActivityLine[]): string {
   if (lines.length === 0) {
-    return 'Engaged in developmental activities today.';
+    return 'Engaged in developmental activities.';
   }
 
   const parts: string[] = [];
@@ -165,17 +175,22 @@ function generateDeterministicSummary(_childName: string, lines: ActivityLine[])
 
     if (!goal) continue;
 
-    const goalDesc = goal.description.toLowerCase();
+    // Use actual activities selected
+    const activities = line.selectedActivities.length > 0
+      ? line.selectedActivities.join(' and ')
+      : 'activities';
+
+    // Include custom narrative if provided
+    const narrative = line.customNarrative
+      ? ` (${line.customNarrative})`
+      : '';
 
     if (i === 0) {
-      parts.push(`Focused on ${goalDesc}`);
-    } else if (i === lines.length - 1) {
-      parts.push(`also worked on ${goalDesc}`);
+      parts.push(`Worked on ${activities}${narrative}`);
     } else {
-      parts.push(`developed skills in ${goalDesc}`);
+      parts.push(`${activities}${narrative}`);
     }
   }
 
-  const narrative = parts.join(', ') + '.';
-  return `${narrative} Made progress across multiple developmental areas.`;
+  return parts.join(', ') + '.';
 }

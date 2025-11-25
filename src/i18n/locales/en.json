@@ -163,8 +163,13 @@
     "modelUnloaded": "Model unloaded from memory. It will reload automatically when needed.",
     "note": "Note",
     "noteText": "The AI model is downloaded once and cached in your browser. It works completely offline after the initial download. The model is approximately 21MB.",
-    "promptTitle": "Prompt Information",
-    "promptDescription": "This is the prompt template used to generate summaries from your activity logs. The AI model processes this locally without sending data to any server."
+    "promptTitle": "AI Prompt Template",
+    "promptDescription": "This is the prompt template used to generate summaries from your activity logs. The AI model processes this locally without sending data to any server.",
+    "customPrompt": "Custom Prompt",
+    "defaultPrompt": "Default Prompt",
+    "resetToDefault": "Reset to Default",
+    "promptSaved": "Custom prompt saved successfully!",
+    "promptReset": "Prompt reset to default."
   },
   "childManager": {
     "title": "Manage Children",
