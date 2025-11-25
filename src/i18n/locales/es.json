@@ -229,6 +229,11 @@
     "summaryGenerated": "¡Resumen de IA generado exitosamente!",
     "summaryFailed": "Error al generar resumen. Por favor intente de nuevo."
   },
+  "pullToRefresh": {
+    "pull": "Desliza para actualizar",
+    "release": "Suelta para actualizar",
+    "refreshing": "Actualizando..."
+  },
   "pdfPreview": {
     "emailSubject": "Asunto del Correo",
     "confirmEmailPdf": "Confirmar Envío de PDF",

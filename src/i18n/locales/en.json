@@ -229,6 +229,11 @@
     "summaryGenerated": "AI summary generated successfully!",
     "summaryFailed": "Failed to generate summary. Please try again."
   },
+  "pullToRefresh": {
+    "pull": "Pull to refresh",
+    "release": "Release to refresh",
+    "refreshing": "Refreshing..."
+  },
   "pdfPreview": {
     "emailSubject": "Email Subject",
     "confirmEmailPdf": "Confirm Email PDF",
