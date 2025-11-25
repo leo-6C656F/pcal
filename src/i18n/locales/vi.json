@@ -187,7 +187,8 @@
     "whatDidYouWorkOn": "Bạn đã làm gì?",
     "whatDidYouWorkOnTooltip": "Chọn mục tiêu phát triển bạn tập trung trong hoạt động này. Mỗi mục tiêu có các hoạt động học tập khác nhau.",
     "whatActivities": "Bạn đã làm hoạt động gì?",
-    "whatActivitiesTooltip": "Đánh dấu tất cả hoạt động bạn đã làm cùng nhau. Bạn có thể chọn nhiều hơn một!"
+    "whatActivitiesTooltip": "Đánh dấu tất cả hoạt động bạn đã làm cùng nhau. Bạn có thể chọn nhiều hơn một!",
+    "selectedActivities": "Hoạt động đã chọn ({{count}})"
   },
   "timeInput": {
     "durationMode": "Chế độ Thời lượng",

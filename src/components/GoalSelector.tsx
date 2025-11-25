@@ -13,7 +13,9 @@ interface GoalSelectorProps {
 
 /**
  * GoalSelector Component
- * Allows user to select a goal and associated activities from custom goals
+ * Smart layout showing all goals and activities in a grid
+ * - Desktop: 2-column grid with goals and nested activities
+ * - Mobile: Single column, stacked layout
  */
 export function GoalSelector({
   selectedGoalCode,
@@ -23,23 +25,12 @@ export function GoalSelector({
 }: GoalSelectorProps) {
   const { t } = useTranslation();
   const goals = useStore(state => state.goals);
-  const selectedGoal = goals.find(g => g.code === selectedGoalCode);
 
   const handleActivityToggle = (activity: string) => {
-    console.log('=== ACTIVITY TOGGLE ===');
-    console.log('Activity:', activity);
-    console.log('Current selectedActivities:', selectedActivities);
-    console.log('Selected Goal Code:', selectedGoalCode);
-    console.log('Selected Goal:', selectedGoal);
-
     if (selectedActivities.includes(activity)) {
-      const newActivities = selectedActivities.filter(a => a !== activity);
-      console.log('Removing activity, new list:', newActivities);
-      onActivitiesChange(newActivities);
+      onActivitiesChange(selectedActivities.filter(a => a !== activity));
     } else {
-      const newActivities = [...selectedActivities, activity];
-      console.log('Adding activity, new list:', newActivities);
-      onActivitiesChange(newActivities);
+      onActivitiesChange([...selectedActivities, activity]);
     }
   };
 
@@ -54,93 +45,125 @@ export function GoalSelector({
   }
 
   return (
-    <div className="space-y-5">
-      {/* Goal Selection - Radio Buttons with Color Coding */}
-      <div>
-        <label className="label-text mb-3 flex items-center gap-2">
-          <Target size={16} className="text-indigo-600" />
-          {t('goalSelector.whatDidYouWorkOn')}
-          <HelpTooltip content={t('goalSelector.whatDidYouWorkOnTooltip')} />
-        </label>
-        <div className="space-y-3">
-          {goals.map(goal => {
-            const isSelected = selectedGoalCode === goal.code;
-            const colors = getGoalColors(goal.code);
-            return (
-              <label
-                key={goal.code}
-                className={`flex items-start gap-3 p-4 rounded-xl cursor-pointer border-2 transition-all duration-200 ${
-                  isSelected
-                    ? `${colors.bg} ${colors.border} shadow-sm`
-                    : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="goal"
-                  value={goal.code}
-                  checked={isSelected}
-                  onChange={(e) => {
-                    onGoalChange(parseInt(e.target.value));
-                    onActivitiesChange([]); // Reset activities when goal changes
-                  }}
-                  className="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500"
-                />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl">{getGoalIcon(goal.code)}</span>
-                    <span className={`font-semibold ${isSelected ? colors.text : 'text-slate-700'}`}>
-                      {t('common.goal')} {goal.code}
-                    </span>
-                  </div>
-                  <p className={`text-sm leading-relaxed ${isSelected ? colors.text : 'text-slate-600'}`}>
-                    {goal.description}
-                  </p>
-                </div>
-              </label>
-            );
-          })}
-        </div>
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        <Target size={16} className="text-indigo-600" />
+        <span className="label-text">{t('goalSelector.whatDidYouWorkOn')}</span>
+        <HelpTooltip content={t('goalSelector.whatDidYouWorkOnTooltip')} />
       </div>
 
-      {/* Activity Selection - Checkbox based */}
-      {selectedGoal && selectedGoal.activities.length > 0 && (
-        <div>
-          <div className="label-text mb-3 flex items-center gap-2">
-            ✅ {t('goalSelector.whatActivities')}
-            <HelpTooltip content={t('goalSelector.whatActivitiesTooltip')} />
-          </div>
-          <div className="space-y-2.5">
-            {selectedGoal.activities.map((activity, index) => {
-              const isSelected = selectedActivities.includes(activity);
-              return (
-                <label
-                  key={index}
-                  className={`flex items-center gap-4 p-4 rounded-xl cursor-pointer border-2 transition-all duration-200 min-h-[52px] ${
-                    isSelected
-                      ? 'bg-indigo-50 border-indigo-400 shadow-sm'
-                      : 'bg-white border-slate-200 hover:border-indigo-200 hover:shadow-sm'
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => handleActivityToggle(activity)}
-                    className="sr-only"
-                  />
-                  <div className="flex-shrink-0">
-                    {isSelected ? (
-                      <CheckCircle2 size={24} className="text-indigo-600" />
-                    ) : (
-                      <Circle size={24} className="text-slate-300" />
-                    )}
-                  </div>
-                  <span className={`text-base flex-1 ${isSelected ? 'text-indigo-900 font-medium' : 'text-slate-700'}`}>
-                    {activity}
+      {/* Smart Grid Layout - All Goals Visible */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {goals.map(goal => {
+          const isSelected = selectedGoalCode === goal.code;
+          const colors = getGoalColors(goal.code);
+          const hasActivities = goal.activities.length > 0;
+
+          return (
+            <div
+              key={goal.code}
+              className={`rounded-xl border-2 transition-all duration-200 overflow-hidden ${
+                isSelected
+                  ? `${colors.border} shadow-md ring-2 ring-offset-1 ${colors.border.replace('border-', 'ring-')}`
+                  : 'border-slate-200 hover:border-slate-300 hover:shadow-sm'
+              }`}
+            >
+              {/* Goal Header - Clickable to select */}
+              <button
+                type="button"
+                onClick={() => {
+                  onGoalChange(goal.code);
+                  onActivitiesChange([]); // Reset activities when goal changes
+                }}
+                className={`w-full p-3 text-left transition-colors ${
+                  isSelected ? colors.bg : 'bg-white hover:bg-slate-50'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{getGoalIcon(goal.code)}</span>
+                  <span className={`font-semibold text-sm ${isSelected ? colors.text : 'text-slate-700'}`}>
+                    {t('common.goal')} {goal.code}
                   </span>
-                </label>
-              );
-            })}
+                  {isSelected && (
+                    <CheckCircle2 size={16} className={colors.icon} />
+                  )}
+                </div>
+                <p className={`text-xs mt-1 line-clamp-2 ${isSelected ? colors.text : 'text-slate-500'}`}>
+                  {goal.description}
+                </p>
+              </button>
+
+              {/* Activities - Always visible, but only interactive when goal is selected */}
+              {hasActivities && (
+                <div className={`border-t ${isSelected ? colors.border : 'border-slate-100'}`}>
+                  <div className={`p-2 space-y-1 ${isSelected ? 'bg-white/80' : 'bg-slate-50/50'}`}>
+                    {goal.activities.map((activity, index) => {
+                      const isActivitySelected = isSelected && selectedActivities.includes(activity);
+                      const isInteractive = isSelected;
+
+                      return (
+                        <label
+                          key={index}
+                          className={`flex items-center gap-2 p-2 rounded-lg text-sm transition-all ${
+                            isInteractive
+                              ? 'cursor-pointer hover:bg-white'
+                              : 'cursor-default opacity-60'
+                          } ${
+                            isActivitySelected
+                              ? `${colors.bg} ${colors.border} border`
+                              : 'border border-transparent'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isActivitySelected}
+                            onChange={() => isInteractive && handleActivityToggle(activity)}
+                            disabled={!isInteractive}
+                            className="sr-only"
+                          />
+                          <div className="flex-shrink-0">
+                            {isActivitySelected ? (
+                              <CheckCircle2 size={18} className={colors.icon} />
+                            ) : (
+                              <Circle size={18} className={isInteractive ? 'text-slate-300' : 'text-slate-200'} />
+                            )}
+                          </div>
+                          <span className={`flex-1 ${
+                            isActivitySelected
+                              ? `${colors.text} font-medium`
+                              : isInteractive
+                                ? 'text-slate-700'
+                                : 'text-slate-400'
+                          }`}>
+                            {activity}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Selected activities summary */}
+      {selectedActivities.length > 0 && (
+        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+          <p className="text-xs font-medium text-indigo-700 mb-1">
+            ✅ {t('goalSelector.selectedActivities', { count: selectedActivities.length })}
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {selectedActivities.map((activity, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-indigo-100 text-indigo-800"
+              >
+                {activity}
+              </span>
+            ))}
           </div>
         </div>
       )}

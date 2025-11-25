@@ -187,7 +187,8 @@
     "whatDidYouWorkOn": "¿En qué trabajó?",
     "whatDidYouWorkOnTooltip": "Elija la meta de desarrollo en la que se enfocó durante esta actividad. Cada meta tiene diferentes actividades de aprendizaje.",
     "whatActivities": "¿Qué actividades hizo?",
-    "whatActivitiesTooltip": "¡Marque todas las actividades que hicieron juntos. Puede seleccionar más de una!"
+    "whatActivitiesTooltip": "¡Marque todas las actividades que hicieron juntos. Puede seleccionar más de una!",
+    "selectedActivities": "Actividades seleccionadas ({{count}})"
   },
   "timeInput": {
     "durationMode": "Modo Duración",

@@ -187,7 +187,8 @@
     "whatDidYouWorkOn": "你们做了什么？",
     "whatDidYouWorkOnTooltip": "选择您在此活动中重点关注的发展目标。每个目标都有不同的学习活动。",
     "whatActivities": "你们做了什么活动？",
-    "whatActivitiesTooltip": "勾选你们一起做的所有活动。您可以选择多个！"
+    "whatActivitiesTooltip": "勾选你们一起做的所有活动。您可以选择多个！",
+    "selectedActivities": "已选活动 ({{count}})"
   },
   "timeInput": {
     "durationMode": "时长模式",
