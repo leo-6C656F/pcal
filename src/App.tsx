@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from './store';
 import { initializeDatabase } from './services/journalReplay';
@@ -14,6 +14,12 @@ import { ArrowLeft, Settings, BookOpenCheck, RefreshCw, Brain, X } from 'lucide-
 
 type View = 'dashboard' | 'entry' | 'settings';
 
+// Navigation state for browser history
+interface NavState {
+  view: View;
+  subView?: 'list' | 'form' | 'finalize';
+}
+
 // Create a toast context to share across the app
 export let showToast: ReturnType<typeof useToast>;
 
@@ -27,10 +33,14 @@ function App() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<View>('dashboard');
+  const [entrySubView, setEntrySubView] = useState<'list' | 'form' | 'finalize'>('list');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [modelLoadingState, setModelLoadingState] = useState<ModelLoadingState | null>(null);
   const [showModelBanner, setShowModelBanner] = useState(false);
   const toast = useToast();
+
+  // Track if we're handling a popstate event to avoid pushing duplicate states
+  const [isPopstateHandling, setIsPopstateHandling] = useState(false);
 
   // Detect if running as PWA (standalone mode)
   const isPWA = typeof window !== 'undefined' && (
@@ -73,6 +83,70 @@ function App() {
       setCurrentView('dashboard');
     }
   }, [currentEntry]);
+
+  // Initialize browser history state on first load
+  useEffect(() => {
+    // Set initial state if there's no state yet
+    if (!window.history.state?.view) {
+      window.history.replaceState({ view: 'dashboard' } as NavState, '');
+    }
+  }, []);
+
+  // Push history state when view changes (but not when handling popstate)
+  useEffect(() => {
+    if (isPopstateHandling) return;
+
+    const currentState = window.history.state as NavState | null;
+    const newState: NavState = {
+      view: currentView,
+      subView: currentView === 'entry' ? entrySubView : undefined
+    };
+
+    // Only push if the state actually changed
+    if (currentState?.view !== newState.view ||
+        (currentView === 'entry' && currentState?.subView !== newState.subView)) {
+      window.history.pushState(newState, '');
+    }
+  }, [currentView, entrySubView, isPopstateHandling]);
+
+  // Handle browser back button
+  const handlePopState = useCallback((event: PopStateEvent) => {
+    setIsPopstateHandling(true);
+    const state = event.state as NavState | null;
+
+    if (!state) {
+      // No state means we're at the initial page, go to dashboard
+      setCurrentEntry(null);
+      setCurrentView('dashboard');
+      setEntrySubView('list');
+    } else {
+      // Navigate to the state's view
+      if (state.view === 'dashboard') {
+        setCurrentEntry(null);
+        setCurrentView('dashboard');
+        setEntrySubView('list');
+      } else if (state.view === 'entry') {
+        setCurrentView('entry');
+        setEntrySubView(state.subView || 'list');
+      } else if (state.view === 'settings') {
+        setCurrentView('settings');
+      }
+    }
+
+    // Reset the flag after a short delay to allow state updates to complete
+    setTimeout(() => setIsPopstateHandling(false), 0);
+  }, [setCurrentEntry]);
+
+  // Listen for browser back/forward button
+  useEffect(() => {
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [handlePopState]);
+
+  // Callback for DailyEntryForm to update sub-view state
+  const handleEntrySubViewChange = useCallback((subView: 'list' | 'form' | 'finalize') => {
+    setEntrySubView(subView);
+  }, []);
 
   // Pre-warm AI model after app initializes
   useEffect(() => {
@@ -271,7 +345,12 @@ function App() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="animate-fade-in">
           {currentView === 'dashboard' && <Dashboard />}
-          {currentView === 'entry' && <DailyEntryForm />}
+          {currentView === 'entry' && (
+            <DailyEntryForm
+              subView={entrySubView}
+              onSubViewChange={handleEntrySubViewChange}
+            />
+          )}
           {currentView === 'settings' && <SettingsPage />}
         </div>
       </main>
