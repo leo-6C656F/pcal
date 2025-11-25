@@ -7,7 +7,7 @@ import { SignaturePad } from './SignaturePad';
 import { ConfirmDialog } from './ConfirmDialog';
 import { HelpTooltip } from './HelpTooltip';
 import type { ActivityLine, ModelLoadingState } from '../types';
-import { Trash2, Plus, Sparkles, Clock, BookOpen, Edit3, ArrowLeft, CheckCircle, RefreshCw, Download, Brain } from 'lucide-react';
+import { Trash2, Plus, Sparkles, Clock, BookOpen, Edit3, ArrowLeft, CheckCircle, RefreshCw, Download } from 'lucide-react';
 import { getGoalColors, getGoalIcon } from '../utils/goalColors';
 import { showToast } from '../App';
 import { isModelReady, initializeModel } from '../services/aiService';
