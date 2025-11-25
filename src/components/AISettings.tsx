@@ -211,18 +211,20 @@ Compile this into a brief, professional summary focused on what was actually don
           </div>
         </div>
 
-        {/* Loading Progress */}
+        {/* Loading Progress - Compact Inline */}
         {modelLoadingState?.isLoading && (
-          <div className="mb-4 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-            <div className="mb-2 flex items-center justify-between text-sm">
-              <span className="text-indigo-900 font-medium">{modelLoadingState.status}</span>
-              <span className="text-indigo-700">{modelLoadingState.progress}%</span>
-            </div>
-            <div className="w-full bg-indigo-200 rounded-full h-2">
-              <div
-                className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${modelLoadingState.progress}%` }}
-              />
+          <div className="mb-3 flex items-center gap-3 p-2 bg-indigo-50 border border-indigo-200 rounded-lg">
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-indigo-900 font-medium">{modelLoadingState.status}</span>
+                <span className="text-xs text-indigo-700">{modelLoadingState.progress}%</span>
+              </div>
+              <div className="w-full bg-indigo-200 rounded-full h-1.5">
+                <div
+                  className="bg-indigo-600 h-1.5 rounded-full transition-all duration-300"
+                  style={{ width: `${modelLoadingState.progress}%` }}
+                />
+              </div>
             </div>
           </div>
         )}
