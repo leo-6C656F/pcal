@@ -230,6 +230,7 @@
     "summaryFailed": "Error al generar resumen. Por favor intente de nuevo."
   },
   "pdfPreview": {
+    "emailSubject": "Asunto del Correo",
     "confirmEmailPdf": "Confirmar Envío de PDF",
     "warningAlreadySent": "Advertencia: Algunas entradas ya fueron enviadas",
     "alreadySentCount": "{{sent}} de {{total}} entradas ya han sido enviadas por correo.",

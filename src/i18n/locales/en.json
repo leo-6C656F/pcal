@@ -230,6 +230,7 @@
     "summaryFailed": "Failed to generate summary. Please try again."
   },
   "pdfPreview": {
+    "emailSubject": "Email Subject",
     "confirmEmailPdf": "Confirm Email PDF",
     "warningAlreadySent": "Warning: Some entries were already sent",
     "alreadySentCount": "{{sent}} of {{total}} entries have already been emailed.",

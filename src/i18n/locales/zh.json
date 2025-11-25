@@ -230,6 +230,7 @@
     "summaryFailed": "生成总结失败。请重试。"
   },
   "pdfPreview": {
+    "emailSubject": "邮件主题",
     "confirmEmailPdf": "确认发送 PDF 邮件",
     "warningAlreadySent": "警告：部分条目已发送",
     "alreadySentCount": "{{total}} 个条目中有 {{sent}} 个已通过邮件发送。",

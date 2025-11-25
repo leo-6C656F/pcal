@@ -230,6 +230,7 @@
     "summaryFailed": "Không thể tạo tóm tắt. Vui lòng thử lại."
   },
   "pdfPreview": {
+    "emailSubject": "Tiêu đề Email",
     "confirmEmailPdf": "Xác nhận Gửi PDF qua Email",
     "warningAlreadySent": "Cảnh báo: Một số mục đã được gửi",
     "alreadySentCount": "{{sent}} trong {{total}} mục đã được gửi qua email.",
