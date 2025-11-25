@@ -132,7 +132,8 @@
   },
   "settings": {
     "goalsTab": "Mục tiêu",
-    "childrenTab": "Quản lý Trẻ em"
+    "childrenTab": "Quản lý Trẻ em",
+    "dataTab": "Dữ liệu"
   },
   "childManager": {
     "title": "Quản lý Trẻ em",
@@ -251,5 +252,41 @@
     "emailPdf": "Gửi PDF qua Email",
     "printToPdf": "In thành PDF",
     "downloadPdf": "Tải xuống PDF"
+  },
+  "dataManager": {
+    "title": "Quản lý Dữ liệu",
+    "subtitle": "Xuất và nhập dữ liệu PCAL của bạn",
+    "currentData": "Dữ liệu Hiện tại",
+    "children": "Trẻ em",
+    "entries": "Mục",
+    "goals": "Mục tiêu",
+    "events": "Sự kiện",
+    "exportTitle": "Xuất Dữ liệu",
+    "exportDescription": "Tải xuống tệp sao lưu chứa tất cả trẻ em, nhật ký hoạt động, mục tiêu và sự kiện. Giữ tệp này an toàn để khôi phục dữ liệu sau này.",
+    "exportButton": "Xuất Bản sao lưu",
+    "exporting": "Đang xuất...",
+    "exportSuccess": "Tải xuống tệp sao lưu thành công!",
+    "exportError": "Không thể xuất dữ liệu. Vui lòng thử lại.",
+    "importTitle": "Nhập Dữ liệu",
+    "importDescription": "Khôi phục dữ liệu từ tệp sao lưu đã xuất trước đó.",
+    "selectFile": "Chọn Tệp Sao lưu",
+    "invalidFile": "Tệp Sao lưu Không hợp lệ",
+    "validFile": "Tệp Sao lưu Hợp lệ",
+    "exportedOn": "Xuất vào",
+    "tryAgain": "Thử tệp khác",
+    "importModeLabel": "Bạn muốn nhập như thế nào?",
+    "mergeMode": "Gộp với dữ liệu hiện có",
+    "mergeModeDescription": "Thêm các bản ghi mới từ bản sao lưu trong khi giữ dữ liệu hiện tại. Các bản ghi trùng lặp sẽ bị bỏ qua.",
+    "replaceMode": "Thay thế tất cả dữ liệu",
+    "replaceModeDescription": "Xóa tất cả dữ liệu hiện tại và thay thế bằng bản sao lưu. Sử dụng điều này để khôi phục hoàn toàn.",
+    "replaceWarning": "Cảnh báo: Điều này sẽ xóa vĩnh viễn tất cả dữ liệu hiện tại của bạn và thay thế bằng nội dung tệp sao lưu.",
+    "mergeData": "Gộp Dữ liệu",
+    "replaceData": "Thay thế Tất cả Dữ liệu",
+    "importing": "Đang nhập...",
+    "importError": "Không thể nhập dữ liệu. Vui lòng thử lại.",
+    "confirmMergeTitle": "Xác nhận Gộp",
+    "confirmMergeMessage": "Điều này sẽ thêm các bản ghi mới từ tệp sao lưu trong khi giữ dữ liệu hiện có. Tiếp tục?",
+    "confirmReplaceTitle": "Xác nhận Thay thế Tất cả",
+    "confirmReplaceMessage": "Điều này sẽ xóa vĩnh viễn TẤT CẢ dữ liệu hiện tại và thay thế bằng tệp sao lưu. Hành động này không thể hoàn tác. Bạn có chắc không?"
   }
 }

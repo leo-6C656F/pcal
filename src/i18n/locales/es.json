@@ -132,7 +132,8 @@
   },
   "settings": {
     "goalsTab": "Metas",
-    "childrenTab": "Administrar Niños"
+    "childrenTab": "Administrar Niños",
+    "dataTab": "Datos"
   },
   "childManager": {
     "title": "Administrar Niños",
@@ -251,5 +252,41 @@
     "emailPdf": "Enviar PDF por Correo",
     "printToPdf": "Imprimir a PDF",
     "downloadPdf": "Descargar PDF"
+  },
+  "dataManager": {
+    "title": "Gestión de Datos",
+    "subtitle": "Exporte e importe sus datos de PCAL",
+    "currentData": "Datos Actuales",
+    "children": "Niños",
+    "entries": "Entradas",
+    "goals": "Metas",
+    "events": "Eventos",
+    "exportTitle": "Exportar Datos",
+    "exportDescription": "Descargue un archivo de respaldo con todos sus niños, registros de actividades, metas y eventos. Guarde este archivo para restaurar sus datos más tarde.",
+    "exportButton": "Exportar Respaldo",
+    "exporting": "Exportando...",
+    "exportSuccess": "¡Archivo de respaldo descargado exitosamente!",
+    "exportError": "Error al exportar datos. Por favor intente de nuevo.",
+    "importTitle": "Importar Datos",
+    "importDescription": "Restaure sus datos desde un archivo de respaldo exportado anteriormente.",
+    "selectFile": "Seleccionar Archivo de Respaldo",
+    "invalidFile": "Archivo de Respaldo Inválido",
+    "validFile": "Archivo de Respaldo Válido",
+    "exportedOn": "Exportado el",
+    "tryAgain": "Intentar con otro archivo",
+    "importModeLabel": "¿Cómo desea importar?",
+    "mergeMode": "Combinar con datos existentes",
+    "mergeModeDescription": "Agregar nuevos registros del respaldo manteniendo sus datos actuales. Los registros duplicados serán omitidos.",
+    "replaceMode": "Reemplazar todos los datos",
+    "replaceModeDescription": "Eliminar todos los datos actuales y reemplazarlos con el respaldo. Use esto para una restauración completa.",
+    "replaceWarning": "Advertencia: Esto eliminará permanentemente todos sus datos actuales y los reemplazará con el contenido del archivo de respaldo.",
+    "mergeData": "Combinar Datos",
+    "replaceData": "Reemplazar Todos los Datos",
+    "importing": "Importando...",
+    "importError": "Error al importar datos. Por favor intente de nuevo.",
+    "confirmMergeTitle": "Confirmar Combinación",
+    "confirmMergeMessage": "Esto agregará nuevos registros del archivo de respaldo manteniendo sus datos existentes. ¿Continuar?",
+    "confirmReplaceTitle": "Confirmar Reemplazo Total",
+    "confirmReplaceMessage": "Esto eliminará permanentemente TODOS sus datos actuales y los reemplazará con el archivo de respaldo. Esta acción no se puede deshacer. ¿Está seguro?"
   }
 }

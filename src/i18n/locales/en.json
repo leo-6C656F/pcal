@@ -132,7 +132,8 @@
   },
   "settings": {
     "goalsTab": "Goals",
-    "childrenTab": "Manage Children"
+    "childrenTab": "Manage Children",
+    "dataTab": "Data"
   },
   "childManager": {
     "title": "Manage Children",
@@ -251,5 +252,41 @@
     "emailPdf": "Email PDF",
     "printToPdf": "Print to PDF",
     "downloadPdf": "Download PDF"
+  },
+  "dataManager": {
+    "title": "Data Management",
+    "subtitle": "Export and import your PCAL data",
+    "currentData": "Current Data",
+    "children": "Children",
+    "entries": "Entries",
+    "goals": "Goals",
+    "events": "Events",
+    "exportTitle": "Export Data",
+    "exportDescription": "Download a backup file containing all your children, activity logs, goals, and journal events. Keep this file safe to restore your data later.",
+    "exportButton": "Export Backup",
+    "exporting": "Exporting...",
+    "exportSuccess": "Backup file downloaded successfully!",
+    "exportError": "Failed to export data. Please try again.",
+    "importTitle": "Import Data",
+    "importDescription": "Restore your data from a previously exported backup file.",
+    "selectFile": "Select Backup File",
+    "invalidFile": "Invalid Backup File",
+    "validFile": "Valid Backup File",
+    "exportedOn": "Exported on",
+    "tryAgain": "Try another file",
+    "importModeLabel": "How would you like to import?",
+    "mergeMode": "Merge with existing data",
+    "mergeModeDescription": "Add new records from the backup while keeping your current data. Duplicate records will be skipped.",
+    "replaceMode": "Replace all data",
+    "replaceModeDescription": "Delete all current data and replace it with the backup. Use this for a complete restore.",
+    "replaceWarning": "Warning: This will permanently delete all your current data and replace it with the backup file contents.",
+    "mergeData": "Merge Data",
+    "replaceData": "Replace All Data",
+    "importing": "Importing...",
+    "importError": "Failed to import data. Please try again.",
+    "confirmMergeTitle": "Confirm Merge",
+    "confirmMergeMessage": "This will add new records from the backup file while keeping your existing data. Proceed?",
+    "confirmReplaceTitle": "Confirm Replace All",
+    "confirmReplaceMessage": "This will permanently delete ALL your current data and replace it with the backup file. This action cannot be undone. Are you sure?"
   }
 }
