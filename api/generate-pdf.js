@@ -65,10 +65,11 @@ export default async function handler(req, res) {
 
     const page = await browser.newPage();
 
-    // Set viewport to match letter size landscape
+    // Set viewport with large height to prevent content overflow during rendering
+    // This ensures each page-container renders fully before PDF pagination
     await page.setViewport({
       width: 1227, // Matches our HTML container width
-      height: 800,
+      height: 1600, // Tall enough to fit full page content
       deviceScaleFactor: 2 // High DPI
     });
 
@@ -93,6 +94,23 @@ export default async function handler(req, res) {
         });
       }));
     });
+
+    // Debug: Check page containers and their dimensions
+    const pageInfo = await page.evaluate(() => {
+      const containers = document.querySelectorAll('.page-container');
+      return {
+        containerCount: containers.length,
+        containers: Array.from(containers).map((c, idx) => ({
+          index: idx,
+          width: c.offsetWidth,
+          height: c.offsetHeight,
+          hasLogo: c.querySelector('img.logo-image') !== null,
+          logoSrc: c.querySelector('img.logo-image')?.src?.substring(0, 50) + '...'
+        }))
+      };
+    });
+    console.log('Page containers found:', pageInfo.containerCount);
+    console.log('Page container details:', JSON.stringify(pageInfo.containers, null, 2));
 
     // Debug: Check if logo images are present and loaded
     const imageInfo = await page.evaluate(() => {
