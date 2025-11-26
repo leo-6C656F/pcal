@@ -1,9 +1,9 @@
 /**
- * Authentication utility for Vercel API routes (CommonJS version for Node.js runtime)
+ * Authentication utility for Vercel API routes (ES Module version for Node.js runtime)
  * Validates Clerk session tokens using official Clerk backend SDK
  */
 
-const { verifyToken } = require('@clerk/backend');
+import { verifyToken } from '@clerk/backend';
 
 /**
  * Verify Clerk session token from Authorization header
