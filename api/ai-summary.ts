@@ -24,6 +24,9 @@ interface AISettings {
   temperature?: number;
   topP?: number;
   doSample?: boolean;
+  frequencyPenalty?: number;
+  presencePenalty?: number;
+  systemMessage?: string;
 }
 
 interface RequestBody {
@@ -69,15 +72,26 @@ export default async function handler(req: Request) {
       );
     }
 
+    // Build messages array
+    const messages: Array<{ role: string; content: string }> = [];
+
+    // Add system message if provided
+    if (settings.systemMessage && settings.systemMessage.trim()) {
+      messages.push({
+        role: 'system',
+        content: settings.systemMessage.trim()
+      });
+    }
+
+    messages.push({
+      role: 'user',
+      content: prompt
+    });
+
     // Build request body with settings
     const requestBody: Record<string, unknown> = {
       model: settings.model || 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
+      messages: messages,
       max_tokens: settings.maxNewTokens || 150
     };
 
@@ -87,6 +101,14 @@ export default async function handler(req: Request) {
       requestBody.top_p = settings.topP || 0.9;
     } else {
       requestBody.temperature = 0; // Greedy decoding
+    }
+
+    // Add OpenAI-specific settings
+    if (settings.frequencyPenalty && settings.frequencyPenalty !== 0) {
+      requestBody.frequency_penalty = settings.frequencyPenalty;
+    }
+    if (settings.presencePenalty && settings.presencePenalty !== 0) {
+      requestBody.presence_penalty = settings.presencePenalty;
     }
 
     console.log('[Edge AI] Calling OpenAI API with model:', requestBody.model);

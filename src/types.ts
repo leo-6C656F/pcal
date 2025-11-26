@@ -84,12 +84,26 @@ export const PREDEFINED_MODELS: PredefinedModel[] = [
   }
 ];
 
+// --- 5.0 AI Provider Mode ---
+export type AIProviderMode = 'off' | 'local' | 'openai';
+
+// OpenAI source: 'proxy' uses the secure server-side proxy, 'direct' uses user's API key
+export type OpenAISource = 'proxy' | 'direct';
+
 export interface AIServiceConfig {
-  openAIKey?: string;
-  selectedModel?: string; // Model ID (can be from predefined list or custom)
-  openAIModel?: string;   // OpenAI model to use (default: gpt-4o-mini)
-  openAIBaseURL?: string; // Custom OpenAI API base URL
-  providerPriority?: 'local-first' | 'openai-first'; // Which provider to try first
+  // Master toggle and provider selection
+  aiEnabled?: boolean;              // Master toggle for AI features (default: true)
+  providerMode?: AIProviderMode;    // Which provider to use: 'off', 'local', or 'openai'
+
+  // OpenAI settings
+  openAISource?: OpenAISource;      // 'proxy' (default) or 'direct' (user's API key)
+  openAIKey?: string;               // User's API key (only used when openAISource is 'direct')
+  selectedModel?: string;           // Model ID (can be from predefined list or custom)
+  openAIModel?: string;             // OpenAI model to use (default: gpt-4o-mini)
+  openAIBaseURL?: string;           // Custom OpenAI API base URL (only for direct mode)
+
+  // Legacy field for backward compatibility
+  providerPriority?: 'local-first' | 'openai-first';
 }
 
 // --- 5.1 AI Generation Settings ---
@@ -112,6 +126,11 @@ export interface AIGenerationSettings {
   numBeams: number;          // Number of beams for beam search (default: 1, 1 = no beam search)
   lengthPenalty: number;     // Length penalty for beam search (default: 1.0)
   earlyStopping: boolean;    // Stop when numBeams sentences are done (default: false)
+
+  // OpenAI-specific settings
+  frequencyPenalty: number;  // Penalize frequent tokens -2.0-2.0 (default: 0)
+  presencePenalty: number;   // Penalize new topics -2.0-2.0 (default: 0)
+  systemMessage: string;     // Custom system message for OpenAI (optional)
 }
 
 export const DEFAULT_AI_SETTINGS: AIGenerationSettings = {
@@ -126,6 +145,9 @@ export const DEFAULT_AI_SETTINGS: AIGenerationSettings = {
   numBeams: 1,
   lengthPenalty: 1.0,
   earlyStopping: false,
+  frequencyPenalty: 0,
+  presencePenalty: 0,
+  systemMessage: '',
 };
 
 export type AIProvider = 'transformers-local' | 'openai-api' | 'openai-api-proxy' | 'fallback';
