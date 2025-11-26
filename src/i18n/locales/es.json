@@ -140,7 +140,8 @@
     "downloadingModel": "Descargando modelo de IA...",
     "generateSummary": "Clic para Generar Resumen",
     "modelDownloaded": "¡Modelo de IA descargado! Ahora puede generar resúmenes.",
-    "modelDownloadFailed": "Error al descargar el modelo de IA. Intente de nuevo."
+    "modelDownloadFailed": "Error al descargar el modelo de IA. Intente de nuevo.",
+    "generatedByAI": "Generado por IA"
   },
   "settings": {
     "goalsTab": "Metas",

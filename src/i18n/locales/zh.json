@@ -140,7 +140,8 @@
     "downloadingModel": "正在下载 AI 模型...",
     "generateSummary": "点击生成总结",
     "modelDownloaded": "AI 模型下载完成！现在可以生成总结了。",
-    "modelDownloadFailed": "AI 模型下载失败。请重试。"
+    "modelDownloadFailed": "AI 模型下载失败。请重试。",
+    "generatedByAI": "由 AI 生成"
   },
   "settings": {
     "goalsTab": "目标",
