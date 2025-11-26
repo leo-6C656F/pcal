@@ -1,13 +1,17 @@
 import chromium from '@sparticuz/chromium';
 import puppeteer from 'puppeteer-core';
+const { verifyAuth, sendUnauthorized } = require('./_lib/auth.js');
 
 /**
  * Vercel Serverless Function
  * Converts HTML to PDF using Puppeteer (headless Chrome)
  * Preserves ALL HTML/CSS styling perfectly
  *
+ * SECURITY: Requires Clerk authentication
+ *
  * Endpoint: /api/generate-pdf
  * Method: POST
+ * Headers: Authorization: Bearer <clerk-session-token>
  * Body: { html: string }
  * Returns: PDF file as Buffer
  */
@@ -16,6 +20,15 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  // Verify authentication
+  const auth = await verifyAuth(req);
+  if (!auth) {
+    console.log('[PDF] Unauthorized request blocked');
+    return sendUnauthorized(res);
+  }
+
+  console.log(`[PDF] Authorized request from user: ${auth.userId}`);
 
   let browser = null;
 

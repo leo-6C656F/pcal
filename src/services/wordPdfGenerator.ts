@@ -58,12 +58,12 @@ export async function generateWordPDF(options: WordPDFOptions): Promise<Blob> {
   const apiUrl = getApiUrl();
   console.log('Using API endpoint:', apiUrl);
 
+  // Import Clerk auth helper dynamically
+  const { authenticatedFetch } = await import('../lib/clerk-auth');
+
   // Send HTML to server for conversion to Word
-  const response = await fetch(apiUrl, {
+  const response = await authenticatedFetch(apiUrl, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
     body: JSON.stringify({ html })
   });
 

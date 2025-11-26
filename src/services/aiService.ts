@@ -233,11 +233,11 @@ async function tryOpenAIProxy(
   const proxyUrl = getAIProxyUrl();
   console.log('[AI] Attempting OpenAI proxy at:', proxyUrl);
 
-  const response = await fetch(proxyUrl, {
+  // Import Clerk auth helper dynamically
+  const { authenticatedFetch } = await import('../lib/clerk-auth');
+
+  const response = await authenticatedFetch(proxyUrl, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({
       prompt,
       settings: {

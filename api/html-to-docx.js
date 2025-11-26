@@ -1,11 +1,15 @@
 import HTMLtoDOCX from '@turbodocx/html-to-docx';
+const { verifyAuth, sendUnauthorized } = require('./_lib/auth.js');
 
 /**
  * Vercel Serverless Function
  * Converts HTML to Word document (.docx) using @turbodocx/html-to-docx
  *
+ * SECURITY: Requires Clerk authentication
+ *
  * Endpoint: /api/html-to-docx
  * Method: POST
+ * Headers: Authorization: Bearer <clerk-session-token>
  * Body: { html: string }
  * Returns: .docx file as Buffer
  */
@@ -14,6 +18,15 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  // Verify authentication
+  const auth = await verifyAuth(req);
+  if (!auth) {
+    console.log('[DOCX] Unauthorized request blocked');
+    return sendUnauthorized(res);
+  }
+
+  console.log(`[DOCX] Authorized request from user: ${auth.userId}`);
 
   try {
     const { html } = req.body;

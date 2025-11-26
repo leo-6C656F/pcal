@@ -98,11 +98,12 @@ export async function generatePDF(options: PDFGenerationOptions): Promise<Uint8A
 
     // Send HTML to server for conversion to PDF
     const serverUrl = getServerUrl();
-    const response = await fetch(`${serverUrl}/api/generate-pdf`, {
+
+    // Import Clerk auth helper dynamically
+    const { authenticatedFetch } = await import('../lib/clerk-auth');
+
+    const response = await authenticatedFetch(`${serverUrl}/api/generate-pdf`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({ html: htmlWithLogo })
     });
 

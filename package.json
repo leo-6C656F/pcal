@@ -13,6 +13,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.57.0",
     "@huggingface/transformers": "^3.8.0",
     "@sparticuz/chromium": "^141.0.0",
     "@turbodocx/html-to-docx": "^1.18.1",

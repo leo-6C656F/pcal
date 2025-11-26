@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
 import { useStore } from './store';
 import { initializeDatabase } from './services/journalReplay';
 import { Dashboard } from './components/Dashboard';
@@ -343,6 +344,18 @@ function App() {
               <Settings size={18} />
               <span className="hidden sm:inline">{t('app.goalsAndSetup')}</span>
             </button>
+
+            {/* Clerk Authentication */}
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all bg-primary hover:bg-primary/90 text-white shadow-sm">
+                  Sign In
+                </button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
           </div>
         </div>
       </header>

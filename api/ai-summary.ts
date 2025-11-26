@@ -3,11 +3,16 @@
  * Proxies OpenAI API requests to keep API keys secure on the server
  * Uses Edge runtime for global low-latency responses
  *
+ * SECURITY: Requires Clerk authentication
+ *
  * Endpoint: /api/ai-summary
  * Method: POST
+ * Headers: Authorization: Bearer <clerk-session-token>
  * Body: { prompt: string, settings: AISettings }
  * Returns: OpenAI completion response
  */
+
+import { verifyAuth, unauthorizedResponse } from './_lib/auth';
 
 export const config = {
   runtime: 'edge',
@@ -34,6 +39,15 @@ export default async function handler(req: Request) {
       { status: 405, headers: { 'Content-Type': 'application/json' } }
     );
   }
+
+  // Verify authentication
+  const auth = await verifyAuth(req);
+  if (!auth) {
+    console.log('[AI Summary] Unauthorized request blocked');
+    return unauthorizedResponse();
+  }
+
+  console.log(`[AI Summary] Authorized request from user: ${auth.userId}`);
 
   try {
     const body = await req.json() as RequestBody;
