@@ -4,10 +4,9 @@ import { useStore } from '../store';
 import { GoalSelector } from './GoalSelector';
 import { TimeInput } from './TimeInput';
 import { SignaturePad } from './SignaturePad';
-import { ConfirmDialog } from './ConfirmDialog';
 import { HelpTooltip } from './HelpTooltip';
 import type { ActivityLine, ModelLoadingState } from '../types';
-import { Trash2, Plus, Sparkles, Clock, BookOpen, Edit3, ArrowLeft, CheckCircle, RefreshCw, Download } from 'lucide-react';
+import { Trash2, Plus, Sparkles, Clock, BookOpen, Edit3, ArrowLeft, CheckCircle, RefreshCw, Download, AlertTriangle } from 'lucide-react';
 import { getGoalColors, getGoalIcon } from '../utils/goalColors';
 import { showToast } from '../App';
 import { isModelReady, initializeModel } from '../services/aiService';
@@ -115,27 +114,18 @@ export function DailyEntryForm({ subView, onSubViewChange }: DailyEntryFormProps
     onEdit: (activity: ActivityLine) => void;
     onFinalize: () => void;
   }) => {
-    const [deleteConfirm, setDeleteConfirm] = useState<{ lineId: string; activity: string } | null>(null);
+    const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
 
     if (!currentEntry) return null;
 
+    const handleDeleteActivity = (lineId: string) => {
+      deleteActivityLine(currentEntry.id, lineId);
+      showToast?.info(t('toast.activityRemoved'));
+      setConfirmingDeleteId(null);
+    };
+
     return (
       <>
-        {deleteConfirm && (
-          <ConfirmDialog
-            title={t('dailyEntryForm.deleteActivityTitle')}
-            message={t('dailyEntryForm.deleteActivityMessage', { activity: deleteConfirm.activity })}
-            confirmText={t('common.delete')}
-            cancelText={t('dailyEntryForm.keepIt')}
-            variant="danger"
-            onConfirm={() => {
-              deleteActivityLine(currentEntry.id, deleteConfirm.lineId);
-              showToast?.info(t('toast.activityRemoved'));
-              setDeleteConfirm(null);
-            }}
-            onCancel={() => setDeleteConfirm(null)}
-          />
-        )}
         <div className="card p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -196,26 +186,46 @@ export function DailyEntryForm({ subView, onSubViewChange }: DailyEntryFormProps
                           {line.customNarrative || line.selectedActivities.join(', ')}
                         </p>
                       </div>
-                      <div className="flex-shrink-0 flex gap-1">
-                        <button
-                          type="button"
-                          onClick={() => onEdit(line)}
-                          className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors"
-                          title={t('dailyEntryForm.editActivity')}
-                        >
-                          <Edit3 size={18} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const activityDesc = line.customNarrative || line.selectedActivities.join(', ') || t('common.activity');
-                            setDeleteConfirm({ lineId: line.id, activity: activityDesc });
-                          }}
-                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                          title={t('dailyEntryForm.deleteActivity')}
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                      <div className="flex-shrink-0 flex gap-1 items-center">
+                        {confirmingDeleteId === line.id ? (
+                          <div className="flex items-center gap-2 px-2 py-1.5 bg-rose-50 border border-rose-200 rounded-lg animate-in fade-in-0 zoom-in-95 duration-150">
+                            <AlertTriangle size={14} className="text-rose-600" />
+                            <span className="text-xs text-rose-700">{t('common.delete')}?</span>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmingDeleteId(null)}
+                              className="px-2 py-0.5 text-xs font-medium text-slate-600 bg-white hover:bg-slate-50 rounded border border-slate-200 transition-colors"
+                            >
+                              {t('dailyEntryForm.keepIt')}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteActivity(line.id)}
+                              className="px-2 py-0.5 text-xs font-medium text-white bg-rose-600 hover:bg-rose-700 rounded transition-colors"
+                            >
+                              {t('common.delete')}
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => onEdit(line)}
+                              className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors"
+                              title={t('dailyEntryForm.editActivity')}
+                            >
+                              <Edit3 size={18} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmingDeleteId(line.id)}
+                              className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                              title={t('dailyEntryForm.deleteActivity')}
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
