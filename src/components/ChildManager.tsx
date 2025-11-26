@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { Trash2, Users, AlertTriangle } from 'lucide-react';
-import { ConfirmDialog } from './ConfirmDialog';
 import { showToast } from '../App';
 
 /**
@@ -14,11 +13,11 @@ export function ChildManager() {
   const { t } = useTranslation();
   const { children, entries, deleteChild } = useStore();
 
-  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
 
   const handleDeleteChild = async (id: string) => {
     await deleteChild(id);
-    setDeleteConfirm(null);
+    setConfirmingDeleteId(null);
     showToast.info(t('childManager.childDeleted'));
   };
 
@@ -28,18 +27,6 @@ export function ChildManager() {
 
   return (
     <div className="space-y-6">
-      {deleteConfirm && (
-        <ConfirmDialog
-          title={t('childManager.deleteChildTitle')}
-          message={t('childManager.deleteChildMessage', { name: deleteConfirm.name })}
-          confirmText={t('childManager.deleteChildConfirm')}
-          cancelText={t('common.cancel')}
-          variant="danger"
-          onConfirm={() => handleDeleteChild(deleteConfirm.id)}
-          onCancel={() => setDeleteConfirm(null)}
-        />
-      )}
-
       {children.length === 0 ? (
         <div className="card p-12 text-center border-dashed border-2 border-slate-200 bg-slate-50">
           <div className="mx-auto w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
@@ -77,13 +64,32 @@ export function ChildManager() {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => setDeleteConfirm({ id: child.id, name: child.name })}
-                      className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                      title={t('childManager.deleteChild')}
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                    {confirmingDeleteId === child.id ? (
+                      <div className="flex items-center gap-2 px-2 py-1.5 bg-rose-50 border border-rose-200 rounded-lg animate-in fade-in-0 zoom-in-95 duration-150">
+                        <AlertTriangle size={14} className="text-rose-600" />
+                        <span className="text-xs text-rose-700">{t('common.delete')}?</span>
+                        <button
+                          onClick={() => setConfirmingDeleteId(null)}
+                          className="px-2 py-0.5 text-xs font-medium text-slate-600 bg-white hover:bg-slate-50 rounded border border-slate-200 transition-colors"
+                        >
+                          {t('common.cancel')}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteChild(child.id)}
+                          className="px-2 py-0.5 text-xs font-medium text-white bg-rose-600 hover:bg-rose-700 rounded transition-colors"
+                        >
+                          {t('common.delete')}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmingDeleteId(child.id)}
+                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                        title={t('childManager.deleteChild')}
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
                   </div>
                 </div>
               );

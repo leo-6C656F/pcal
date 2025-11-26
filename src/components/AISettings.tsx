@@ -16,10 +16,11 @@ import {
   Globe,
   Power,
   Cpu,
-  Server,
   Shield,
-  Settings2
+  Settings2,
+  AlertTriangle
 } from 'lucide-react';
+import { showToast } from '../App';
 import {
   isModelReady,
   initializeModel,
@@ -56,6 +57,9 @@ export function AISettings() {
   const [openAIKey, setOpenAIKey] = useState<string>('');
   const [openAIModel, setOpenAIModel] = useState<string>('gpt-4o-mini');
   const [openAIBaseURL, setOpenAIBaseURL] = useState<string>('');
+
+  // Inline confirmation states
+  const [confirmingClearCache, setConfirmingClearCache] = useState(false);
 
   useEffect(() => {
     updateStatus();
@@ -126,19 +130,18 @@ export function AISettings() {
   };
 
   const handleClearCache = async () => {
-    if (!confirm(t('aiSettings.confirmClear'))) return;
-
     setIsClearing(true);
     setError(null);
+    setConfirmingClearCache(false);
 
     try {
       await clearModelCache();
       await updateStatus();
-      alert(t('aiSettings.cacheCleared'));
+      showToast?.success(t('aiSettings.cacheCleared'));
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMsg);
-      alert(t('aiSettings.clearFailed') + ': ' + errorMsg);
+      showToast?.error(t('aiSettings.clearFailed') + ': ' + errorMsg);
     } finally {
       setIsClearing(false);
     }
@@ -155,14 +158,14 @@ export function AISettings() {
 
       if (success) {
         await updateStatus();
-        alert(t('aiSettings.redownloadSuccess'));
+        showToast?.success(t('aiSettings.redownloadSuccess'));
       } else {
         throw new Error('Model initialization failed');
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMsg);
-      alert(t('aiSettings.redownloadFailed') + ': ' + errorMsg);
+      showToast?.error(t('aiSettings.redownloadFailed') + ': ' + errorMsg);
     } finally {
       setIsRedownloading(false);
       setModelLoadingState(null);
@@ -184,14 +187,14 @@ export function AISettings() {
 
       if (success) {
         await updateStatus();
-        alert(t('aiSettings.redownloadSuccess'));
+        showToast?.success(t('aiSettings.redownloadSuccess'));
       } else {
         throw new Error('Model initialization failed');
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMsg);
-      alert(t('aiSettings.redownloadFailed') + ': ' + errorMsg);
+      showToast?.error(t('aiSettings.redownloadFailed') + ': ' + errorMsg);
     } finally {
       setIsRedownloading(false);
       setModelLoadingState(null);
@@ -201,7 +204,7 @@ export function AISettings() {
   const handleUnloadModel = () => {
     unloadModel();
     updateStatus();
-    alert(t('aiSettings.modelUnloaded'));
+    showToast?.info(t('aiSettings.modelUnloaded'));
   };
 
   const formatBytes = (bytes: number): string => {
@@ -215,7 +218,7 @@ export function AISettings() {
   const handleSavePrompt = () => {
     if (customPrompt.trim()) {
       localStorage.setItem('aiPromptTemplate', customPrompt.trim());
-      alert(t('aiSettings.promptSaved'));
+      showToast?.success(t('aiSettings.promptSaved'));
     }
     setIsEditingPrompt(false);
   };
@@ -224,7 +227,7 @@ export function AISettings() {
     localStorage.removeItem('aiPromptTemplate');
     setCustomPrompt('');
     setIsEditingPrompt(false);
-    alert(t('aiSettings.promptReset'));
+    showToast?.info(t('aiSettings.promptReset'));
   };
 
   const handleSettingChange = (key: keyof AIGenerationSettings, value: number | boolean | string) => {
@@ -236,7 +239,7 @@ export function AISettings() {
   const handleResetSettings = () => {
     setGenSettings(DEFAULT_AI_SETTINGS);
     saveAISettings(DEFAULT_AI_SETTINGS);
-    alert(t('aiSettings.settingsReset'));
+    showToast?.info(t('aiSettings.settingsReset'));
   };
 
   const handleModelChange = (modelId: string) => {
@@ -254,13 +257,13 @@ export function AISettings() {
 
   const handleCustomModelSave = () => {
     if (!customModelId.trim()) {
-      alert('Please enter a valid model ID');
+      showToast?.error('Please enter a valid model ID');
       return;
     }
 
     setSelectedModelId(customModelId.trim());
     setSelectedModel(customModelId.trim());
-    alert('Custom model saved. Please download the model to use it.');
+    showToast?.success('Custom model saved. Please download the model to use it.');
   };
 
   const handleProviderModeChange = (mode: AIProviderMode) => {
@@ -530,23 +533,43 @@ Final sentence:`;
               )}
             </button>
 
-            <button
-              onClick={handleClearCache}
-              disabled={isClearing || isRedownloading}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isClearing ? (
-                <>
-                  <RefreshCw size={18} className="animate-spin" />
-                  <span>{t('aiSettings.clearing')}</span>
-                </>
-              ) : (
-                <>
-                  <Trash2 size={18} />
-                  <span>{t('aiSettings.clearCache')}</span>
-                </>
-              )}
-            </button>
+            {confirmingClearCache ? (
+              <div className="flex items-center gap-2 px-3 py-2 bg-rose-50 border border-rose-200 rounded-lg animate-in fade-in-0 zoom-in-95 duration-150">
+                <AlertTriangle size={16} className="text-rose-600" />
+                <span className="text-sm text-rose-700">{t('aiSettings.confirmClear')}</span>
+                <button
+                  onClick={() => setConfirmingClearCache(false)}
+                  className="px-2.5 py-1 text-xs font-medium text-slate-600 bg-white hover:bg-slate-50 rounded border border-slate-200 transition-colors"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  onClick={handleClearCache}
+                  disabled={isClearing}
+                  className="px-2.5 py-1 text-xs font-medium text-white bg-rose-600 hover:bg-rose-700 rounded transition-colors disabled:opacity-50"
+                >
+                  {isClearing ? t('aiSettings.clearing') : t('aiSettings.clearCache')}
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmingClearCache(true)}
+                disabled={isClearing || isRedownloading}
+                className="flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isClearing ? (
+                  <>
+                    <RefreshCw size={18} className="animate-spin" />
+                    <span>{t('aiSettings.clearing')}</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={18} />
+                    <span>{t('aiSettings.clearCache')}</span>
+                  </>
+                )}
+              </button>
+            )}
 
             <button
               onClick={handleUnloadModel}

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Goal } from '../types';
-import { Modal } from './Modal';
+import { Sheet } from './Sheet';
 import { Plus, X } from 'lucide-react';
+import { showToast } from '../App';
 
 interface GoalFormProps {
   goal?: Goal | null;
@@ -37,11 +38,11 @@ export function GoalForm({ goal, onSave, onClose, existingCodes }: GoalFormProps
 
   const handleSave = () => {
     if (!currentGoal.description.trim()) {
-      alert(t('goalForm.enterDescription'));
+      showToast?.error(t('goalForm.enterDescription'));
       return;
     }
     if (codeError) {
-      alert(t('goalForm.fixErrors'));
+      showToast?.error(t('goalForm.fixErrors'));
       return;
     }
     onSave(currentGoal);
@@ -74,9 +75,10 @@ export function GoalForm({ goal, onSave, onClose, existingCodes }: GoalFormProps
   }
 
   return (
-    <Modal
+    <Sheet
       onClose={onClose}
       title={goal ? t('goalForm.editGoal') : t('goalForm.addNewGoal')}
+      size="sm"
       footer={
         <div className="flex gap-2">
           <button onClick={onClose} className="btn-secondary flex-1 text-sm py-2">
@@ -151,6 +153,6 @@ export function GoalForm({ goal, onSave, onClose, existingCodes }: GoalFormProps
           )}
         </div>
       </div>
-    </Modal>
+    </Sheet>
   );
 }
