@@ -40,6 +40,8 @@ export async function generateServerPDF(options: {
   }
 
   try {
+    console.log('🚀 [serverPdfGenerator] NEW CODE DEPLOYED - Version 2.0');
+
     // Convert logo to base64
     const logoBase64 = await imageToBase64(logoImage);
     console.log('[serverPdfGenerator] Logo base64 length:', logoBase64.length);
