@@ -299,6 +299,39 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PCAL In-Kind Form</title>
     <style>
+        /* Page rules for print/PDF generation */
+        @page {
+            size: letter landscape;
+            margin: 0.25in;
+        }
+
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .page-container {
+                page-break-after: always !important;
+                break-after: page !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            .page-container:last-child {
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+            }
+
+            /* Ensure logo images are always visible on print */
+            .logo-image {
+                display: block !important;
+                visibility: visible !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+
         body {
             font-family: "Times New Roman", Times, serif;
             background-color: white;
@@ -318,6 +351,8 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
             box-sizing: border-box;
             page-break-after: always;
             break-after: page;
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
 
         .page-container:last-child {
