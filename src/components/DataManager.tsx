@@ -29,6 +29,7 @@ export function DataManager() {
   const [importMode, setImportMode] = useState<ImportMode>('merge');
   const [showImportConfirm, setShowImportConfirm] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  const [includeOpenAI, setIncludeOpenAI] = useState(false);
 
   // Load stats on mount
   useEffect(() => {
@@ -43,7 +44,7 @@ export function DataManager() {
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      await downloadExport();
+      await downloadExport(includeOpenAI);
       showToast.success(t('dataManager.exportSuccess'));
     } catch (error) {
       console.error('Export error:', error);
@@ -181,6 +182,26 @@ export function DataManager() {
           <h2 className="text-lg font-semibold text-slate-900">{t('dataManager.exportTitle')}</h2>
         </div>
         <p className="text-slate-600 mb-4">{t('dataManager.exportDescription')}</p>
+
+        {/* Export Options */}
+        <div className="mb-4 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={includeOpenAI}
+              onChange={(e) => setIncludeOpenAI(e.target.checked)}
+              className="mt-0.5"
+            />
+            <div>
+              <p className="text-sm font-medium text-slate-900">Include OpenAI API Key</p>
+              <p className="text-xs text-slate-500 mt-1">
+                Export your OpenAI API configuration (key, model, base URL, and priority).
+                This allows you to backup your API settings or transfer them to another device.
+              </p>
+            </div>
+          </label>
+        </div>
+
         <button
           onClick={handleExport}
           disabled={isExporting}
@@ -282,6 +303,21 @@ export function DataManager() {
                   <p className="text-xs text-slate-500">{t('dataManager.events')}</p>
                 </div>
               </div>
+
+              {/* OpenAI Config Preview */}
+              {importPreview.openAIConfig && (
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="text-blue-600" size={16} />
+                    <p className="text-sm font-medium text-blue-900">
+                      OpenAI API configuration included
+                    </p>
+                  </div>
+                  <p className="text-xs text-blue-700 mt-1 ml-6">
+                    This backup contains OpenAI API settings (key, model: {importPreview.openAIConfig.openAIModel})
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Import Mode Selection */}

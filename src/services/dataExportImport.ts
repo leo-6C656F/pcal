@@ -19,6 +19,12 @@ export interface ExportData {
     goals: Goal[];
     journal: JournalEvent[];
   };
+  openAIConfig?: {
+    openAIKey: string;
+    openAIModel: string;
+    openAIBaseURL: string;
+    providerPriority: string;
+  };
 }
 
 export interface ImportResult {
@@ -35,7 +41,7 @@ export interface ImportResult {
 /**
  * Export all application data to a JSON object
  */
-export async function exportAllData(): Promise<ExportData> {
+export async function exportAllData(includeOpenAI: boolean = false): Promise<ExportData> {
   const [children, dailyEntries, goals, journal] = await Promise.all([
     db.children.toArray(),
     db.dailyEntries.toArray(),
@@ -43,7 +49,7 @@ export async function exportAllData(): Promise<ExportData> {
     db.journal.toArray(),
   ]);
 
-  return {
+  const exportData: ExportData = {
     version: EXPORT_VERSION,
     exportedAt: Date.now(),
     appName: 'PCAL',
@@ -54,13 +60,27 @@ export async function exportAllData(): Promise<ExportData> {
       journal,
     },
   };
+
+  // Optionally include OpenAI configuration
+  if (includeOpenAI) {
+    const savedOpenAIConfig = localStorage.getItem('openAIConfig');
+    if (savedOpenAIConfig) {
+      try {
+        exportData.openAIConfig = JSON.parse(savedOpenAIConfig);
+      } catch (e) {
+        console.error('Failed to parse OpenAI config during export:', e);
+      }
+    }
+  }
+
+  return exportData;
 }
 
 /**
  * Download export data as a JSON file
  */
-export async function downloadExport(): Promise<void> {
-  const exportData = await exportAllData();
+export async function downloadExport(includeOpenAI: boolean = false): Promise<void> {
+  const exportData = await exportAllData(includeOpenAI);
   const jsonString = JSON.stringify(exportData, null, 2);
   const blob = new Blob([jsonString], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -235,17 +255,11 @@ export async function importData(file: File, mode: ImportMode): Promise<ImportRe
         newGoals.length > 0 ? db.goals.bulkAdd(newGoals) : Promise.resolve(),
         newJournal.length > 0 ? db.journal.bulkAdd(newJournal) : Promise.resolve(),
       ]);
+    }
 
-      return {
-        success: true,
-        message: 'Data merged successfully!',
-        stats: {
-          children: newChildren.length,
-          entries: newEntries.length,
-          goals: newGoals.length,
-          journalEvents: newJournal.length,
-        },
-      };
+    // Import OpenAI configuration if present
+    if (parsed.openAIConfig) {
+      localStorage.setItem('openAIConfig', JSON.stringify(parsed.openAIConfig));
     }
 
     return {
