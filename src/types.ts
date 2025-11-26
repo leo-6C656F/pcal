@@ -128,7 +128,7 @@ export const DEFAULT_AI_SETTINGS: AIGenerationSettings = {
   earlyStopping: false,
 };
 
-export type AIProvider = 'transformers-local' | 'openai-api' | 'fallback';
+export type AIProvider = 'transformers-local' | 'openai-api' | 'openai-api-proxy' | 'fallback';
 
 // --- 6. Model Loading State ---
 export interface ModelLoadingState {

@@ -16,7 +16,7 @@ import {
 /**
  * AI Service - Waterfall Logic
  * Tier 1: Transformers.js (local, works offline)
- * Tier 2: User's OpenAI API Key
+ * Tier 2: OpenAI API (via proxy or direct)
  * Tier 3: Deterministic Fallback
  */
 
@@ -53,6 +53,27 @@ function getOpenAIConfig(): AIServiceConfig {
 }
 
 /**
+ * Get the API URL for AI summary proxy
+ * In production (Vercel): uses Edge Function /api/ai-summary
+ * In development: can use proxy or direct OpenAI (based on config)
+ */
+function getAIProxyUrl(): string {
+  // If custom server URL is set, use it
+  if (import.meta.env.VITE_SERVER_URL) {
+    return `${import.meta.env.VITE_SERVER_URL}/api/ai-summary`;
+  }
+
+  // In production, use same domain (Vercel Edge Function)
+  if (import.meta.env.PROD) {
+    return '/api/ai-summary';
+  }
+
+  // In development, use localhost (if Vercel dev is running)
+  // Otherwise falls back to direct OpenAI API
+  return 'http://localhost:3000/api/ai-summary';
+}
+
+/**
  * Generate a summary paragraph from activity lines
  */
 export async function generateSummary(
@@ -68,11 +89,20 @@ export async function generateSummary(
 
   // Try providers based on priority
   if (providerPriority === 'openai-first') {
-    // Try OpenAI first, then local, then fallback
+    // Try OpenAI proxy first (secure, server-side API key)
+    try {
+      const summary = await tryOpenAIProxy(childName, lines);
+      console.log('[AI] Used OpenAI API (via Edge proxy)');
+      return { summary, provider: 'openai-api-proxy' };
+    } catch (error) {
+      console.log('[AI] OpenAI proxy not available:', error);
+    }
+
+    // Try OpenAI direct (user's API key) as fallback
     if (mergedConfig.openAIKey) {
       try {
         const summary = await tryOpenAI(childName, lines, mergedConfig);
-        console.log('[AI] Used OpenAI API');
+        console.log('[AI] Used OpenAI API (direct)');
         return { summary, provider: 'openai-api' };
       } catch (error) {
         console.error('[AI] OpenAI API failed:', error);
@@ -102,11 +132,20 @@ export async function generateSummary(
       console.log('[AI] Transformers.js not available:', error);
     }
 
-    // Tier 2: OpenAI API
+    // Tier 2a: OpenAI proxy (secure, server-side)
+    try {
+      const summary = await tryOpenAIProxy(childName, lines);
+      console.log('[AI] Used OpenAI API (via Edge proxy)');
+      return { summary, provider: 'openai-api-proxy' };
+    } catch (error) {
+      console.log('[AI] OpenAI proxy not available:', error);
+    }
+
+    // Tier 2b: OpenAI direct (user's API key)
     if (mergedConfig.openAIKey) {
       try {
         const summary = await tryOpenAI(childName, lines, mergedConfig);
-        console.log('[AI] Used OpenAI API');
+        console.log('[AI] Used OpenAI API (direct)');
         return { summary, provider: 'openai-api' };
       } catch (error) {
         console.error('[AI] OpenAI API failed:', error);
@@ -181,7 +220,48 @@ async function tryTransformersLocal(
 }
 
 /**
- * Tier 2: Try OpenAI API
+ * Tier 2a: Try OpenAI API via Edge Function Proxy (Secure)
+ * This keeps the API key on the server and uses Edge runtime for speed
+ */
+async function tryOpenAIProxy(
+  childName: string,
+  lines: ActivityLine[]
+): Promise<string> {
+  const settings = getAISettings();
+  const prompt = buildPrompt(childName, lines);
+
+  const proxyUrl = getAIProxyUrl();
+  console.log('[AI] Attempting OpenAI proxy at:', proxyUrl);
+
+  const response = await fetch(proxyUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      prompt,
+      settings: {
+        model: 'gpt-4o-mini',
+        maxNewTokens: settings.maxNewTokens,
+        temperature: settings.temperature,
+        topP: settings.topP,
+        doSample: settings.doSample
+      }
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Proxy error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.summary;
+}
+
+/**
+ * Tier 2b: Try OpenAI API directly (Fallback for when proxy unavailable)
+ * Uses user-provided API key from localStorage
  */
 async function tryOpenAI(
   childName: string,
