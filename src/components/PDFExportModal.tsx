@@ -5,6 +5,7 @@ import { format, parse } from 'date-fns';
 import { Mail, FileText, X, ArrowLeft } from 'lucide-react';
 import { PDFPreview } from './PDFPreview';
 import { Modal } from './Modal';
+import { FinalizeEntriesModal } from './FinalizeEntriesModal';
 import type { DailyEntry } from '../types';
 
 interface PDFExportModalProps {
@@ -17,6 +18,7 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
   const { goals, currentChild } = useStore();
   const [selectedEntryIds, setSelectedEntryIds] = useState<Set<string>>(new Set());
   const [showPreview, setShowPreview] = useState(false);
+  const [showFinalization, setShowFinalization] = useState(false);
 
   const toggleEntrySelection = (entryId: string) => {
     const newSelection = new Set(selectedEntryIds);
@@ -37,10 +39,36 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
   };
 
   const handleGeneratePDF = () => {
+    // Check if all selected entries have signatures
+    const unsignedEntries = selectedEntries.filter(e => !e.signatureBase64);
+
+    if (unsignedEntries.length > 0) {
+      // Show finalization modal if there are unsigned entries
+      setShowFinalization(true);
+    } else {
+      // All entries are signed, proceed to preview
+      setShowPreview(true);
+    }
+  };
+
+  const handleProceedToPreview = () => {
+    setShowFinalization(false);
     setShowPreview(true);
   };
 
   const selectedEntries = childEntries.filter(e => selectedEntryIds.has(e.id)).sort((a, b) => a.date.localeCompare(b.date));
+  const unsignedEntries = selectedEntries.filter(e => !e.signatureBase64);
+
+  // Show finalization modal if there are unsigned entries
+  if (showFinalization && unsignedEntries.length > 0) {
+    return (
+      <FinalizeEntriesModal
+        onClose={onClose}
+        unsignedEntries={unsignedEntries}
+        onProceed={handleProceedToPreview}
+      />
+    );
+  }
 
   if (showPreview && selectedEntryIds.size > 0 && currentChild) {
     return (

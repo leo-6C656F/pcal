@@ -38,6 +38,7 @@
     "entry": "entrada",
     "entriesPlural": "entradas",
     "signed": "Firmado",
+    "notSigned": "Sin Firmar",
     "sent": "Enviado",
     "saved": "Guardado",
     "clear": "Limpiar",
@@ -230,7 +231,13 @@
     "entriesSelected": "{{count}} {{type}} seleccionada(s)",
     "backToSelection": "← Volver a Selección",
     "reviewGenerate": "Revisar y Generar PDF",
-    "selectAtLeastOne": "Seleccione al menos una entrada para generar un PDF"
+    "selectAtLeastOne": "Seleccione al menos una entrada para generar un PDF",
+    "finalizeRequired": "Se Requiere Finalizar Entradas",
+    "signatureRequired": "Las entradas deben estar firmadas antes de exportar",
+    "signatureRequiredDescription": "Todas las entradas seleccionadas deben tener un resumen y firma antes de poder incluirse en el PDF. Por favor finalice cada entrada a continuación.",
+    "entriesNeedingFinalization": "Entradas que necesitan finalización",
+    "finalize": "Finalizar",
+    "finalizeAllToGenerate": "Complete y firme todas las entradas para proceder con la generación del PDF"
   },
   "confirmDialog": {
     "defaultConfirm": "Confirmar",

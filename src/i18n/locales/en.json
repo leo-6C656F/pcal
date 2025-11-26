@@ -38,6 +38,7 @@
     "entry": "entry",
     "entriesPlural": "entries",
     "signed": "Signed",
+    "notSigned": "Not Signed",
     "sent": "Sent",
     "saved": "Saved",
     "clear": "Clear",
@@ -277,7 +278,13 @@
     "entriesSelected": "{{count}} {{type}} selected",
     "backToSelection": "← Back to Selection",
     "reviewGenerate": "Review & Generate PDF",
-    "selectAtLeastOne": "Select at least one entry to generate a PDF"
+    "selectAtLeastOne": "Select at least one entry to generate a PDF",
+    "finalizeRequired": "Finalize Entries Required",
+    "signatureRequired": "Entries must be signed before export",
+    "signatureRequiredDescription": "All selected entries must have a summary and signature before they can be included in the PDF. Please finalize each entry below.",
+    "entriesNeedingFinalization": "Entries needing finalization",
+    "finalize": "Finalize",
+    "finalizeAllToGenerate": "Complete and sign all entries to proceed with PDF generation"
   },
   "confirmDialog": {
     "defaultConfirm": "Confirm",
