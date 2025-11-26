@@ -1,4 +1,5 @@
 import { AlertTriangle } from 'lucide-react';
+import { Modal } from './Modal';
 
 interface ConfirmDialogProps {
   title: string;
@@ -21,35 +22,28 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const variantStyles = {
     danger: {
-      icon: 'bg-rose-100 text-rose-600',
+      icon: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400',
       button: 'btn-danger',
     },
     warning: {
-      icon: 'bg-amber-100 text-amber-600',
-      button: 'bg-amber-600 hover:bg-amber-700 focus:ring-amber-500',
+      icon: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
+      button: 'bg-amber-600 hover:bg-amber-700 focus:ring-amber-500 text-white',
     },
     info: {
-      icon: 'bg-blue-100 text-blue-600',
-      button: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
+      icon: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
+      button: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 text-white',
     },
   };
 
   const styles = variantStyles[variant];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-soft-lg max-w-md w-full p-6 animate-bounce-in">
-        <div className="flex items-start gap-4">
-          <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${styles.icon}`}>
-            <AlertTriangle size={24} />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-lg font-bold text-slate-900 mb-2">{title}</h3>
-            <p className="text-slate-600 leading-relaxed">{message}</p>
-          </div>
-        </div>
-
-        <div className="flex gap-3 mt-6">
+    <Modal
+      title={title}
+      onClose={onCancel}
+      size="sm"
+      footer={
+        <div className="flex gap-3">
           <button onClick={onCancel} className="btn-secondary flex-1">
             {cancelText}
           </button>
@@ -57,7 +51,16 @@ export function ConfirmDialog({
             {confirmText}
           </button>
         </div>
+      }
+    >
+      <div className="flex items-start gap-4">
+        <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${styles.icon}`}>
+          <AlertTriangle size={24} />
+        </div>
+        <div className="flex-1">
+          <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{message}</p>
+        </div>
       </div>
-    </div>
+    </Modal>
   );
 }

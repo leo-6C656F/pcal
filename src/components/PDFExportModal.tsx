@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { format, parse } from 'date-fns';
-import { Mail, FileText, X, ArrowLeft } from 'lucide-react';
+import { Mail, FileText, ArrowLeft } from 'lucide-react';
 import { PDFPreview } from './PDFPreview';
 import { Modal } from './Modal';
 import { FinalizeEntriesModal } from './FinalizeEntriesModal';
@@ -71,57 +71,43 @@ export function PDFExportModal({ onClose, childEntries }: PDFExportModalProps) {
   }
 
   if (showPreview && selectedEntryIds.size > 0 && currentChild) {
-    return (
-      <div
-        className="fixed inset-0 bg-gradient-to-br from-black/50 via-black/40 to-black/50 dark:from-black/70 dark:via-black/60 dark:to-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 animate-in fade-in-0"
-        onClick={onClose}
-      >
-        <div
-          className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-4xl max-h-[92vh] flex flex-col animate-in zoom-in-95 overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
+    // Custom title with back button for preview modal
+    const previewTitle = (
+      <div className="flex items-center gap-2 min-w-0 flex-1">
+        <button
+          onClick={() => setShowPreview(false)}
+          className="p-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary"
+          aria-label={t('pdfExport.backToSelection')}
         >
-          <div className="flex-shrink-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-3 sticky top-0 z-10">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <button
-                  onClick={() => setShowPreview(false)}
-                  className="p-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary"
-                  aria-label={t('pdfExport.backToSelection')}
-                >
-                  <ArrowLeft size={18} />
-                </button>
-                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center flex-shrink-0">
-                  <FileText size={16} className="text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <h2 className="text-base font-semibold text-slate-900 dark:text-white truncate">{t('pdfExport.pdfPreview')}</h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                    {selectedEntries.length} {selectedEntries.length === 1 ? t('common.entry') : t('common.entriesPlural')}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={onClose}
-                className="p-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary"
-                aria-label="Close modal"
-              >
-                <X size={18} />
-              </button>
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto scroll-smooth p-4">
-            <PDFPreview
-              entries={selectedEntries}
-              child={currentChild}
-              centerName={currentChild.center}
-              teacherName={currentChild.teacher}
-              goals={goals}
-              onClose={onClose}
-            />
-          </div>
+          <ArrowLeft size={18} />
+        </button>
+        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+          <FileText size={16} className="text-primary" />
+        </div>
+        <div className="min-w-0">
+          <span className="text-base font-semibold text-slate-900 dark:text-white truncate block">{t('pdfExport.pdfPreview')}</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400 truncate block">
+            {selectedEntries.length} {selectedEntries.length === 1 ? t('common.entry') : t('common.entriesPlural')}
+          </span>
         </div>
       </div>
+    );
+
+    return (
+      <Modal
+        title={previewTitle}
+        onClose={onClose}
+        size="lg"
+      >
+        <PDFPreview
+          entries={selectedEntries}
+          child={currentChild}
+          centerName={currentChild.center}
+          teacherName={currentChild.teacher}
+          goals={goals}
+          onClose={onClose}
+        />
+      </Modal>
     );
   }
 
