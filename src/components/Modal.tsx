@@ -14,11 +14,11 @@ export function Modal({ children, onClose, title, size = 'md', footer }: ModalPr
   const contentRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Compact sizes - more screen space efficient
+  // Responsive sizes that use more screen space
   const sizeClasses = {
-    sm: 'max-w-[320px]',  // Simple dialogs
-    md: 'max-w-[480px]',  // Standard dialogs
-    lg: 'max-w-[640px]',  // Wide dialogs
+    sm: 'max-w-md',        // Small dialogs - 448px
+    md: 'max-w-2xl',       // Standard dialogs - 672px
+    lg: 'max-w-5xl',       // Wide dialogs for lists - 1024px
   };
 
   // Focus trap and keyboard navigation
