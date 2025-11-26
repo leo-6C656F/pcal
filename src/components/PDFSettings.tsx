@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FileText, Check } from 'lucide-react';
 
-export type PDFGenerationMethod = 'html-canvas' | 'word-docx';
+export type PDFGenerationMethod = 'html-canvas' | 'word-docx' | 'puppeteer-pdf';
 
 /**
  * PDFSettings Component
@@ -14,8 +14,8 @@ export function PDFSettings() {
   useEffect(() => {
     // Load saved preference
     const saved = localStorage.getItem('pdfGenerationMethod');
-    if (saved === 'word-docx' || saved === 'html-canvas') {
-      setPdfMethod(saved);
+    if (saved === 'word-docx' || saved === 'html-canvas' || saved === 'puppeteer-pdf') {
+      setPdfMethod(saved as PDFGenerationMethod);
     } else if (saved === 'word-pdf') {
       // Migrate old setting to new value
       setPdfMethod('word-docx');
@@ -175,6 +175,65 @@ export function PDFSettings() {
               </div>
             </div>
           </div>
+
+          {/* Puppeteer PDF Method (Best Quality) */}
+          <div
+            onClick={() => handleMethodChange('puppeteer-pdf')}
+            className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+              pdfMethod === 'puppeteer-pdf'
+                ? 'border-primary bg-primary/5'
+                : 'border-slate-200 hover:border-slate-300'
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                pdfMethod === 'puppeteer-pdf'
+                  ? 'border-primary bg-primary'
+                  : 'border-slate-300'
+              }`}>
+                {pdfMethod === 'puppeteer-pdf' && (
+                  <div className="w-2 h-2 bg-white rounded-full" />
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-semibold text-slate-900">Server-Side PDF (Puppeteer)</h4>
+                  <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded">
+                    Best Quality
+                  </span>
+                </div>
+                <p className="text-sm text-slate-600 mt-1">
+                  Renders HTML in headless Chrome, preserving 100% of styling
+                </p>
+                <div className="mt-3 space-y-1">
+                  <div className="flex items-start gap-2 text-sm">
+                    <span className="text-green-600">✓</span>
+                    <span className="text-slate-600">Perfect styling preservation (exactly like HTML)</span>
+                  </div>
+                  <div className="flex items-start gap-2 text-sm">
+                    <span className="text-green-600">✓</span>
+                    <span className="text-slate-600">Real text (searchable, copyable, accessible)</span>
+                  </div>
+                  <div className="flex items-start gap-2 text-sm">
+                    <span className="text-green-600">✓</span>
+                    <span className="text-slate-600">Ready-to-use PDF (no conversion needed)</span>
+                  </div>
+                  <div className="flex items-start gap-2 text-sm">
+                    <span className="text-green-600">✓</span>
+                    <span className="text-slate-600">Tables, borders, colors all preserved</span>
+                  </div>
+                  <div className="flex items-start gap-2 text-sm">
+                    <span className="text-blue-600">ℹ</span>
+                    <span className="text-slate-600">Uses serverless API (works on Vercel)</span>
+                  </div>
+                  <div className="flex items-start gap-2 text-sm">
+                    <span className="text-amber-600">⚠</span>
+                    <span className="text-slate-600">Requires online connection</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Info Box */}
@@ -200,12 +259,16 @@ export function PDFSettings() {
                 <tr className="border-b border-slate-200">
                   <th className="text-left py-2 px-3 font-semibold text-slate-700">Feature</th>
                   <th className="text-center py-2 px-3 font-semibold text-slate-700">HTML Canvas</th>
+                  <th className="text-center py-2 px-3 font-semibold text-slate-700">Puppeteer PDF</th>
                   <th className="text-center py-2 px-3 font-semibold text-slate-700">Word Document</th>
                 </tr>
               </thead>
               <tbody className="text-slate-600">
                 <tr className="border-b border-slate-100">
                   <td className="py-2 px-3">Output Format</td>
+                  <td className="text-center py-2 px-3">
+                    <span className="text-slate-700">PDF</span>
+                  </td>
                   <td className="text-center py-2 px-3">
                     <span className="text-slate-700">PDF</span>
                   </td>
@@ -221,6 +284,9 @@ export function PDFSettings() {
                   <td className="text-center py-2 px-3">
                     <span className="inline-block w-5 h-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs">✗</span>
                   </td>
+                  <td className="text-center py-2 px-3">
+                    <span className="inline-block w-5 h-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs">✗</span>
+                  </td>
                 </tr>
                 <tr className="border-b border-slate-100">
                   <td className="py-2 px-3">Deployment</td>
@@ -230,11 +296,29 @@ export function PDFSettings() {
                   <td className="text-center py-2 px-3">
                     <span className="text-blue-600">Serverless API</span>
                   </td>
+                  <td className="text-center py-2 px-3">
+                    <span className="text-blue-600">Serverless API</span>
+                  </td>
+                </tr>
+                <tr className="border-b border-slate-100">
+                  <td className="py-2 px-3">Styling Preservation</td>
+                  <td className="text-center py-2 px-3">
+                    <span className="text-amber-600">Image-based</span>
+                  </td>
+                  <td className="text-center py-2 px-3">
+                    <span className="text-green-600">Perfect (100%)</span>
+                  </td>
+                  <td className="text-center py-2 px-3">
+                    <span className="text-amber-600">Partial</span>
+                  </td>
                 </tr>
                 <tr className="border-b border-slate-100">
                   <td className="py-2 px-3">Searchable Text</td>
                   <td className="text-center py-2 px-3">
                     <span className="inline-block w-5 h-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs">✗</span>
+                  </td>
+                  <td className="text-center py-2 px-3">
+                    <span className="inline-block w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs">✓</span>
                   </td>
                   <td className="text-center py-2 px-3">
                     <span className="inline-block w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs">✓</span>
@@ -246,11 +330,17 @@ export function PDFSettings() {
                     <span className="text-amber-600">Larger</span>
                   </td>
                   <td className="text-center py-2 px-3">
+                    <span className="text-green-600">Medium</span>
+                  </td>
+                  <td className="text-center py-2 px-3">
                     <span className="text-green-600">Smaller</span>
                   </td>
                 </tr>
                 <tr className="border-b border-slate-100">
                   <td className="py-2 px-3">Print Quality</td>
+                  <td className="text-center py-2 px-3">
+                    <span className="text-green-600">Excellent</span>
+                  </td>
                   <td className="text-center py-2 px-3">
                     <span className="text-green-600">Excellent</span>
                   </td>
@@ -264,6 +354,9 @@ export function PDFSettings() {
                     <span className="text-red-600">No</span>
                   </td>
                   <td className="text-center py-2 px-3">
+                    <span className="text-red-600">No</span>
+                  </td>
+                  <td className="text-center py-2 px-3">
                     <span className="text-green-600">Yes</span>
                   </td>
                 </tr>
@@ -273,11 +366,17 @@ export function PDFSettings() {
                     <span className="text-green-600">Fast</span>
                   </td>
                   <td className="text-center py-2 px-3">
+                    <span className="text-amber-600">Medium</span>
+                  </td>
+                  <td className="text-center py-2 px-3">
                     <span className="text-green-600">Fast</span>
                   </td>
                 </tr>
                 <tr>
                   <td className="py-2 px-3">Ready to Submit</td>
+                  <td className="text-center py-2 px-3">
+                    <span className="text-green-600">Yes (PDF)</span>
+                  </td>
                   <td className="text-center py-2 px-3">
                     <span className="text-green-600">Yes (PDF)</span>
                   </td>
@@ -302,8 +401,8 @@ export function PDFSettings() {
  */
 export function getPDFGenerationMethod(): PDFGenerationMethod {
   const saved = localStorage.getItem('pdfGenerationMethod');
-  if (saved === 'word-docx' || saved === 'html-canvas') {
-    return saved;
+  if (saved === 'word-docx' || saved === 'html-canvas' || saved === 'puppeteer-pdf') {
+    return saved as PDFGenerationMethod;
   }
   // Migrate old 'word-pdf' setting to 'word-docx'
   if (saved === 'word-pdf') {

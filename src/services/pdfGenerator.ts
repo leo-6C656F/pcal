@@ -8,8 +8,9 @@ import logoImage from '../assets/logo.png';
  * PDF Generator Service
  * Generates exact replica of Orange County Head Start PCAL In-Kind Form
  * Supports multiple generation methods:
- * - HTML canvas → PDF (default, generates actual PDF)
- * - Word document (generates .docx file for download)
+ * - HTML canvas → PDF (default, client-side, image-based)
+ * - Puppeteer → PDF (server-side, perfect styling preservation)
+ * - Word document (server-side, generates .docx file for download)
  */
 
 interface PDFGenerationOptions {
@@ -18,7 +19,27 @@ interface PDFGenerationOptions {
   centerName: string;
   teacherName: string;
   goals: Goal[];
-  forceMethod?: 'html-canvas' | 'word-docx'; // Optional: override user preference
+  forceMethod?: 'html-canvas' | 'word-docx' | 'puppeteer-pdf'; // Optional: override user preference
+}
+
+/**
+ * Get the API URL for server-side PDF generation
+ * In production (Vercel): uses relative URL
+ * In development: uses localhost:3001 or VITE_SERVER_URL env variable
+ */
+function getServerUrl(): string {
+  // If custom server URL is set, use it
+  if (import.meta.env.VITE_SERVER_URL) {
+    return import.meta.env.VITE_SERVER_URL;
+  }
+
+  // In production, use relative URLs
+  if (import.meta.env.PROD) {
+    return '';
+  }
+
+  // In development, default to localhost server
+  return 'http://localhost:3001';
 }
 
 /**
@@ -59,9 +80,44 @@ export async function generatePDF(options: PDFGenerationOptions): Promise<Uint8A
   // Convert logo to base64
   const logoBase64 = await imageToBase64(logoImage);
 
-  if (method === 'word-docx') {
-    // Use Word document generation (client-side only)
-    console.log('Using Word document generation method (client-side)');
+  if (method === 'puppeteer-pdf') {
+    // Use server-side Puppeteer for perfect HTML/CSS preservation
+    console.log('Using Puppeteer server-side PDF generation method');
+
+    // Generate HTML from template
+    const html = await generateHTML({
+      entries,
+      child,
+      centerName,
+      teacherName,
+      goals
+    });
+
+    // Replace logo placeholder with actual base64
+    const htmlWithLogo = html.replace('LOGO_BASE64_PLACEHOLDER', logoBase64);
+
+    // Send HTML to server for conversion to PDF
+    const serverUrl = getServerUrl();
+    const response = await fetch(`${serverUrl}/api/generate-pdf`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ html: htmlWithLogo })
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(`Server error: ${error.error || response.statusText}`);
+    }
+
+    // Convert response to Uint8Array
+    const arrayBuffer = await response.arrayBuffer();
+    return new Uint8Array(arrayBuffer);
+
+  } else if (method === 'word-docx') {
+    // Use Word document generation (server-side)
+    console.log('Using Word document generation method (server-side)');
     const blob = await generateWordPDF({
       entries,
       child,
