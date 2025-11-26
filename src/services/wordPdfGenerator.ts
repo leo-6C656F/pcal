@@ -17,7 +17,25 @@ interface WordPDFOptions {
   logoBase64?: string;
 }
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
+/**
+ * Get the API URL for Word document generation
+ * In production (Vercel): uses relative URL /api/html-to-docx
+ * In development: uses localhost:3001 or VITE_SERVER_URL env variable
+ */
+function getApiUrl(): string {
+  // If custom server URL is set, use it
+  if (import.meta.env.VITE_SERVER_URL) {
+    return `${import.meta.env.VITE_SERVER_URL}/api/html-to-docx`;
+  }
+
+  // In production (or when using relative URLs), use same domain
+  if (import.meta.env.PROD) {
+    return '/api/html-to-docx';
+  }
+
+  // In development, default to localhost server
+  return 'http://localhost:3001/api/html-to-docx';
+}
 
 /**
  * Generate Word document for download
@@ -37,8 +55,11 @@ export async function generateWordPDF(options: WordPDFOptions): Promise<Blob> {
     goals
   });
 
+  const apiUrl = getApiUrl();
+  console.log('Using API endpoint:', apiUrl);
+
   // Send HTML to server for conversion to Word
-  const response = await fetch(`${SERVER_URL}/api/html-to-docx`, {
+  const response = await fetch(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

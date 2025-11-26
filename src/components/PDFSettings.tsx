@@ -164,8 +164,8 @@ export function PDFSettings() {
                     <span className="text-slate-600">Smaller file sizes than canvas method</span>
                   </div>
                   <div className="flex items-start gap-2 text-sm">
-                    <span className="text-amber-600">⚠</span>
-                    <span className="text-slate-600">Requires server running (port 3001)</span>
+                    <span className="text-blue-600">ℹ</span>
+                    <span className="text-slate-600">Uses serverless API (works on Vercel)</span>
                   </div>
                   <div className="flex items-start gap-2 text-sm">
                     <span className="text-amber-600">ℹ</span>
@@ -223,12 +223,12 @@ export function PDFSettings() {
                   </td>
                 </tr>
                 <tr className="border-b border-slate-100">
-                  <td className="py-2 px-3">Server Required</td>
+                  <td className="py-2 px-3">Deployment</td>
                   <td className="text-center py-2 px-3">
-                    <span className="text-green-600">No</span>
+                    <span className="text-green-600">Client-side only</span>
                   </td>
                   <td className="text-center py-2 px-3">
-                    <span className="text-amber-600">Yes (port 3001)</span>
+                    <span className="text-blue-600">Serverless API</span>
                   </td>
                 </tr>
                 <tr className="border-b border-slate-100">
