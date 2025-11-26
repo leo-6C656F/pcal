@@ -11,18 +11,28 @@ interface ModalProps {
 
 export function Modal({ children, onClose, title, size = 'md', footer }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Compact sizes - more screen space efficient
+  // Responsive sizes that use more screen space
   const sizeClasses = {
-    sm: 'max-w-[320px]',  // Simple dialogs
-    md: 'max-w-[480px]',  // Standard dialogs
-    lg: 'max-w-[640px]',  // Wide dialogs
+    sm: 'max-w-md',        // Small dialogs - 448px
+    md: 'max-w-2xl',       // Standard dialogs - 672px
+    lg: 'max-w-5xl',       // Wide dialogs for lists - 1024px
   };
 
   // Focus trap and keyboard navigation
   useEffect(() => {
-    closeButtonRef.current?.focus();
+    // Focus the content area first so scrolling works immediately
+    // Then move focus to close button for accessibility
+    if (contentRef.current) {
+      contentRef.current.focus();
+    }
+
+    // Small delay to ensure content is rendered before focusing close button
+    const timer = setTimeout(() => {
+      closeButtonRef.current?.focus();
+    }, 50);
 
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -55,6 +65,7 @@ export function Modal({ children, onClose, title, size = 'md', footer }: ModalPr
     document.body.style.overflow = 'hidden';
 
     return () => {
+      clearTimeout(timer);
       document.removeEventListener('keydown', handleEscape);
       document.removeEventListener('keydown', handleTab);
       document.body.style.overflow = originalOverflow;
@@ -92,7 +103,11 @@ export function Modal({ children, onClose, title, size = 'md', footer }: ModalPr
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto scroll-smooth px-4 py-3">
+        <div
+          ref={contentRef}
+          tabIndex={-1}
+          className="flex-1 overflow-y-auto overscroll-contain scroll-smooth px-4 py-3 focus:outline-none"
+        >
           {children}
         </div>
 
