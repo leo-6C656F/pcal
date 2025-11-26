@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import type { Goal } from '../types';
-import { Plus, Trash2, Edit, Target } from 'lucide-react';
+import { Plus, Trash2, Edit, Target, AlertTriangle } from 'lucide-react';
 import { GoalForm } from './GoalForm';
-import { ConfirmDialog } from './ConfirmDialog';
 import { showToast } from '../App';
 
 /**
@@ -17,8 +16,8 @@ export function GoalManager() {
 
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [goalToEdit, setGoalToEdit] = useState<Goal | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<number | null>(null);
+  const [confirmingClearAll, setConfirmingClearAll] = useState(false);
 
   const handleSaveGoal = async (goal: Goal) => {
     await saveGoal(goal);
@@ -29,13 +28,13 @@ export function GoalManager() {
 
   const handleDeleteGoal = async (code: number) => {
     await deleteGoal(code);
-    setShowDeleteConfirm(null);
+    setConfirmingDeleteId(null);
     showToast.info(t('goalManager.goalDeleted'));
   };
 
   const handleClearAll = async () => {
     await clearAllGoals();
-    setShowClearConfirm(false);
+    setConfirmingClearAll(false);
     showToast.info(t('goalManager.goalsReset'));
   };
 
@@ -50,40 +49,38 @@ export function GoalManager() {
         />
       )}
 
-      {showDeleteConfirm !== null && (
-        <ConfirmDialog
-          title={t('goalManager.deleteGoalTitle')}
-          message={t('goalManager.deleteGoalMessage')}
-          onConfirm={() => handleDeleteGoal(showDeleteConfirm)}
-          onCancel={() => setShowDeleteConfirm(null)}
-          variant="danger"
-          confirmText={t('common.delete')}
-        />
-      )}
-
-      {showClearConfirm && (
-        <ConfirmDialog
-          title={t('goalManager.resetAllGoalsTitle')}
-          message={t('goalManager.resetAllGoalsMessage')}
-          onConfirm={handleClearAll}
-          onCancel={() => setShowClearConfirm(false)}
-          variant="danger"
-          confirmText={t('goalManager.resetAll')}
-        />
-      )}
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">{t('goalManager.title')}</h1>
           <p className="text-slate-500 mt-1">{t('goalManager.subtitle')}</p>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowClearConfirm(true)}
-            className="btn-danger bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 hover:border-rose-300"
-          >
-            {t('goalManager.resetAllGoals')}
-          </button>
+        <div className="flex gap-2 items-center">
+          {confirmingClearAll ? (
+            <div className="flex items-center gap-2 px-3 py-2 bg-rose-50 border border-rose-200 rounded-lg animate-in fade-in-0 zoom-in-95 duration-150">
+              <AlertTriangle size={16} className="text-rose-600" />
+              <span className="text-sm text-rose-700">{t('goalManager.resetAllGoalsMessage')}</span>
+              <button
+                onClick={() => setConfirmingClearAll(false)}
+                className="px-2.5 py-1 text-xs font-medium text-slate-600 bg-white hover:bg-slate-50 rounded border border-slate-200 transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={handleClearAll}
+                className="px-2.5 py-1 text-xs font-medium text-white bg-rose-600 hover:bg-rose-700 rounded transition-colors"
+              >
+                {t('goalManager.resetAll')}
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmingClearAll(true)}
+              className="btn-danger bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 hover:border-rose-300"
+            >
+              {t('goalManager.resetAllGoals')}
+            </button>
+          )}
           <button
             onClick={() => { setGoalToEdit(null); setShowGoalForm(true); }}
             className="btn-primary"
@@ -133,20 +130,41 @@ export function GoalManager() {
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <button
-                      onClick={() => { setGoalToEdit(goal); setShowGoalForm(true); }}
-                      className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors"
-                      title={t('common.edit')}
-                    >
-                      <Edit size={18} />
-                    </button>
-                    <button
-                      onClick={() => setShowDeleteConfirm(goal.code)}
-                      className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                      title={t('common.delete')}
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                    {confirmingDeleteId === goal.code ? (
+                      <div className="flex items-center gap-2 px-2 py-1.5 bg-rose-50 border border-rose-200 rounded-lg animate-in fade-in-0 zoom-in-95 duration-150">
+                        <AlertTriangle size={14} className="text-rose-600" />
+                        <span className="text-xs text-rose-700">{t('common.delete')}?</span>
+                        <button
+                          onClick={() => setConfirmingDeleteId(null)}
+                          className="px-2 py-0.5 text-xs font-medium text-slate-600 bg-white hover:bg-slate-50 rounded border border-slate-200 transition-colors"
+                        >
+                          {t('common.cancel')}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteGoal(goal.code)}
+                          className="px-2 py-0.5 text-xs font-medium text-white bg-rose-600 hover:bg-rose-700 rounded transition-colors"
+                        >
+                          {t('common.delete')}
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => { setGoalToEdit(goal); setShowGoalForm(true); }}
+                          className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors"
+                          title={t('common.edit')}
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button
+                          onClick={() => setConfirmingDeleteId(goal.code)}
+                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          title={t('common.delete')}
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

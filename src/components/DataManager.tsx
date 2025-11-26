@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Download, Upload, Database, AlertTriangle, CheckCircle, FileJson, Loader2 } from 'lucide-react';
 import { downloadExport, importData, parseImportFile, getDataStats, type ImportMode, type ExportData } from '../services/dataExportImport';
-import { ConfirmDialog } from './ConfirmDialog';
 import { showToast } from '../App';
 import { useStore } from '../store';
 
@@ -27,7 +26,7 @@ export function DataManager() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [importPreview, setImportPreview] = useState<ExportData | null>(null);
   const [importMode, setImportMode] = useState<ImportMode>('merge');
-  const [showImportConfirm, setShowImportConfirm] = useState(false);
+  const [confirmingImport, setConfirmingImport] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [includeOpenAI, setIncludeOpenAI] = useState(false);
 
@@ -78,7 +77,7 @@ export function DataManager() {
   const handleImportConfirm = async () => {
     if (!selectedFile) return;
 
-    setShowImportConfirm(false);
+    setConfirmingImport(false);
     setIsImporting(true);
 
     try {
@@ -121,17 +120,6 @@ export function DataManager() {
 
   return (
     <div className="space-y-8">
-      {showImportConfirm && (
-        <ConfirmDialog
-          title={importMode === 'replace' ? t('dataManager.confirmReplaceTitle') : t('dataManager.confirmMergeTitle')}
-          message={importMode === 'replace' ? t('dataManager.confirmReplaceMessage') : t('dataManager.confirmMergeMessage')}
-          onConfirm={handleImportConfirm}
-          onCancel={() => setShowImportConfirm(false)}
-          variant={importMode === 'replace' ? 'danger' : 'info'}
-          confirmText={importMode === 'replace' ? t('dataManager.replaceData') : t('dataManager.mergeData')}
-        />
-      )}
-
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-slate-900">{t('dataManager.title')}</h1>
@@ -366,31 +354,65 @@ export function DataManager() {
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowImportConfirm(true)}
-                disabled={isImporting}
-                className={importMode === 'replace' ? 'btn-danger' : 'btn-primary'}
-              >
-                {isImporting ? (
-                  <>
-                    <Loader2 size={18} className="mr-2 animate-spin" />
-                    {t('dataManager.importing')}
-                  </>
-                ) : (
-                  <>
-                    <Upload size={18} className="mr-2" />
-                    {importMode === 'replace' ? t('dataManager.replaceData') : t('dataManager.mergeData')}
-                  </>
-                )}
-              </button>
-              <button
-                onClick={cancelImport}
-                disabled={isImporting}
-                className="btn-secondary"
-              >
-                {t('common.cancel')}
-              </button>
+            <div className="flex flex-col gap-3">
+              {confirmingImport ? (
+                <div className={`flex items-center gap-3 p-3 rounded-lg border animate-in fade-in-0 zoom-in-95 duration-150 ${
+                  importMode === 'replace'
+                    ? 'bg-rose-50 border-rose-200'
+                    : 'bg-blue-50 border-blue-200'
+                }`}>
+                  <AlertTriangle size={18} className={importMode === 'replace' ? 'text-rose-600' : 'text-blue-600'} />
+                  <span className={`text-sm flex-1 ${importMode === 'replace' ? 'text-rose-700' : 'text-blue-700'}`}>
+                    {importMode === 'replace'
+                      ? t('dataManager.confirmReplaceMessage')
+                      : t('dataManager.confirmMergeMessage')}
+                  </span>
+                  <button
+                    onClick={() => setConfirmingImport(false)}
+                    className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-white hover:bg-slate-50 rounded border border-slate-200 transition-colors"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    onClick={handleImportConfirm}
+                    disabled={isImporting}
+                    className={`px-3 py-1.5 text-xs font-medium text-white rounded transition-colors disabled:opacity-50 ${
+                      importMode === 'replace'
+                        ? 'bg-rose-600 hover:bg-rose-700'
+                        : 'bg-blue-600 hover:bg-blue-700'
+                    }`}
+                  >
+                    {isImporting ? t('dataManager.importing') : (importMode === 'replace' ? t('dataManager.replaceData') : t('dataManager.mergeData'))}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setConfirmingImport(true)}
+                    disabled={isImporting}
+                    className={importMode === 'replace' ? 'btn-danger' : 'btn-primary'}
+                  >
+                    {isImporting ? (
+                      <>
+                        <Loader2 size={18} className="mr-2 animate-spin" />
+                        {t('dataManager.importing')}
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={18} className="mr-2" />
+                        {importMode === 'replace' ? t('dataManager.replaceData') : t('dataManager.mergeData')}
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={cancelImport}
+                    disabled={isImporting}
+                    className="btn-secondary"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}

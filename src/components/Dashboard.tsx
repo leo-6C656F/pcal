@@ -7,7 +7,7 @@ import { ChildForm } from './ChildForm';
 import { ChildList } from './ChildList';
 import { EntryList } from './EntryList';
 import { PDFExportModal } from './PDFExportModal';
-import { Modal } from './Modal';
+import { Sheet } from './Sheet';
 import { WelcomeScreen } from './WelcomeScreen';
 import { PullToRefresh } from './PullToRefresh';
 
@@ -119,9 +119,9 @@ export function Dashboard() {
         )}
       </div>
 
-      {/* Create Child Modal/Form area */}
+      {/* Create Child Sheet */}
       {showChildForm && (
-        <Modal onClose={() => setShowChildForm(false)} title={t('dashboard.addNewChild')}>
+        <Sheet onClose={() => setShowChildForm(false)} title={t('dashboard.addNewChild')} size="sm">
           <ChildForm
             onChildCreated={(child) => {
               setCurrentChild(child);
@@ -129,7 +129,7 @@ export function Dashboard() {
             }}
             onCancel={() => setShowChildForm(false)}
           />
-        </Modal>
+        </Sheet>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
@@ -189,24 +189,14 @@ export function Dashboard() {
                 </div>
               </div>
 
-              {/* Date Picker Modal */}
+              {/* Date Picker Sheet */}
               {showDatePicker && (
-                <Modal onClose={() => setShowDatePicker(false)} title={t('dashboard.selectActivityDate')}>
-                  <div className="space-y-6">
-                    <div>
-                      <label className="label-text mb-2">{t('dashboard.chooseDate')}</label>
-                      <input
-                        type="date"
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        max={format(new Date(), 'yyyy-MM-dd')}
-                        className="input-field w-full text-lg py-3"
-                      />
-                      <p className="text-xs text-slate-500 mt-2">
-                        {t('dashboard.dateHelperText')}
-                      </p>
-                    </div>
-                    <div className="flex gap-3 pt-2">
+                <Sheet
+                  onClose={() => setShowDatePicker(false)}
+                  title={t('dashboard.selectActivityDate')}
+                  size="sm"
+                  footer={
+                    <div className="flex gap-3">
                       <button
                         onClick={() => setShowDatePicker(false)}
                         className="btn-secondary flex-1"
@@ -228,8 +218,24 @@ export function Dashboard() {
                         )}
                       </button>
                     </div>
+                  }
+                >
+                  <div className="space-y-4">
+                    <div>
+                      <label className="label-text mb-2">{t('dashboard.chooseDate')}</label>
+                      <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        max={format(new Date(), 'yyyy-MM-dd')}
+                        className="input-field w-full text-lg py-3"
+                      />
+                      <p className="text-xs text-slate-500 mt-2">
+                        {t('dashboard.dateHelperText')}
+                      </p>
+                    </div>
                   </div>
-                </Modal>
+                </Sheet>
               )}
 
               {showPDFExport && (
