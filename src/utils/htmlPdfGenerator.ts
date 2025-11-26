@@ -269,22 +269,24 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
             </div>
 
             <!-- Totals Box attached to right side -->
-            <div class="totals-box">
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 2px; border-bottom: 1px solid black;">
-                    <tr>
-                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #dbe4f1;">TOTAL HRS</td>
-                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #dbe4f1;">${pageTotalHours}</td>
-                    </tr>
-                    <tr>
-                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #dbe4f1;">HRLY RATE</td>
-                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #dbe4f1;"></td>
-                    </tr>
-                    <tr>
-                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #dbe4f1;">TOTAL $</td>
-                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #dbe4f1;"></td>
-                    </tr>
-                </table>
-                <div style="text-align: center; color: red; font-size: 10px; font-weight: normal; margin-top: 2px;">Original copy to Accounting</div>
+            <div class="totals-wrapper">
+                <div class="totals-box">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #dbe4f1;">TOTAL HRS</td>
+                            <td style="border: 1px solid black; padding: 2px 3px; background-color: #dbe4f1;">${pageTotalHours}</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #dbe4f1;">HRLY RATE</td>
+                            <td style="border: 1px solid black; padding: 2px 3px; background-color: #dbe4f1;"></td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #dbe4f1;">TOTAL $</td>
+                            <td style="border: 1px solid black; padding: 2px 3px; background-color: #dbe4f1;"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div style="text-align: center; color: red; font-size: 10px; font-weight: normal; margin-top: 2px; width: 100%;">Original copy to Accounting</div>
             </div>
         </div>
     </div>`;
@@ -528,14 +530,18 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
             height: auto;
         }
 
-        .totals-box {
+        .totals-wrapper {
             width: 17%;
             font-size: 10px;
             font-weight: bold;
-            border-left: 1px solid black;
-            border-right: 1px solid black;
             margin-right: 0px;
             margin-top: -1px;
+        }
+
+        .totals-box {
+            border-left: 1px solid black;
+            border-right: 1px solid black;
+            border-bottom: 1px solid black;
         }
 
         .total-row {
