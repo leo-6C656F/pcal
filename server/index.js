@@ -1,7 +1,13 @@
 import express from 'express';
 import puppeteer from 'puppeteer';
 import cors from 'cors';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import fs from 'fs/promises';
+import path from 'path';
+import os from 'os';
 
+const execPromise = promisify(exec);
 const app = express();
 const PORT = 3001;
 
@@ -83,6 +89,88 @@ app.post('/api/generate-pdf', async (req, res) => {
   } finally {
     if (browser) {
       await browser.close();
+    }
+  }
+});
+
+/**
+ * Word to PDF Conversion Endpoint
+ * Receives DOCX file as base64 and converts it to PDF using LibreOffice
+ */
+app.post('/api/word-to-pdf', async (req, res) => {
+  let tempDir;
+
+  try {
+    const { docxBase64, filename = 'document.docx' } = req.body;
+
+    if (!docxBase64) {
+      return res.status(400).json({ error: 'DOCX base64 content is required' });
+    }
+
+    console.log('Converting DOCX to PDF with LibreOffice...');
+
+    // Create temporary directory
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'pcal-word-'));
+
+    // Save DOCX file
+    const docxPath = path.join(tempDir, filename);
+    const docxBuffer = Buffer.from(docxBase64, 'base64');
+    await fs.writeFile(docxPath, docxBuffer);
+
+    // Check if LibreOffice is available
+    try {
+      await execPromise('which libreoffice || which soffice');
+    } catch (e) {
+      return res.status(500).json({
+        error: 'LibreOffice not installed',
+        details: 'LibreOffice/OpenOffice is required for Word to PDF conversion. Please install it or use the default PDF generation method.'
+      });
+    }
+
+    // Convert to PDF using LibreOffice
+    const { stdout, stderr } = await execPromise(
+      `libreoffice --headless --convert-to pdf --outdir "${tempDir}" "${docxPath}" || soffice --headless --convert-to pdf --outdir "${tempDir}" "${docxPath}"`,
+      { timeout: 30000 }
+    );
+
+    if (stderr && !stderr.includes('using')) {
+      console.warn('LibreOffice stderr:', stderr);
+    }
+
+    // Read the generated PDF
+    const pdfFilename = filename.replace(/\.docx$/i, '.pdf');
+    const pdfPath = path.join(tempDir, pdfFilename);
+
+    // Wait a bit for the file to be written
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const pdfBuffer = await fs.readFile(pdfPath);
+
+    console.log('PDF converted successfully, size:', pdfBuffer.length);
+
+    // Send PDF as response
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Length': pdfBuffer.length,
+      'Content-Disposition': `attachment; filename="${pdfFilename}"`
+    });
+
+    res.send(pdfBuffer);
+
+  } catch (error) {
+    console.error('Word to PDF conversion error:', error);
+    res.status(500).json({
+      error: 'Failed to convert Word to PDF',
+      details: error.message
+    });
+  } finally {
+    // Cleanup temporary files
+    if (tempDir) {
+      try {
+        await fs.rm(tempDir, { recursive: true, force: true });
+      } catch (e) {
+        console.error('Failed to cleanup temp dir:', e);
+      }
     }
   }
 });
