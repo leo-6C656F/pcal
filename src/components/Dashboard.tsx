@@ -31,7 +31,9 @@ export function Dashboard() {
   // Pull-to-refresh handler
   const handleRefresh = useCallback(async () => {
     await Promise.all([loadChildren(), loadEntries()]);
-  }, [loadChildren, loadEntries]);
+    // Store functions are stable (from Zustand), so we don't need them as dependencies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [showChildForm, setShowChildForm] = useState(false);
   const [showPDFExport, setShowPDFExport] = useState(false);

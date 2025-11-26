@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from './store';
 import { initializeDatabase } from './services/journalReplay';
@@ -40,7 +40,7 @@ function App() {
   const toast = useToast();
 
   // Track if we're handling a popstate event to avoid pushing duplicate states
-  const [isPopstateHandling, setIsPopstateHandling] = useState(false);
+  const isPopstateHandlingRef = useRef(false);
 
   // Detect if running as PWA (standalone mode)
   const isPWA = typeof window !== 'undefined' && (
@@ -73,14 +73,17 @@ function App() {
     };
 
     init();
-  }, [loadChildren, loadEntries, loadGoals]);
+    // Store functions are stable (from Zustand), so we don't need them as dependencies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Update view when currentEntry changes
   useEffect(() => {
     if (currentEntry) {
       setCurrentView('entry');
-    } else if (currentView === 'entry') {
-      setCurrentView('dashboard');
+    } else {
+      // Only change to dashboard if we were on entry view
+      setCurrentView(prev => prev === 'entry' ? 'dashboard' : prev);
     }
   }, [currentEntry]);
 
@@ -94,7 +97,7 @@ function App() {
 
   // Push history state when view changes (but not when handling popstate)
   useEffect(() => {
-    if (isPopstateHandling) return;
+    if (isPopstateHandlingRef.current) return;
 
     const currentState = window.history.state as NavState | null;
     const newState: NavState = {
@@ -107,11 +110,11 @@ function App() {
         (currentView === 'entry' && currentState?.subView !== newState.subView)) {
       window.history.pushState(newState, '');
     }
-  }, [currentView, entrySubView, isPopstateHandling]);
+  }, [currentView, entrySubView]);
 
   // Handle browser back button
   const handlePopState = useCallback((event: PopStateEvent) => {
-    setIsPopstateHandling(true);
+    isPopstateHandlingRef.current = true;
     const state = event.state as NavState | null;
 
     if (!state) {
@@ -133,8 +136,11 @@ function App() {
       }
     }
 
-    // Reset the flag after a short delay to allow state updates to complete
-    setTimeout(() => setIsPopstateHandling(false), 0);
+    // Reset the flag synchronously after React processes the state updates
+    // Using requestAnimationFrame to ensure this happens after the render cycle
+    requestAnimationFrame(() => {
+      isPopstateHandlingRef.current = false;
+    });
   }, [setCurrentEntry]);
 
   // Listen for browser back/forward button

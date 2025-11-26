@@ -77,7 +77,8 @@ export const useStore = create<AppState>((set, get) => ({
     };
 
     await db.children.add(child);
-    await get().loadChildren();
+    // Update state directly instead of reloading all children
+    set({ children: [...get().children, child] });
 
     return child;
   },
@@ -87,12 +88,12 @@ export const useStore = create<AppState>((set, get) => ({
     if (child) {
       const updatedChild = { ...child, ...updates };
       await db.children.put(updatedChild);
-      await get().loadChildren();
-
-      // Update current child if it's the one being edited
-      if (get().currentChild?.id === id) {
-        get().setCurrentChild(updatedChild);
-      }
+      // Update state directly instead of reloading all children
+      set({
+        children: get().children.map(c => c.id === id ? updatedChild : c),
+        // Update current child if it's the one being edited
+        currentChild: get().currentChild?.id === id ? updatedChild : get().currentChild
+      });
     }
   },
 
@@ -103,15 +104,15 @@ export const useStore = create<AppState>((set, get) => ({
     // Delete the child
     await db.children.delete(id);
 
-    // Reload data
-    await get().loadChildren();
-    await get().loadEntries();
-
-    // Clear current child if it's the one being deleted
-    if (get().currentChild?.id === id) {
-      get().setCurrentChild(null);
-      get().setCurrentEntry(null);
-    }
+    // Update state directly instead of reloading
+    const isCurrentChild = get().currentChild?.id === id;
+    set({
+      children: get().children.filter(c => c.id !== id),
+      entries: get().entries.filter(e => e.childId !== id),
+      // Clear current child if it's the one being deleted
+      currentChild: isCurrentChild ? null : get().currentChild,
+      currentEntry: isCurrentChild ? null : get().currentEntry
+    });
   },
 
   createEntry: async (date, childId) => {
@@ -128,7 +129,8 @@ export const useStore = create<AppState>((set, get) => ({
 
     // Add to database
     await db.dailyEntries.add(entry);
-    await get().loadEntries();
+    // Update state directly instead of reloading all entries
+    set({ entries: [...get().entries, entry] });
 
     return entry;
   },
@@ -147,12 +149,13 @@ export const useStore = create<AppState>((set, get) => ({
     if (entry) {
       entry.lines.push(line);
       await db.dailyEntries.put(entry);
-      await get().loadEntries();
-
-      // Update current entry if it's the one being edited
-      if (get().currentEntry?.id === entryId) {
-        set({ currentEntry: entry });
-      }
+      // Update state directly instead of reloading all entries
+      const updatedEntries = get().entries.map(e => e.id === entryId ? entry : e);
+      set({
+        entries: updatedEntries,
+        // Update current entry if it's the one being edited
+        currentEntry: get().currentEntry?.id === entryId ? entry : get().currentEntry
+      });
     }
   },
 
@@ -167,12 +170,13 @@ export const useStore = create<AppState>((set, get) => ({
       if (lineIndex !== -1) {
         entry.lines[lineIndex] = { ...entry.lines[lineIndex], ...updates };
         await db.dailyEntries.put(entry);
-        await get().loadEntries();
-
-        // Update current entry if it's the one being edited
-        if (get().currentEntry?.id === entryId) {
-          set({ currentEntry: entry });
-        }
+        // Update state directly instead of reloading all entries
+        const updatedEntries = get().entries.map(e => e.id === entryId ? entry : e);
+        set({
+          entries: updatedEntries,
+          // Update current entry if it's the one being edited
+          currentEntry: get().currentEntry?.id === entryId ? entry : get().currentEntry
+        });
       }
     }
   },
@@ -186,12 +190,13 @@ export const useStore = create<AppState>((set, get) => ({
     if (entry) {
       entry.lines = entry.lines.filter(l => l.id !== lineId);
       await db.dailyEntries.put(entry);
-      await get().loadEntries();
-
-      // Update current entry if it's the one being edited
-      if (get().currentEntry?.id === entryId) {
-        set({ currentEntry: entry });
-      }
+      // Update state directly instead of reloading all entries
+      const updatedEntries = get().entries.map(e => e.id === entryId ? entry : e);
+      set({
+        entries: updatedEntries,
+        // Update current entry if it's the one being edited
+        currentEntry: get().currentEntry?.id === entryId ? entry : get().currentEntry
+      });
     }
   },
 
@@ -204,12 +209,13 @@ export const useStore = create<AppState>((set, get) => ({
     if (entry) {
       entry.signatureBase64 = signatureBase64;
       await db.dailyEntries.put(entry);
-      await get().loadEntries();
-
-      // Update current entry if it's the one being edited
-      if (get().currentEntry?.id === entryId) {
-        set({ currentEntry: entry });
-      }
+      // Update state directly instead of reloading all entries
+      const updatedEntries = get().entries.map(e => e.id === entryId ? entry : e);
+      set({
+        entries: updatedEntries,
+        // Update current entry if it's the one being edited
+        currentEntry: get().currentEntry?.id === entryId ? entry : get().currentEntry
+      });
     }
   },
 
@@ -224,52 +230,62 @@ export const useStore = create<AppState>((set, get) => ({
     entry.aiSummary = summary;
     entry.aiSummaryProvider = provider;
     await db.dailyEntries.put(entry);
-    await get().loadEntries();
-
-    // Update current entry if it's the one being edited
-    if (get().currentEntry?.id === entryId) {
-      set({ currentEntry: entry });
-    }
+    // Update state directly instead of reloading all entries
+    const updatedEntries = get().entries.map(e => e.id === entryId ? entry : e);
+    set({
+      entries: updatedEntries,
+      // Update current entry if it's the one being edited
+      currentEntry: get().currentEntry?.id === entryId ? entry : get().currentEntry
+    });
   },
 
   setAIConfig: (config) => set({ aiConfig: config }),
 
   saveGoal: async (goal) => {
     await db.goals.put(goal);
-    await get().loadGoals();
+    // Update state directly instead of reloading all goals
+    const existingIndex = get().goals.findIndex(g => g.code === goal.code);
+    if (existingIndex >= 0) {
+      set({ goals: get().goals.map(g => g.code === goal.code ? goal : g) });
+    } else {
+      set({ goals: [...get().goals, goal] });
+    }
   },
 
   deleteGoal: async (code) => {
     await db.goals.delete(code);
-    await get().loadGoals();
+    // Update state directly instead of reloading all goals
+    set({ goals: get().goals.filter(g => g.code !== code) });
   },
 
   clearAllGoals: async () => {
     await db.goals.clear();
-    await get().loadGoals();
+    // Update state directly instead of reloading
+    set({ goals: [] });
   },
 
   markEntriesAsSent: async (entryIds) => {
     const timestamp = Date.now();
+    const updatedEntriesMap = new Map<string, DailyEntry>();
 
     for (const entryId of entryIds) {
       const entry = await db.dailyEntries.get(entryId);
       if (entry) {
         entry.emailedAt = timestamp;
         await db.dailyEntries.put(entry);
+        updatedEntriesMap.set(entryId, entry);
       }
     }
 
-    await get().loadEntries();
-
-    // Update current entry if it's one of the marked entries
-    const currentEntry = get().currentEntry;
-    if (currentEntry && entryIds.includes(currentEntry.id)) {
-      const updatedEntry = await db.dailyEntries.get(currentEntry.id);
-      if (updatedEntry) {
-        set({ currentEntry: updatedEntry });
-      }
-    }
+    // Update state directly instead of reloading all entries
+    const currentEntryId = get().currentEntry?.id;
+    set({
+      entries: get().entries.map(e => updatedEntriesMap.get(e.id) || e),
+      // Update current entry if it's one of the marked entries
+      currentEntry: currentEntryId && updatedEntriesMap.has(currentEntryId)
+        ? updatedEntriesMap.get(currentEntryId)!
+        : get().currentEntry
+    });
   }
 }));
 
