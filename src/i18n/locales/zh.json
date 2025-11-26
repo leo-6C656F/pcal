@@ -38,6 +38,7 @@
     "entry": "条目",
     "entriesPlural": "条目",
     "signed": "已签名",
+    "notSigned": "未签名",
     "sent": "已发送",
     "saved": "已保存",
     "clear": "清除",
@@ -230,7 +231,13 @@
     "entriesSelected": "已选择 {{count}} {{type}}",
     "backToSelection": "← 返回选择",
     "reviewGenerate": "审核并生成 PDF",
-    "selectAtLeastOne": "请至少选择一个条目以生成 PDF"
+    "selectAtLeastOne": "请至少选择一个条目以生成 PDF",
+    "finalizeRequired": "需要完成条目",
+    "signatureRequired": "导出前条目必须签名",
+    "signatureRequiredDescription": "所有选定的条目必须有摘要和签名才能包含在 PDF 中。请在下方完成每个条目。",
+    "entriesNeedingFinalization": "需要完成的条目",
+    "finalize": "完成",
+    "finalizeAllToGenerate": "完成并签署所有条目以继续生成 PDF"
   },
   "confirmDialog": {
     "defaultConfirm": "确认",

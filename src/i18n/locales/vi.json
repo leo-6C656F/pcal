@@ -38,6 +38,7 @@
     "entry": "mục",
     "entriesPlural": "mục",
     "signed": "Đã ký",
+    "notSigned": "Chưa ký",
     "sent": "Đã gửi",
     "saved": "Đã lưu",
     "clear": "Xóa",
@@ -230,7 +231,13 @@
     "entriesSelected": "{{count}} {{type}} đã chọn",
     "backToSelection": "← Quay lại Lựa chọn",
     "reviewGenerate": "Xem xét & Tạo PDF",
-    "selectAtLeastOne": "Chọn ít nhất một mục để tạo PDF"
+    "selectAtLeastOne": "Chọn ít nhất một mục để tạo PDF",
+    "finalizeRequired": "Cần Hoàn tất các Mục",
+    "signatureRequired": "Các mục phải được ký trước khi xuất",
+    "signatureRequiredDescription": "Tất cả các mục đã chọn phải có tóm tắt và chữ ký trước khi có thể đưa vào PDF. Vui lòng hoàn tất từng mục bên dưới.",
+    "entriesNeedingFinalization": "Các mục cần hoàn tất",
+    "finalize": "Hoàn tất",
+    "finalizeAllToGenerate": "Hoàn tất và ký tất cả các mục để tiếp tục tạo PDF"
   },
   "confirmDialog": {
     "defaultConfirm": "Xác nhận",
