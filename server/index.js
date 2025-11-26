@@ -102,7 +102,7 @@ app.post('/api/html-to-docx', async (req, res) => {
 
     console.log('Generating Word document from HTML...');
 
-    // Convert HTML to Word document
+    // Convert HTML to Word document with enhanced styling options
     const docxBuffer = await HTMLtoDOCX(html, null, {
       orientation: 'landscape',
       margins: {
@@ -110,6 +110,18 @@ app.post('/api/html-to-docx', async (req, res) => {
         right: 720,
         bottom: 720,
         left: 720
+      },
+      font: 'Times New Roman',
+      fontSize: 22, // 11pt in half-points
+      table: {
+        row: {
+          cantSplit: true // Prevent table rows from splitting across pages
+        }
+      },
+      pageSize: {
+        orientation: 'landscape',
+        width: 15840, // 11 inches in twips (11 * 1440)
+        height: 12240  // 8.5 inches in twips (8.5 * 1440)
       }
     });
 
