@@ -110,7 +110,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
         .page-container {
             width: 1227px;
             background-color: white;
-            padding: 40px;
+            padding: 28px;
             position: relative;
             box-sizing: border-box;
         }
@@ -279,7 +279,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
         }
 
         .empty-row td {
-            height: 20px;
+            height: 15px;
         }
 
         /* Footer Section */
@@ -292,13 +292,13 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
 
         .signatures {
             width: 78%;
-            padding-top: 15px;
-            font-size: 12px;
+            padding-top: 8px;
+            font-size: 11px;
             font-weight: bold;
         }
 
         .signature-line {
-            margin-top: 18px;
+            margin-top: 12px;
             display: flex;
             align-items: flex-end;
         }
@@ -483,7 +483,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
                         <td style="text-align: center;">${activity.goalCodes.join(', ')}</td>
                         <td>${activity.startTime}</td>
                         <td>${activity.endTime}</td>
-                        <td style="padding: 0; position: relative; height: 30px; overflow: visible;">${activity.signatureBase64 ? `<img src="${activity.signatureBase64}" style="position: absolute; top: 50%; left: 2px; transform: translateY(calc(-50% + ${topOffset}px)); max-height: 28px; max-width: calc(100% - 4px); height: auto; object-fit: contain; mix-blend-mode: multiply;" alt="Signature" />` : ''}</td>
+                        <td style="padding: 0; position: relative; height: 26px; overflow: visible;">${activity.signatureBase64 ? `<img src="${activity.signatureBase64}" style="position: absolute; top: 50%; left: 2px; transform: translateY(calc(-50% + ${topOffset}px)); max-height: 24px; max-width: calc(100% - 4px); height: auto; object-fit: contain; mix-blend-mode: multiply;" alt="Signature" />` : ''}</td>
                         <td class="grey-col">${(activity.totalMinutes / 60).toFixed(2)}</td>
                     </tr>
                 `}).join('')}
@@ -511,18 +511,18 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
 
             <!-- Totals Box attached to right side -->
             <div class="totals-box">
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 3px;">
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 2px;">
                     <tr>
-                        <td style="border: 1px solid black; padding: 3px 4px; font-weight: bold; background-color: #d3d3d3;">TOTAL HRS</td>
-                        <td style="border: 1px solid black; padding: 3px 4px; background-color: #d3d3d3;">${totalHours}</td>
+                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #d3d3d3;">TOTAL HRS</td>
+                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #d3d3d3;">${totalHours}</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid black; padding: 3px 4px; font-weight: bold; background-color: #d3d3d3;">HRLY RATE</td>
-                        <td style="border: 1px solid black; padding: 3px 4px; background-color: #d3d3d3;"></td>
+                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #d3d3d3;">HRLY RATE</td>
+                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #d3d3d3;"></td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid black; padding: 3px 4px; font-weight: bold; background-color: #d3d3d3;">TOTAL $</td>
-                        <td style="border: 1px solid black; padding: 3px 4px; background-color: #d3d3d3;"></td>
+                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #d3d3d3;">TOTAL $</td>
+                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #d3d3d3;"></td>
                     </tr>
                 </table>
                 <div style="text-align: right; color: red; font-size: 10px; font-weight: normal;">Original copy to Accounting</div>
