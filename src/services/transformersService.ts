@@ -7,7 +7,8 @@
  */
 
 import { pipeline } from '@huggingface/transformers';
-import type { ModelLoadingState } from '../types';
+import type { ModelLoadingState, AIGenerationSettings } from '../types';
+import { DEFAULT_AI_SETTINGS } from '../types';
 
 // Model configuration
 const MODEL_ID = 'Xenova/LaMini-Flan-T5-248M';
@@ -118,9 +119,37 @@ export function getLoadError(): string | null {
 }
 
 /**
+ * Get AI generation settings from localStorage
+ */
+export function getAISettings(): AIGenerationSettings {
+  if (typeof window === 'undefined') {
+    return DEFAULT_AI_SETTINGS;
+  }
+
+  const saved = localStorage.getItem('aiGenerationSettings');
+  if (saved) {
+    try {
+      return { ...DEFAULT_AI_SETTINGS, ...JSON.parse(saved) };
+    } catch {
+      return DEFAULT_AI_SETTINGS;
+    }
+  }
+  return DEFAULT_AI_SETTINGS;
+}
+
+/**
+ * Save AI generation settings to localStorage
+ */
+export function saveAISettings(settings: AIGenerationSettings): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('aiGenerationSettings', JSON.stringify(settings));
+  }
+}
+
+/**
  * Generate a summary using the local Transformers.js model
  */
-export async function generateLocalSummary(prompt: string): Promise<string | null> {
+export async function generateLocalSummary(prompt: string, settings?: AIGenerationSettings): Promise<string | null> {
   if (!generatorPipeline) {
     // Try to initialize if not ready
     const initialized = await initializeModel();
@@ -129,12 +158,24 @@ export async function generateLocalSummary(prompt: string): Promise<string | nul
     }
   }
 
+  // Use provided settings or get from localStorage
+  const genSettings = settings || getAISettings();
+
   try {
-    const result = await generatorPipeline(prompt, {
-      max_new_tokens: 150,
-      min_length: 30,
-      do_sample: false,
-    });
+    // Build generation options
+    const generationOptions: Record<string, unknown> = {
+      max_new_tokens: genSettings.maxNewTokens,
+      min_length: genSettings.minLength,
+      do_sample: genSettings.doSample,
+    };
+
+    // Add sampling parameters only if sampling is enabled
+    if (genSettings.doSample) {
+      generationOptions.temperature = genSettings.temperature;
+      generationOptions.top_p = genSettings.topP;
+    }
+
+    const result = await generatorPipeline(prompt, generationOptions);
 
     // Result is an array with generated_text
     if (Array.isArray(result) && result.length > 0) {

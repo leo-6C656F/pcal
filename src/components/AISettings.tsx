@@ -8,7 +8,9 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  HardDrive
+  HardDrive,
+  Sliders,
+  RotateCcw
 } from 'lucide-react';
 import {
   isModelReady,
@@ -16,9 +18,12 @@ import {
   clearModelCache,
   getModelCacheSize,
   unloadModel,
-  getLoadError
+  getLoadError,
+  getAISettings,
+  saveAISettings
 } from '../services/aiService';
-import type { ModelLoadingState } from '../types';
+import type { ModelLoadingState, AIGenerationSettings } from '../types';
+import { DEFAULT_AI_SETTINGS } from '../types';
 
 export function AISettings() {
   const { t } = useTranslation();
@@ -30,6 +35,7 @@ export function AISettings() {
   const [error, setError] = useState<string | null>(null);
   const [customPrompt, setCustomPrompt] = useState<string>('');
   const [isEditingPrompt, setIsEditingPrompt] = useState(false);
+  const [genSettings, setGenSettings] = useState<AIGenerationSettings>(DEFAULT_AI_SETTINGS);
 
   useEffect(() => {
     updateStatus();
@@ -38,6 +44,8 @@ export function AISettings() {
     if (saved) {
       setCustomPrompt(saved);
     }
+    // Load generation settings
+    setGenSettings(getAISettings());
   }, []);
 
   const updateStatus = async () => {
@@ -134,11 +142,34 @@ export function AISettings() {
     alert(t('aiSettings.promptReset'));
   };
 
-  const defaultPrompt = `Write one concise paragraph in past tense. Use ONLY the information provided below. Do not make up or infer activities. If custom notes are provided, integrate them naturally into a well-formed sentence. Do not include child's name or time spent:
+  const handleSettingChange = (key: keyof AIGenerationSettings, value: number | boolean) => {
+    const newSettings = { ...genSettings, [key]: value };
+    setGenSettings(newSettings);
+    saveAISettings(newSettings);
+  };
 
+  const handleResetSettings = () => {
+    setGenSettings(DEFAULT_AI_SETTINGS);
+    saveAISettings(DEFAULT_AI_SETTINGS);
+    alert(t('aiSettings.settingsReset'));
+  };
+
+  const defaultPrompt = `Rewrite the activities below into one concise sentence in past tense describing only what the parent did.
+Follow these strict rules:
+- Use ONLY the actions written.
+- Do NOT mention the child.
+- Do NOT talk about goals, communication, development, or purpose.
+- Do NOT add, infer, or interpret anything not written.
+- Do NOT mention time or duration.
+- Generalize parentheses details (e.g., "Mirror play (eyes, nose, mouth)" → "Parent did mirror play." or "Using sign language (more, all done)" → "Parent practiced sign language.").
+
+Example input: Repetition with songs (Brown Bear)
+Example output: Parent practiced repetition with songs.
+
+Activities to rewrite:
 {activities}
 
-Compile this into a brief, professional summary focused on what was actually done.`;
+Final sentence:`;
 
   return (
     <div className="space-y-6">
@@ -338,6 +369,147 @@ Compile this into a brief, professional summary focused on what was actually don
             </p>
           </div>
         )}
+      </div>
+
+      {/* Generation Settings Card */}
+      <div className="card">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-lg bg-purple-100 text-purple-600">
+              <Sliders size={24} />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900">
+                {t('aiSettings.generationTitle')}
+              </h3>
+              <p className="text-sm text-slate-500">
+                {t('aiSettings.generationDescription')}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleResetSettings}
+            className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900"
+          >
+            <RotateCcw size={16} />
+            {t('aiSettings.resetToDefault')}
+          </button>
+        </div>
+
+        <div className="space-y-6">
+          {/* Max New Tokens */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-medium text-slate-700">
+                {t('aiSettings.maxTokens')}
+              </label>
+              <span className="text-sm font-semibold text-primary">{genSettings.maxNewTokens}</span>
+            </div>
+            <input
+              type="range"
+              min="20"
+              max="300"
+              step="10"
+              value={genSettings.maxNewTokens}
+              onChange={(e) => handleSettingChange('maxNewTokens', parseInt(e.target.value))}
+              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
+            />
+            <p className="mt-1 text-xs text-slate-500">{t('aiSettings.maxTokensHelp')}</p>
+          </div>
+
+          {/* Min Length */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-medium text-slate-700">
+                {t('aiSettings.minLength')}
+              </label>
+              <span className="text-sm font-semibold text-primary">{genSettings.minLength}</span>
+            </div>
+            <input
+              type="range"
+              min="5"
+              max="100"
+              step="5"
+              value={genSettings.minLength}
+              onChange={(e) => handleSettingChange('minLength', parseInt(e.target.value))}
+              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
+            />
+            <p className="mt-1 text-xs text-slate-500">{t('aiSettings.minLengthHelp')}</p>
+          </div>
+
+          {/* Do Sample Toggle */}
+          <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+            <div>
+              <label className="text-sm font-medium text-slate-700">
+                {t('aiSettings.useSampling')}
+              </label>
+              <p className="text-xs text-slate-500 mt-1">{t('aiSettings.useSamplingHelp')}</p>
+            </div>
+            <button
+              onClick={() => handleSettingChange('doSample', !genSettings.doSample)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                genSettings.doSample ? 'bg-primary' : 'bg-slate-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  genSettings.doSample ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Temperature - Only visible when sampling is enabled */}
+          {genSettings.doSample && (
+            <>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium text-slate-700">
+                    {t('aiSettings.temperature')}
+                  </label>
+                  <span className="text-sm font-semibold text-primary">{genSettings.temperature.toFixed(1)}</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="2.0"
+                  step="0.1"
+                  value={genSettings.temperature}
+                  onChange={(e) => handleSettingChange('temperature', parseFloat(e.target.value))}
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                />
+                <p className="mt-1 text-xs text-slate-500">{t('aiSettings.temperatureHelp')}</p>
+              </div>
+
+              {/* Top P */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium text-slate-700">
+                    {t('aiSettings.topP')}
+                  </label>
+                  <span className="text-sm font-semibold text-primary">{genSettings.topP.toFixed(1)}</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="1.0"
+                  step="0.1"
+                  value={genSettings.topP}
+                  onChange={(e) => handleSettingChange('topP', parseFloat(e.target.value))}
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                />
+                <p className="mt-1 text-xs text-slate-500">{t('aiSettings.topPHelp')}</p>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Tips for the extra content issue */}
+        <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-sm text-amber-900">
+            <strong>{t('aiSettings.tip')}:</strong> {t('aiSettings.extraContentTip')}
+          </p>
+        </div>
       </div>
     </div>
   );

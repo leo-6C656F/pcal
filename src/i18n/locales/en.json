@@ -178,7 +178,22 @@
     "defaultPrompt": "Default Prompt",
     "resetToDefault": "Reset to Default",
     "promptSaved": "Custom prompt saved successfully!",
-    "promptReset": "Prompt reset to default."
+    "promptReset": "Prompt reset to default.",
+    "generationTitle": "Generation Settings",
+    "generationDescription": "Fine-tune how the AI generates summaries",
+    "settingsReset": "Generation settings reset to defaults.",
+    "maxTokens": "Max Output Length",
+    "maxTokensHelp": "Maximum number of tokens (words/word-pieces) to generate. Lower values produce shorter outputs.",
+    "minLength": "Minimum Length",
+    "minLengthHelp": "Minimum output length. Set lower if you want very short summaries.",
+    "useSampling": "Use Sampling",
+    "useSamplingHelp": "When off, the AI uses greedy decoding (most predictable output). Turn on for more variety.",
+    "temperature": "Temperature",
+    "temperatureHelp": "Higher values (1.5+) make output more creative/random. Lower values (0.3-0.7) make it more focused and deterministic.",
+    "topP": "Top P (Nucleus Sampling)",
+    "topPHelp": "Controls diversity. Lower values make the output more focused on likely tokens.",
+    "tip": "Tip",
+    "extraContentTip": "If the AI adds extra explanations or notes you don't want, try: 1) Lowering 'Max Output Length' to 50-80, 2) Keeping 'Use Sampling' OFF for more predictable output, or 3) Adjusting your prompt to be more explicit about what NOT to include."
   },
   "childManager": {
     "title": "Manage Children",

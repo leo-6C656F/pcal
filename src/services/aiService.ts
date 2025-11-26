@@ -8,7 +8,9 @@ import {
   clearModelCache,
   getModelCacheSize,
   unloadModel,
-  getLoadError
+  getLoadError,
+  getAISettings,
+  saveAISettings
 } from './transformersService';
 
 /**
@@ -26,7 +28,9 @@ export {
   clearModelCache,
   getModelCacheSize,
   unloadModel,
-  getLoadError
+  getLoadError,
+  getAISettings,
+  saveAISettings
 };
 
 /**
@@ -88,7 +92,22 @@ function buildPrompt(_childName: string, lines: ActivityLine[]): string {
   }
 
   // Default prompt
-  return `Write one concise paragraph in past tense. Use ONLY the information provided below. Do not make up or infer activities. If custom notes are provided, integrate them naturally into a well-formed sentence. Do not include child's name or time spent:\n\n${activitiesText}\n\nCompile this into a brief, professional summary focused on what was actually done.`;
+  return `Rewrite the activities below into one concise sentence in past tense describing only what the parent did.
+Follow these strict rules:
+- Use ONLY the actions written.
+- Do NOT mention the child.
+- Do NOT talk about goals, communication, development, or purpose.
+- Do NOT add, infer, or interpret anything not written.
+- Do NOT mention time or duration.
+- Generalize parentheses details (e.g., "Mirror play (eyes, nose, mouth)" → "Parent did mirror play." or "Using sign language (more, all done)" → "Parent practiced sign language.").
+
+Example input: Repetition with songs (Brown Bear)
+Example output: Parent practiced repetition with songs.
+
+Activities to rewrite:
+${activitiesText}
+
+Final sentence:`;
 }
 
 /**
@@ -119,6 +138,8 @@ async function tryOpenAI(
   lines: ActivityLine[],
   apiKey: string
 ): Promise<string> {
+  const settings = getAISettings();
+
   const activitiesJson = JSON.stringify(
     lines.map(line => ({
       goal: GOALS.find(g => g.code === line.goalCode)?.description,
@@ -129,26 +150,37 @@ async function tryOpenAI(
     2
   );
 
+  // Build request body with settings
+  const requestBody: Record<string, unknown> = {
+    model: 'gpt-4o-mini',
+    messages: [
+      {
+        role: 'system',
+        content: 'You are a professional early childhood education specialist. Write concise summaries in past tense using ONLY the information provided. Do not make up or infer activities. Do not include child names or time spent. If custom notes are provided, integrate them naturally.'
+      },
+      {
+        role: 'user',
+        content: `Write one brief paragraph summarizing what was actually done. Use only the provided information:\n\n${activitiesJson}`
+      }
+    ],
+    max_tokens: settings.maxNewTokens
+  };
+
+  // Add temperature if sampling is enabled
+  if (settings.doSample) {
+    requestBody.temperature = settings.temperature;
+    requestBody.top_p = settings.topP;
+  } else {
+    requestBody.temperature = 0; // Greedy decoding
+  }
+
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`
     },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a professional early childhood education specialist. Write concise summaries in past tense using ONLY the information provided. Do not make up or infer activities. Do not include child names or time spent. If custom notes are provided, integrate them naturally.'
-        },
-        {
-          role: 'user',
-          content: `Write one brief paragraph summarizing what was actually done. Use only the provided information:\n\n${activitiesJson}`
-        }
-      ],
-      max_tokens: 150
-    })
+    body: JSON.stringify(requestBody)
   });
 
   if (!response.ok) {
