@@ -7,8 +7,14 @@ export default defineConfig(() => {
   // Custom domain is configured, use root path
   const base = process.env.GITHUB_PAGES === 'true' ? '/' : '/'
 
+  // Generate build timestamp
+  const buildTimestamp = new Date().toISOString()
+
   return {
     base,
+    define: {
+      '__BUILD_TIMESTAMP__': JSON.stringify(buildTimestamp),
+    },
     optimizeDeps: {
       exclude: ['@huggingface/transformers'],
     },
