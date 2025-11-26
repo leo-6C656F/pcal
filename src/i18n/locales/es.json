@@ -256,6 +256,12 @@
     "release": "Suelta para actualizar",
     "refreshing": "Actualizando..."
   },
+  "theme": {
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema",
+    "selectTheme": "Seleccionar tema"
+  },
   "pdfPreview": {
     "emailSubject": "Asunto del Correo",
     "confirmEmailPdf": "Confirmar Envío de PDF",

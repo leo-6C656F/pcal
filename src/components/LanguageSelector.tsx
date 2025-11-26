@@ -16,21 +16,21 @@ export function LanguageSelector() {
   return (
     <div className="relative inline-block">
       <div className="flex items-center gap-2">
-        <Globe size={18} className="text-slate-500" />
+        <Globe size={18} className="text-slate-500 dark:text-slate-400" />
         <select
           value={i18n.language}
           onChange={(e) => handleLanguageChange(e.target.value)}
-          className="appearance-none bg-transparent border border-slate-200 rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-slate-700 hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer transition-colors"
+          className="appearance-none bg-transparent border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-slate-700 dark:text-slate-300 hover:border-blue-300 dark:hover:border-blue-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer transition-colors dark:bg-slate-800"
           aria-label="Select language"
         >
           {languages.map((lang) => (
-            <option key={lang.code} value={lang.code}>
+            <option key={lang.code} value={lang.code} className="dark:bg-slate-800">
               {lang.nativeName}
             </option>
           ))}
         </select>
         <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-          <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </div>

@@ -256,6 +256,12 @@
     "release": "释放刷新",
     "refreshing": "正在刷新..."
   },
+  "theme": {
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统",
+    "selectTheme": "选择主题"
+  },
   "pdfPreview": {
     "emailSubject": "邮件主题",
     "confirmEmailPdf": "确认发送 PDF 邮件",

@@ -256,6 +256,12 @@
     "release": "Thả để làm mới",
     "refreshing": "Đang làm mới..."
   },
+  "theme": {
+    "light": "Sáng",
+    "dark": "Tối",
+    "system": "Hệ thống",
+    "selectTheme": "Chọn giao diện"
+  },
   "pdfPreview": {
     "emailSubject": "Tiêu đề Email",
     "confirmEmailPdf": "Xác nhận Gửi PDF qua Email",

@@ -303,6 +303,12 @@
     "release": "Release to refresh",
     "refreshing": "Refreshing..."
   },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "selectTheme": "Select theme"
+  },
   "pdfPreview": {
     "emailSubject": "Email Subject",
     "confirmEmailPdf": "Confirm Email PDF",
