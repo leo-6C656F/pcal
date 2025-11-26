@@ -73,10 +73,10 @@ export default async function handler(req, res) {
       landscape: true,
       printBackground: true,
       margin: {
-        top: '0.4in',
-        right: '0.4in',
-        bottom: '0.4in',
-        left: '0.4in'
+        top: '0in',
+        right: '0in',
+        bottom: '0in',
+        left: '0in'
       },
       preferCSSPageSize: false
     });
