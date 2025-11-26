@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FileText, Check } from 'lucide-react';
 
-export type PDFGenerationMethod = 'html-canvas' | 'word-pdf';
+export type PDFGenerationMethod = 'html-canvas' | 'word-docx';
 
 /**
  * PDFSettings Component
@@ -14,8 +14,12 @@ export function PDFSettings() {
   useEffect(() => {
     // Load saved preference
     const saved = localStorage.getItem('pdfGenerationMethod');
-    if (saved === 'word-pdf' || saved === 'html-canvas') {
+    if (saved === 'word-docx' || saved === 'html-canvas') {
       setPdfMethod(saved);
+    } else if (saved === 'word-pdf') {
+      // Migrate old setting to new value
+      setPdfMethod('word-docx');
+      localStorage.setItem('pdfGenerationMethod', 'word-docx');
     }
   }, []);
 
@@ -113,59 +117,59 @@ export function PDFSettings() {
             </div>
           </div>
 
-          {/* Word to PDF Method (New) */}
+          {/* Word Document Method (New) */}
           <div
-            onClick={() => handleMethodChange('word-pdf')}
+            onClick={() => handleMethodChange('word-docx')}
             className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-              pdfMethod === 'word-pdf'
+              pdfMethod === 'word-docx'
                 ? 'border-primary bg-primary/5'
                 : 'border-slate-200 hover:border-slate-300'
             }`}
           >
             <div className="flex items-start gap-3">
               <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                pdfMethod === 'word-pdf'
+                pdfMethod === 'word-docx'
                   ? 'border-primary bg-primary'
                   : 'border-slate-300'
               }`}>
-                {pdfMethod === 'word-pdf' && (
+                {pdfMethod === 'word-docx' && (
                   <div className="w-2 h-2 bg-white rounded-full" />
                 )}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h4 className="font-semibold text-slate-900">Word Document → PDF</h4>
+                  <h4 className="font-semibold text-slate-900">Word Document (.docx)</h4>
                   <span className="px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 rounded">
                     New
                   </span>
                 </div>
                 <p className="text-sm text-slate-600 mt-1">
-                  Generates Word document (.docx) and optionally converts to PDF via server
+                  Generates editable Word documents (.docx) that you can convert to PDF later
                 </p>
                 <div className="mt-3 space-y-1">
+                  <div className="flex items-start gap-2 text-sm">
+                    <span className="text-green-600">✓</span>
+                    <span className="text-slate-600">Fully editable in Microsoft Word or LibreOffice</span>
+                  </div>
                   <div className="flex items-start gap-2 text-sm">
                     <span className="text-green-600">✓</span>
                     <span className="text-slate-600">Real text (searchable, copyable, accessible)</span>
                   </div>
                   <div className="flex items-start gap-2 text-sm">
                     <span className="text-green-600">✓</span>
-                    <span className="text-slate-600">Smaller file sizes</span>
+                    <span className="text-slate-600">Convert to PDF yourself for best quality</span>
                   </div>
                   <div className="flex items-start gap-2 text-sm">
                     <span className="text-green-600">✓</span>
-                    <span className="text-slate-600">Better print quality (vector text)</span>
+                    <span className="text-slate-600">Fully client-side (no server required)</span>
                   </div>
                   <div className="flex items-start gap-2 text-sm">
                     <span className="text-green-600">✓</span>
-                    <span className="text-slate-600">Can download as .docx for editing</span>
+                    <span className="text-slate-600">Smaller file sizes than canvas method</span>
                   </div>
                   <div className="flex items-start gap-2 text-sm">
-                    <span className="text-amber-600">⚠</span>
-                    <span className="text-slate-600">Requires server with LibreOffice for PDF conversion</span>
-                  </div>
-                  <div className="flex items-start gap-2 text-sm">
-                    <span className="text-amber-600">⚠</span>
-                    <span className="text-slate-600">Slightly slower generation</span>
+                    <span className="text-amber-600">ℹ</span>
+                    <span className="text-slate-600">Downloads as .docx file (not PDF)</span>
                   </div>
                 </div>
               </div>
@@ -176,12 +180,12 @@ export function PDFSettings() {
         {/* Info Box */}
         <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-900">
-            <strong>Note:</strong> Your selection will be saved and used for all future PDF exports.
+            <strong>Note:</strong> Your selection will be saved and used for all future exports.
             You can change this setting at any time.
-            {pdfMethod === 'word-pdf' && (
+            {pdfMethod === 'word-docx' && (
               <span className="block mt-2">
-                <strong>Server Required:</strong> The Word → PDF conversion requires a running server with LibreOffice installed.
-                If the server is unavailable, Word documents (.docx) will be downloaded instead.
+                <strong>Tip:</strong> After downloading the .docx file, you can convert it to PDF using Microsoft Word (File → Save As → PDF)
+                or LibreOffice (File → Export as PDF) for the best quality PDF output.
               </span>
             )}
           </p>
@@ -196,17 +200,26 @@ export function PDFSettings() {
                 <tr className="border-b border-slate-200">
                   <th className="text-left py-2 px-3 font-semibold text-slate-700">Feature</th>
                   <th className="text-center py-2 px-3 font-semibold text-slate-700">HTML Canvas</th>
-                  <th className="text-center py-2 px-3 font-semibold text-slate-700">Word → PDF</th>
+                  <th className="text-center py-2 px-3 font-semibold text-slate-700">Word Document</th>
                 </tr>
               </thead>
               <tbody className="text-slate-600">
+                <tr className="border-b border-slate-100">
+                  <td className="py-2 px-3">Output Format</td>
+                  <td className="text-center py-2 px-3">
+                    <span className="text-slate-700">PDF</span>
+                  </td>
+                  <td className="text-center py-2 px-3">
+                    <span className="text-slate-700">.docx</span>
+                  </td>
+                </tr>
                 <tr className="border-b border-slate-100">
                   <td className="py-2 px-3">Works Offline</td>
                   <td className="text-center py-2 px-3">
                     <span className="inline-block w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs">✓</span>
                   </td>
                   <td className="text-center py-2 px-3">
-                    <span className="inline-block w-5 h-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-xs">⚠</span>
+                    <span className="inline-block w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs">✓</span>
                   </td>
                 </tr>
                 <tr className="border-b border-slate-100">
@@ -233,39 +246,42 @@ export function PDFSettings() {
                     <span className="text-green-600">Excellent</span>
                   </td>
                   <td className="text-center py-2 px-3">
-                    <span className="text-green-600">Excellent</span>
+                    <span className="text-green-600">Excellent*</span>
                   </td>
                 </tr>
                 <tr className="border-b border-slate-100">
-                  <td className="py-2 px-3">Accessibility</td>
-                  <td className="text-center py-2 px-3">
-                    <span className="text-amber-600">Limited</span>
-                  </td>
-                  <td className="text-center py-2 px-3">
-                    <span className="text-green-600">Full</span>
-                  </td>
-                </tr>
-                <tr className="border-b border-slate-100">
-                  <td className="py-2 px-3">Editable Output</td>
+                  <td className="py-2 px-3">Editable</td>
                   <td className="text-center py-2 px-3">
                     <span className="text-red-600">No</span>
                   </td>
                   <td className="text-center py-2 px-3">
-                    <span className="text-green-600">Yes (.docx)</span>
+                    <span className="text-green-600">Yes</span>
                   </td>
                 </tr>
-                <tr>
+                <tr className="border-b border-slate-100">
                   <td className="py-2 px-3">Generation Speed</td>
                   <td className="text-center py-2 px-3">
                     <span className="text-green-600">Fast</span>
                   </td>
                   <td className="text-center py-2 px-3">
-                    <span className="text-amber-600">Moderate</span>
+                    <span className="text-green-600">Fast</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-3">Ready to Submit</td>
+                  <td className="text-center py-2 px-3">
+                    <span className="text-green-600">Yes (PDF)</span>
+                  </td>
+                  <td className="text-center py-2 px-3">
+                    <span className="text-amber-600">After conversion</span>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          <p className="text-xs text-slate-500 mt-2">
+            * Excellent when converted to PDF using Word or LibreOffice
+          </p>
         </div>
       </div>
     </div>
@@ -277,8 +293,13 @@ export function PDFSettings() {
  */
 export function getPDFGenerationMethod(): PDFGenerationMethod {
   const saved = localStorage.getItem('pdfGenerationMethod');
-  if (saved === 'word-pdf' || saved === 'html-canvas') {
+  if (saved === 'word-docx' || saved === 'html-canvas') {
     return saved;
+  }
+  // Migrate old 'word-pdf' setting to 'word-docx'
+  if (saved === 'word-pdf') {
+    localStorage.setItem('pdfGenerationMethod', 'word-docx');
+    return 'word-docx';
   }
   return 'html-canvas'; // Default
 }

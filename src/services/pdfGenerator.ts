@@ -7,7 +7,9 @@ import logoImage from '../assets/logo.png';
 /**
  * PDF Generator Service
  * Generates exact replica of Orange County Head Start PCAL In-Kind Form
- * Supports multiple generation methods: HTML canvas and Word → PDF
+ * Supports multiple generation methods:
+ * - HTML canvas → PDF (default, generates actual PDF)
+ * - Word document (generates .docx file for download)
  */
 
 interface PDFGenerationOptions {
@@ -16,7 +18,7 @@ interface PDFGenerationOptions {
   centerName: string;
   teacherName: string;
   goals: Goal[];
-  forceMethod?: 'html-canvas' | 'word-pdf'; // Optional: override user preference
+  forceMethod?: 'html-canvas' | 'word-docx'; // Optional: override user preference
 }
 
 /**
@@ -41,6 +43,8 @@ async function imageToBase64(imageUrl: string): Promise<string> {
 /**
  * Generate PDF matching the exact Orange County Head Start PCAL form
  * Supports multiple generation methods based on user preference
+ *
+ * Note: When 'word-docx' method is selected, this returns a .docx file (not PDF)
  */
 export async function generatePDF(options: PDFGenerationOptions): Promise<Uint8Array> {
   const { entries, child, centerName, teacherName, goals, forceMethod } = options;
@@ -55,20 +59,20 @@ export async function generatePDF(options: PDFGenerationOptions): Promise<Uint8A
   // Convert logo to base64
   const logoBase64 = await imageToBase64(logoImage);
 
-  if (method === 'word-pdf') {
-    // Use Word document → PDF method
-    console.log('Using Word → PDF generation method');
+  if (method === 'word-docx') {
+    // Use Word document generation (client-side only)
+    console.log('Using Word document generation method (client-side)');
     const blob = await generateWordPDF({
       entries,
       child,
       centerName,
       teacherName,
       goals,
-      logoBase64,
-      convertToPDF: true
+      logoBase64
     });
 
     // Convert blob to Uint8Array
+    // Note: This is a .docx file, not a PDF
     const arrayBuffer = await blob.arrayBuffer();
     return new Uint8Array(arrayBuffer);
   } else {
