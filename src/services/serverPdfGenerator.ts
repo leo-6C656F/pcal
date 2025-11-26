@@ -52,8 +52,8 @@ export async function generateServerPDF(options: {
       goals
     });
 
-    // Replace logo placeholder
-    const htmlWithLogo = html.replace('LOGO_BASE64_PLACEHOLDER', logoBase64);
+    // Replace logo placeholder (global replace for all pages)
+    const htmlWithLogo = html.replace(/LOGO_BASE64_PLACEHOLDER/g, logoBase64);
 
     console.log('Sending HTML to server for PDF generation...');
 
