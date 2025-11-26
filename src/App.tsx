@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
+import { format } from 'date-fns';
 import { useStore } from './store';
 import { initializeDatabase } from './services/journalReplay';
 import { Dashboard } from './components/Dashboard';
@@ -379,7 +380,9 @@ function App() {
         <div className="max-w-6xl mx-auto px-6 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
             <div className="text-xs text-slate-600 dark:text-slate-400">
-              <p className="font-medium text-slate-700 dark:text-slate-300">{t('app.version')}</p>
+              <p className="font-medium text-slate-700 dark:text-slate-300">
+                {t('app.version')} • {format(new Date(__BUILD_TIMESTAMP__), 'MMM d, yyyy h:mm a')}
+              </p>
               <p>{t('app.tagline')}</p>
             </div>
             <div className="flex gap-4 text-xs text-slate-600 dark:text-slate-400">
