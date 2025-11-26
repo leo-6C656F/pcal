@@ -6,32 +6,30 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   size?: 'sm' | 'md' | 'lg';
+  footer?: ReactNode;
 }
 
-export function Modal({ children, onClose, title, size = 'md' }: ModalProps) {
+export function Modal({ children, onClose, title, size = 'md', footer }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Material Design 3 standard sizes (max 560px)
+  // Compact sizes - more screen space efficient
   const sizeClasses = {
-    sm: 'max-w-[280px]',  // Simple dialogs
-    md: 'max-w-[420px]',  // Standard dialogs
-    lg: 'max-w-[560px]',  // Full-width dialogs (Material Design max)
+    sm: 'max-w-[320px]',  // Simple dialogs
+    md: 'max-w-[480px]',  // Standard dialogs
+    lg: 'max-w-[640px]',  // Wide dialogs
   };
 
   // Focus trap and keyboard navigation
   useEffect(() => {
-    // Focus the close button when modal opens
     closeButtonRef.current?.focus();
 
-    // Handle Escape key
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
       }
     };
 
-    // Handle Tab key for focus trap
     const handleTab = (e: KeyboardEvent) => {
       if (e.key !== 'Tab' || !modalRef.current) return;
 
@@ -53,7 +51,6 @@ export function Modal({ children, onClose, title, size = 'md' }: ModalProps) {
     document.addEventListener('keydown', handleEscape);
     document.addEventListener('keydown', handleTab);
 
-    // Prevent body scroll when modal is open
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
@@ -66,7 +63,7 @@ export function Modal({ children, onClose, title, size = 'md' }: ModalProps) {
 
   return (
     <div
-      className="fixed inset-0 bg-gradient-to-br from-black/50 via-black/40 to-black/50 dark:from-black/70 dark:via-black/60 dark:to-black/70 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in-0 duration-200 p-4"
+      className="fixed inset-0 bg-gradient-to-br from-black/50 via-black/40 to-black/50 dark:from-black/70 dark:via-black/60 dark:to-black/70 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in-0 duration-200 p-3"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -74,30 +71,37 @@ export function Modal({ children, onClose, title, size = 'md' }: ModalProps) {
     >
       <div
         ref={modalRef}
-        className={`bg-white dark:bg-slate-800 rounded-[28px] shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-slate-200/50 dark:border-slate-700/50 w-full ${sizeClasses[size]} max-h-[90vh] flex flex-col relative animate-in zoom-in-95 duration-200 overflow-hidden overscroll-contain`}
+        className={`bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full ${sizeClasses[size]} max-h-[92vh] flex flex-col relative animate-in zoom-in-95 duration-200 overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex-shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-slate-700">
-          <div className="flex justify-between items-center gap-4">
-            <h2 id="modal-title" className="text-xl font-semibold text-slate-900 dark:text-white">
+        {/* Sticky Header */}
+        <div className="flex-shrink-0 px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 sticky top-0 z-10">
+          <div className="flex justify-between items-center gap-3">
+            <h2 id="modal-title" className="text-base font-semibold text-slate-900 dark:text-white">
               {title}
             </h2>
             <button
               ref={closeButtonRef}
               onClick={onClose}
-              className="flex-shrink-0 p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-slate-800"
+              className="flex-shrink-0 p-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
               aria-label="Close modal"
             >
-              <X size={20} strokeWidth={2} />
+              <X size={18} strokeWidth={2} />
             </button>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-auto scroll-smooth px-6 py-5">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto scroll-smooth px-4 py-3">
           {children}
         </div>
+
+        {/* Sticky Footer (if provided) */}
+        {footer && (
+          <div className="flex-shrink-0 px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 sticky bottom-0 z-10">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );
