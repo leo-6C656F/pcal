@@ -289,9 +289,9 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
         }
 
         .page-container {
-            width: 1227px;
+            width: 1050px;
             background-color: white;
-            padding: 28px;
+            padding: 20px;
             position: relative;
             box-sizing: border-box;
             page-break-after: always;
@@ -604,7 +604,7 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
     wrapper.style.fontFamily = '"Times New Roman", Times, serif';
     wrapper.style.backgroundColor = 'white';
     wrapper.style.padding = '0';
-    wrapper.style.width = '1227px';
+    wrapper.style.width = '1050px';
 
     // Append style element first
     if (styleElement) {
@@ -624,8 +624,19 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
     document.body.appendChild(wrapper);
 
     try {
-      // Wait for rendering and images to load
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for all images to load
+      const images = Array.from(pageContainer.querySelectorAll('img'));
+      await Promise.all(images.map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise((resolve) => {
+          img.onload = () => resolve(true);
+          img.onerror = () => resolve(true); // Continue even if image fails
+          setTimeout(() => resolve(true), 1000); // Timeout after 1s
+        });
+      }));
+
+      // Additional wait for rendering
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       console.log(`Rendering page ${i + 1}/${pageContainers.length} to canvas...`);
 
@@ -651,7 +662,7 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
       const pngImage = await pdfDoc.embedPng(pngImageBytes);
 
       // Calculate scaling to fit letter size landscape with margins
-      const margin = 28.8; // 0.4 inches = 28.8 points
+      const margin = 18; // 0.25 inches = 18 points (reduced for more content space)
       const maxWidth = 792 - (margin * 2); // Landscape: page width (11") minus margins
       const maxHeight = 612 - (margin * 2); // Landscape: page height (8.5") minus margins
 
