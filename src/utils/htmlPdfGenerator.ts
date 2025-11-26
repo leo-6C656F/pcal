@@ -99,10 +99,11 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
     <style>
         body {
             font-family: "Times New Roman", Times, serif;
-            background-color: #f0f0f0;
+            background-color: white;
             display: flex;
             justify-content: center;
-            padding: 20px;
+            padding: 0;
+            margin: 0;
             color: black;
         }
 
