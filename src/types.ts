@@ -87,15 +87,31 @@ export const PREDEFINED_MODELS: PredefinedModel[] = [
 export interface AIServiceConfig {
   openAIKey?: string;
   selectedModel?: string; // Model ID (can be from predefined list or custom)
+  openAIModel?: string;   // OpenAI model to use (default: gpt-4o-mini)
+  openAIBaseURL?: string; // Custom OpenAI API base URL
+  providerPriority?: 'local-first' | 'openai-first'; // Which provider to try first
 }
 
 // --- 5.1 AI Generation Settings ---
 export interface AIGenerationSettings {
+  // Basic settings
   maxNewTokens: number;      // Max tokens to generate (default: 100)
   minLength: number;         // Minimum output length (default: 10)
+
+  // Sampling settings
   doSample: boolean;         // Use sampling vs greedy (default: false)
   temperature: number;       // Sampling temperature 0.1-2.0 (default: 0.7, only used if doSample is true)
   topP: number;              // Nucleus sampling 0.1-1.0 (default: 0.9, only used if doSample is true)
+  topK: number;              // Top-K sampling (default: 50, only used if doSample is true)
+
+  // Repetition control
+  repetitionPenalty: number; // Penalize repetition 1.0-2.0 (default: 1.0, 1.0 = no penalty)
+  noRepeatNgramSize: number; // Prevent repeating n-grams (default: 0, 0 = disabled)
+
+  // Beam search settings
+  numBeams: number;          // Number of beams for beam search (default: 1, 1 = no beam search)
+  lengthPenalty: number;     // Length penalty for beam search (default: 1.0)
+  earlyStopping: boolean;    // Stop when numBeams sentences are done (default: false)
 }
 
 export const DEFAULT_AI_SETTINGS: AIGenerationSettings = {
@@ -104,6 +120,12 @@ export const DEFAULT_AI_SETTINGS: AIGenerationSettings = {
   doSample: false,
   temperature: 0.7,
   topP: 0.9,
+  topK: 50,
+  repetitionPenalty: 1.0,
+  noRepeatNgramSize: 0,
+  numBeams: 1,
+  lengthPenalty: 1.0,
+  earlyStopping: false,
 };
 
 export type AIProvider = 'transformers-local' | 'openai-api' | 'fallback';

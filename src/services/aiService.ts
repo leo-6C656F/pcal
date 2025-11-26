@@ -34,6 +34,25 @@ export {
 };
 
 /**
+ * Load OpenAI config from localStorage
+ */
+function getOpenAIConfig(): AIServiceConfig {
+  if (typeof window === 'undefined') {
+    return {};
+  }
+
+  const saved = localStorage.getItem('openAIConfig');
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return {};
+    }
+  }
+  return {};
+}
+
+/**
  * Generate a summary paragraph from activity lines
  */
 export async function generateSummary(
@@ -42,25 +61,56 @@ export async function generateSummary(
   config: AIServiceConfig = {},
   onModelProgress?: (state: ModelLoadingState) => void
 ): Promise<{ summary: string; provider: AIProvider }> {
-  // Tier 1: Transformers.js (Local)
-  try {
-    const summary = await tryTransformersLocal(childName, lines, onModelProgress);
-    if (summary) {
-      console.log('[AI] Used Transformers.js (local)');
-      return { summary, provider: 'transformers-local' };
-    }
-  } catch (error) {
-    console.log('[AI] Transformers.js not available:', error);
-  }
+  // Merge config with saved OpenAI config
+  const openAIConfig = getOpenAIConfig();
+  const mergedConfig = { ...openAIConfig, ...config };
+  const providerPriority = mergedConfig.providerPriority || 'local-first';
 
-  // Tier 2: OpenAI API
-  if (config.openAIKey) {
+  // Try providers based on priority
+  if (providerPriority === 'openai-first') {
+    // Try OpenAI first, then local, then fallback
+    if (mergedConfig.openAIKey) {
+      try {
+        const summary = await tryOpenAI(childName, lines, mergedConfig);
+        console.log('[AI] Used OpenAI API');
+        return { summary, provider: 'openai-api' };
+      } catch (error) {
+        console.error('[AI] OpenAI API failed:', error);
+      }
+    }
+
+    // Try local as fallback
     try {
-      const summary = await tryOpenAI(childName, lines, config.openAIKey);
-      console.log('[AI] Used OpenAI API');
-      return { summary, provider: 'openai-api' };
+      const summary = await tryTransformersLocal(childName, lines, onModelProgress);
+      if (summary) {
+        console.log('[AI] Used Transformers.js (local)');
+        return { summary, provider: 'transformers-local' };
+      }
     } catch (error) {
-      console.error('[AI] OpenAI API failed:', error);
+      console.log('[AI] Transformers.js not available:', error);
+    }
+  } else {
+    // Default: local-first
+    // Tier 1: Transformers.js (Local)
+    try {
+      const summary = await tryTransformersLocal(childName, lines, onModelProgress);
+      if (summary) {
+        console.log('[AI] Used Transformers.js (local)');
+        return { summary, provider: 'transformers-local' };
+      }
+    } catch (error) {
+      console.log('[AI] Transformers.js not available:', error);
+    }
+
+    // Tier 2: OpenAI API
+    if (mergedConfig.openAIKey) {
+      try {
+        const summary = await tryOpenAI(childName, lines, mergedConfig);
+        console.log('[AI] Used OpenAI API');
+        return { summary, provider: 'openai-api' };
+      } catch (error) {
+        console.error('[AI] OpenAI API failed:', error);
+      }
     }
   }
 
@@ -136,9 +186,16 @@ async function tryTransformersLocal(
 async function tryOpenAI(
   _childName: string,
   lines: ActivityLine[],
-  apiKey: string
+  config: AIServiceConfig
 ): Promise<string> {
   const settings = getAISettings();
+  const apiKey = config.openAIKey;
+  const model = config.openAIModel || 'gpt-4o-mini';
+  const baseURL = config.openAIBaseURL || 'https://api.openai.com/v1';
+
+  if (!apiKey) {
+    throw new Error('OpenAI API key not provided');
+  }
 
   const activitiesJson = JSON.stringify(
     lines.map(line => ({
@@ -152,7 +209,7 @@ async function tryOpenAI(
 
   // Build request body with settings
   const requestBody: Record<string, unknown> = {
-    model: 'gpt-4o-mini',
+    model: model,
     messages: [
       {
         role: 'system',
@@ -174,7 +231,8 @@ async function tryOpenAI(
     requestBody.temperature = 0; // Greedy decoding
   }
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const endpoint = `${baseURL}/chat/completions`;
+  const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
