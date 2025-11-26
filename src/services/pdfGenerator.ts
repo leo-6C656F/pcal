@@ -108,7 +108,11 @@ export async function generatePDF(options: PDFGenerationOptions): Promise<Uint8A
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(`Server error: ${error.error || response.statusText}`);
+      const errorMessage = error.details
+        ? `${error.error}: ${error.details}`
+        : (error.error || response.statusText);
+      console.error('Server-side PDF generation failed:', errorMessage);
+      throw new Error(`Server error: ${errorMessage}`);
     }
 
     // Convert response to Uint8Array
