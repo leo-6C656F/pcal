@@ -138,7 +138,7 @@ function buildPrompt(_childName: string, lines: ActivityLine[]): string {
     : null;
 
   if (customPrompt) {
-    return customPrompt.replace('{activities}', activitiesText);
+    return customPrompt.replaceAll('{activities}', activitiesText);
   }
 
   // Default prompt
