@@ -10,7 +10,10 @@ import {
   AlertCircle,
   HardDrive,
   Sliders,
-  RotateCcw
+  RotateCcw,
+  Cloud,
+  Key,
+  Globe
 } from 'lucide-react';
 import {
   isModelReady,
@@ -41,6 +44,12 @@ export function AISettings() {
   const [customModelId, setCustomModelId] = useState<string>('');
   const [isCustomModel, setIsCustomModel] = useState(false);
 
+  // OpenAI settings
+  const [openAIKey, setOpenAIKey] = useState<string>('');
+  const [openAIModel, setOpenAIModel] = useState<string>('gpt-4o-mini');
+  const [openAIBaseURL, setOpenAIBaseURL] = useState<string>('');
+  const [providerPriority, setProviderPriority] = useState<'local-first' | 'openai-first'>('local-first');
+
   useEffect(() => {
     updateStatus();
     // Load custom prompt from localStorage
@@ -60,6 +69,20 @@ export function AISettings() {
     if (!isPredefined) {
       setIsCustomModel(true);
       setCustomModelId(currentModel);
+    }
+
+    // Load OpenAI configuration
+    const savedOpenAIConfig = localStorage.getItem('openAIConfig');
+    if (savedOpenAIConfig) {
+      try {
+        const config = JSON.parse(savedOpenAIConfig);
+        setOpenAIKey(config.openAIKey || '');
+        setOpenAIModel(config.openAIModel || 'gpt-4o-mini');
+        setOpenAIBaseURL(config.openAIBaseURL || '');
+        setProviderPriority(config.providerPriority || 'local-first');
+      } catch (e) {
+        console.error('Failed to parse OpenAI config:', e);
+      }
     }
   }, []);
 
@@ -191,6 +214,17 @@ export function AISettings() {
     setSelectedModelId(customModelId.trim());
     setSelectedModel(customModelId.trim());
     alert('Custom model saved. Please reload the model to use it.');
+  };
+
+  const handleSaveOpenAIConfig = () => {
+    const config = {
+      openAIKey,
+      openAIModel,
+      openAIBaseURL,
+      providerPriority
+    };
+    localStorage.setItem('openAIConfig', JSON.stringify(config));
+    alert('OpenAI configuration saved successfully!');
   };
 
   const defaultPrompt = `Rewrite the activities below into one concise sentence in past tense describing only what the parent did.
@@ -421,6 +455,117 @@ Final sentence:`;
         </div>
       </div>
 
+      {/* OpenAI Configuration Card */}
+      <div className="card">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-lg bg-blue-100 text-blue-600">
+              <Cloud size={24} />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900">
+                OpenAI API Configuration
+              </h3>
+              <p className="text-sm text-slate-500">
+                Configure OpenAI API as a fallback or primary provider
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          {/* Provider Priority */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Provider Priority
+            </label>
+            <select
+              value={providerPriority}
+              onChange={(e) => setProviderPriority(e.target.value as 'local-first' | 'openai-first')}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+            >
+              <option value="local-first">Local Model First (OpenAI as fallback)</option>
+              <option value="openai-first">OpenAI First (Local as fallback)</option>
+            </select>
+            <p className="mt-1 text-xs text-slate-500">
+              Choose which AI provider to try first when generating summaries
+            </p>
+          </div>
+
+          {/* API Key */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+              <Key size={16} />
+              OpenAI API Key
+            </label>
+            <input
+              type="password"
+              value={openAIKey}
+              onChange={(e) => setOpenAIKey(e.target.value)}
+              placeholder="sk-..."
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-mono text-sm"
+            />
+            <p className="mt-1 text-xs text-slate-500">
+              Your OpenAI API key. Stored locally in your browser.
+            </p>
+          </div>
+
+          {/* OpenAI Model Selection */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              OpenAI Model
+            </label>
+            <select
+              value={openAIModel}
+              onChange={(e) => setOpenAIModel(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+            >
+              <option value="gpt-4o-mini">GPT-4o Mini (Recommended - Fast & Affordable)</option>
+              <option value="gpt-4o">GPT-4o (Most Capable)</option>
+              <option value="gpt-4-turbo">GPT-4 Turbo</option>
+              <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Fastest & Cheapest)</option>
+              <option value="gpt-4">GPT-4 (Legacy)</option>
+            </select>
+            <p className="mt-1 text-xs text-slate-500">
+              Select which OpenAI model to use for summary generation
+            </p>
+          </div>
+
+          {/* Base URL (Optional) */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+              <Globe size={16} />
+              API Base URL (Optional)
+            </label>
+            <input
+              type="text"
+              value={openAIBaseURL}
+              onChange={(e) => setOpenAIBaseURL(e.target.value)}
+              placeholder="https://api.openai.com/v1 (default)"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-mono text-sm"
+            />
+            <p className="mt-1 text-xs text-slate-500">
+              Custom API endpoint for OpenAI-compatible services (Azure, LocalAI, etc.)
+            </p>
+          </div>
+
+          {/* Save Button */}
+          <button
+            onClick={handleSaveOpenAIConfig}
+            className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+          >
+            Save OpenAI Configuration
+          </button>
+
+          {/* Info */}
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-900">
+              <strong>Privacy Note:</strong> Your API key is stored only in your browser's local storage and is never sent to our servers. It's used directly to communicate with OpenAI's API from your browser.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Prompt Editor */}
       <div className="card">
         <div className="flex items-center justify-between mb-3">
@@ -605,8 +750,139 @@ Final sentence:`;
                 />
                 <p className="mt-1 text-xs text-slate-500">{t('aiSettings.topPHelp')}</p>
               </div>
+
+              {/* Top K */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium text-slate-700">
+                    Top K
+                  </label>
+                  <span className="text-sm font-semibold text-primary">{genSettings.topK}</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="5"
+                  value={genSettings.topK}
+                  onChange={(e) => handleSettingChange('topK', parseInt(e.target.value))}
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                />
+                <p className="mt-1 text-xs text-slate-500">Sample from top K tokens (0 = disabled)</p>
+              </div>
             </>
           )}
+
+          {/* Repetition Penalty */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-medium text-slate-700">
+                Repetition Penalty
+              </label>
+              <span className="text-sm font-semibold text-primary">{genSettings.repetitionPenalty.toFixed(1)}</span>
+            </div>
+            <input
+              type="range"
+              min="1.0"
+              max="2.0"
+              step="0.1"
+              value={genSettings.repetitionPenalty}
+              onChange={(e) => handleSettingChange('repetitionPenalty', parseFloat(e.target.value))}
+              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
+            />
+            <p className="mt-1 text-xs text-slate-500">Penalize repeated tokens (1.0 = no penalty, higher = less repetition)</p>
+          </div>
+
+          {/* No Repeat N-Gram Size */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-medium text-slate-700">
+                No Repeat N-Gram Size
+              </label>
+              <span className="text-sm font-semibold text-primary">{genSettings.noRepeatNgramSize}</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="5"
+              step="1"
+              value={genSettings.noRepeatNgramSize}
+              onChange={(e) => handleSettingChange('noRepeatNgramSize', parseInt(e.target.value))}
+              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
+            />
+            <p className="mt-1 text-xs text-slate-500">Prevent repeating n-grams of this size (0 = disabled)</p>
+          </div>
+
+          {/* Beam Search Settings */}
+          <div className="mt-6 pt-6 border-t border-slate-200">
+            <h4 className="text-sm font-semibold text-slate-700 mb-4">Beam Search Settings</h4>
+
+            {/* Number of Beams */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-slate-700">
+                  Number of Beams
+                </label>
+                <span className="text-sm font-semibold text-primary">{genSettings.numBeams}</span>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                step="1"
+                value={genSettings.numBeams}
+                onChange={(e) => handleSettingChange('numBeams', parseInt(e.target.value))}
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
+              />
+              <p className="mt-1 text-xs text-slate-500">Number of beams for beam search (1 = greedy, higher = better quality but slower)</p>
+            </div>
+
+            {/* Length Penalty - Only visible when beam search is enabled */}
+            {genSettings.numBeams > 1 && (
+              <>
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium text-slate-700">
+                      Length Penalty
+                    </label>
+                    <span className="text-sm font-semibold text-primary">{genSettings.lengthPenalty.toFixed(1)}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="2.0"
+                    step="0.1"
+                    value={genSettings.lengthPenalty}
+                    onChange={(e) => handleSettingChange('lengthPenalty', parseFloat(e.target.value))}
+                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                  <p className="mt-1 text-xs text-slate-500">Exponential penalty for length (&lt;1.0 = shorter, &gt;1.0 = longer)</p>
+                </div>
+
+                {/* Early Stopping */}
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                  <div>
+                    <label className="text-sm font-medium text-slate-700">
+                      Early Stopping
+                    </label>
+                    <p className="text-xs text-slate-500 mt-1">Stop when numBeams complete sequences are generated</p>
+                  </div>
+                  <button
+                    onClick={() => handleSettingChange('earlyStopping', !genSettings.earlyStopping)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      genSettings.earlyStopping ? 'bg-primary' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        genSettings.earlyStopping ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Tips for the extra content issue */}

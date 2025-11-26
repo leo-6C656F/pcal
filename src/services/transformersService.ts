@@ -207,6 +207,24 @@ export async function generateLocalSummary(prompt: string, settings?: AIGenerati
     if (genSettings.doSample) {
       generationOptions.temperature = genSettings.temperature;
       generationOptions.top_p = genSettings.topP;
+      if (genSettings.topK > 0) {
+        generationOptions.top_k = genSettings.topK;
+      }
+    }
+
+    // Add repetition control parameters
+    if (genSettings.repetitionPenalty > 1.0) {
+      generationOptions.repetition_penalty = genSettings.repetitionPenalty;
+    }
+    if (genSettings.noRepeatNgramSize > 0) {
+      generationOptions.no_repeat_ngram_size = genSettings.noRepeatNgramSize;
+    }
+
+    // Add beam search parameters
+    if (genSettings.numBeams > 1) {
+      generationOptions.num_beams = genSettings.numBeams;
+      generationOptions.length_penalty = genSettings.lengthPenalty;
+      generationOptions.early_stopping = genSettings.earlyStopping;
     }
 
     const result = await generatorPipeline(prompt, generationOptions);
