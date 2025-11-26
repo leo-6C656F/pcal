@@ -1,6 +1,6 @@
 import chromium from '@sparticuz/chromium';
 import puppeteer from 'puppeteer-core';
-const { verifyAuth, sendUnauthorized } = require('./_lib/auth.js');
+import { verifyAuth, sendUnauthorized } from './_lib/auth.js';
 
 /**
  * Vercel Serverless Function
