@@ -110,7 +110,6 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
             width: 1227px;
             background-color: white;
             padding: 40px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
             position: relative;
             box-sizing: border-box;
         }
