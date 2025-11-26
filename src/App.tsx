@@ -184,16 +184,16 @@ function App() {
 
   if (initError) {
     return (
-      <div className="min-h-screen bg-rose-50 dark:bg-rose-950 flex items-center justify-center p-6 transition-colors">
+      <main className="min-h-screen bg-rose-50 dark:bg-rose-950 flex items-center justify-center p-6 transition-colors">
         <div className="card p-8 max-w-lg w-full border-rose-100 dark:border-rose-900 bg-white dark:bg-slate-900">
           <div className="flex flex-col items-center text-center">
             <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900 rounded-full flex items-center justify-center mb-4">
-              <span className="text-2xl">⚠️</span>
+              <span className="text-2xl" role="img" aria-label="Warning">⚠️</span>
             </div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
               {t('app.initializationError')}
             </h1>
-            <p className="text-slate-600 dark:text-slate-400 mb-6">{initError}</p>
+            <p className="text-slate-700 dark:text-slate-300 mb-6">{initError}</p>
             <button
               onClick={() => window.location.reload()}
               className="btn-primary bg-rose-600 hover:bg-rose-700 focus:ring-rose-500"
@@ -202,18 +202,18 @@ function App() {
             </button>
           </div>
         </div>
-      </div>
+      </main>
     );
   }
 
   if (!isInitialized) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center transition-colors">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-10 w-10 border-[3px] border-primary border-t-transparent"></div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400 font-medium">{t('app.initializingPcal')}</p>
+      <main className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center transition-colors">
+        <div className="text-center" role="status" aria-live="polite">
+          <div className="inline-block animate-spin rounded-full h-10 w-10 border-[3px] border-primary border-t-transparent" aria-hidden="true"></div>
+          <p className="mt-4 text-slate-700 dark:text-slate-300 font-medium">{t('app.initializingPcal')}</p>
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -365,11 +365,11 @@ function App() {
       <footer className="border-t border-slate-200 dark:border-slate-700 mt-auto bg-white dark:bg-slate-900 transition-colors">
         <div className="max-w-6xl mx-auto px-6 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
-            <div className="text-xs text-slate-400 dark:text-slate-500">
-              <p className="font-medium text-slate-500 dark:text-slate-400">{t('app.version')}</p>
+            <div className="text-xs text-slate-600 dark:text-slate-400">
+              <p className="font-medium text-slate-700 dark:text-slate-300">{t('app.version')}</p>
               <p>{t('app.tagline')}</p>
             </div>
-            <div className="flex gap-4 text-xs text-slate-400 dark:text-slate-500">
+            <div className="flex gap-4 text-xs text-slate-600 dark:text-slate-400">
               <span>✓ {t('app.worksOffline')}</span>
               <span>•</span>
               <span>✓ {t('app.dataPrivacy')}</span>
