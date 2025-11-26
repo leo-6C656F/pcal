@@ -1,5 +1,5 @@
 import type { DailyEntry, ChildContext, Goal } from '../types';
-import { format, parse, startOfWeek, endOfWeek } from 'date-fns';
+import { format, parse, startOfWeek } from 'date-fns';
 
 /**
  * HTML-based PDF Generator
@@ -94,31 +94,6 @@ function groupActivitiesByWeek(activities: AggregatedDailyActivity[]): Aggregate
 }
 
 /**
- * Get week date range string (e.g., "November 23 - 29" or "November 30 - December 6")
- */
-function getWeekDateRange(activities: AggregatedDailyActivity[]): string {
-  if (activities.length === 0) return '';
-
-  const dates = activities.map(a => parse(a.date, 'yyyy-MM-dd', new Date()));
-  const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
-  const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
-
-  const weekStart = startOfWeek(minDate, { weekStartsOn: 0 });
-  const weekEnd = endOfWeek(maxDate, { weekStartsOn: 0 });
-
-  const startMonth = format(weekStart, 'MMMM');
-  const endMonth = format(weekEnd, 'MMMM');
-  const startDay = format(weekStart, 'd');
-  const endDay = format(weekEnd, 'd');
-
-  if (startMonth === endMonth) {
-    return `${startMonth} ${startDay} - ${endDay}`;
-  } else {
-    return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
-  }
-}
-
-/**
  * Generate HTML for PCAL form
  */
 export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
@@ -149,15 +124,12 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
   const activityFontSize = aggregatedActivities.length > 6 ? '7.5px' : '8.5px';
 
   // Helper function to generate a single page
-  const generatePage = (pageActivities: AggregatedDailyActivity[], pageNum: number, totalPages: number) => {
+  const generatePage = (pageActivities: AggregatedDailyActivity[]) => {
     const fillRows = Math.max(0, 10 - pageActivities.length);
 
     // Calculate total for THIS page
     const pageTotal = pageActivities.reduce((sum, activity) => sum + activity.totalMinutes, 0);
     const pageTotalHours = (pageTotal / 60).toFixed(2);
-
-    // Get week date range for this page
-    const weekRange = getWeekDateRange(pageActivities);
 
     return `
     <div class="page-container">
@@ -166,7 +138,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
             <div class="logo-area">
                 <img src="data:image/png;base64,LOGO_BASE64_PLACEHOLDER" alt="Orange County Head Start Logo" class="logo-image">
             </div>
-            <h1>Parent-Child Activity Log (PCAL) In-Kind Form${totalPages > 1 ? ` - Page ${pageNum + 1} of ${totalPages}` : ''}${weekRange ? ` - Week of ${weekRange}` : ''}</h1>
+            <h1>Parent-Child Activity Log (PCAL) In-Kind Form</h1>
         </div>
 
         <!-- Top Inputs -->
@@ -608,7 +580,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
     </style>
 </head>
 <body>
-    ${activityPages.map((pageActivities, pageIndex) => generatePage(pageActivities, pageIndex, activityPages.length)).join('')}
+    ${activityPages.map((pageActivities) => generatePage(pageActivities)).join('')}
 </body>
 </html>`;
 }
@@ -672,6 +644,12 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
     document.body.appendChild(wrapper);
 
     try {
+      // Explicitly set logo source for each page to ensure it loads
+      const logoImages = Array.from(pageContainer.querySelectorAll('img.logo-image')) as HTMLImageElement[];
+      logoImages.forEach(img => {
+        img.src = `data:image/png;base64,${logoBase64}`;
+      });
+
       // Wait for all images to load
       const images = Array.from(pageContainer.querySelectorAll('img'));
       await Promise.all(images.map(img => {
