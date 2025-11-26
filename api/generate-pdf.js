@@ -80,6 +80,20 @@ export default async function handler(req, res) {
     // Wait for fonts and images to fully load
     await page.evaluateHandle('document.fonts.ready');
 
+    // Wait for all images to be fully loaded (including base64 data URLs)
+    await page.evaluate(async () => {
+      const images = Array.from(document.querySelectorAll('img'));
+      await Promise.all(images.map(img => {
+        if (img.complete && img.naturalHeight > 0) return Promise.resolve();
+        return new Promise((resolve) => {
+          img.onload = resolve;
+          img.onerror = resolve;
+          // Timeout after 5 seconds
+          setTimeout(resolve, 5000);
+        });
+      }));
+    });
+
     // Debug: Check if logo images are present and loaded
     const imageInfo = await page.evaluate(() => {
       const logoImages = document.querySelectorAll('img.logo-image');
@@ -99,17 +113,18 @@ export default async function handler(req, res) {
     console.log('Logo image details:', JSON.stringify(imageInfo.images, null, 2));
 
     // Generate PDF with landscape orientation
+    // Use preferCSSPageSize: true to respect CSS @page rules for proper page breaks
     const pdfBuffer = await page.pdf({
       format: 'Letter',
       landscape: true,
       printBackground: true,
       margin: {
-        top: '0in',
-        right: '0in',
-        bottom: '0in',
-        left: '0in'
+        top: '0.25in',
+        right: '0.25in',
+        bottom: '0.25in',
+        left: '0.25in'
       },
-      preferCSSPageSize: false
+      preferCSSPageSize: true
     });
 
     console.log('PDF generated successfully, size:', pdfBuffer.length);
