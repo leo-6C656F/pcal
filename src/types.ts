@@ -48,8 +48,45 @@ export interface Goal {
 export type TimeInputMode = 'start-duration' | 'start-end';
 
 // --- 5. AI Service Types ---
+
+// Predefined model options
+export interface PredefinedModel {
+  id: string;
+  name: string;
+  description: string;
+  size: string;
+}
+
+export const PREDEFINED_MODELS: PredefinedModel[] = [
+  {
+    id: 'Xenova/flan-t5-small',
+    name: 'FLAN-T5 Small',
+    description: 'Lightweight and fast (default)',
+    size: '~80 MB'
+  },
+  {
+    id: 'Xenova/LaMini-Flan-T5-248M',
+    name: 'LaMini FLAN-T5',
+    description: 'Balanced performance',
+    size: '~21 MB'
+  },
+  {
+    id: 'Xenova/flan-t5-base',
+    name: 'FLAN-T5 Base',
+    description: 'Better quality, larger size',
+    size: '~250 MB'
+  },
+  {
+    id: 'Xenova/distilbart-cnn-6-6',
+    name: 'DistilBART CNN',
+    description: 'Optimized for summarization',
+    size: '~300 MB'
+  }
+];
+
 export interface AIServiceConfig {
   openAIKey?: string;
+  selectedModel?: string; // Model ID (can be from predefined list or custom)
 }
 
 // --- 5.1 AI Generation Settings ---
