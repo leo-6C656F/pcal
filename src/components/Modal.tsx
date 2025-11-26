@@ -4,7 +4,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 interface ModalProps {
   children: ReactNode;
   onClose: () => void;
-  title: string;
+  title: string | ReactNode;
   size?: 'sm' | 'md' | 'lg';
   footer?: ReactNode;
 }
@@ -88,9 +88,15 @@ export function Modal({ children, onClose, title, size = 'md', footer }: ModalPr
         {/* Sticky Header */}
         <div className="flex-shrink-0 px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 sticky top-0 z-10">
           <div className="flex justify-between items-center gap-3">
-            <h2 id="modal-title" className="text-base font-semibold text-slate-900 dark:text-white">
-              {title}
-            </h2>
+            {typeof title === 'string' ? (
+              <h2 id="modal-title" className="text-base font-semibold text-slate-900 dark:text-white">
+                {title}
+              </h2>
+            ) : (
+              <div id="modal-title" className="flex-1 min-w-0">
+                {title}
+              </div>
+            )}
             <button
               ref={closeButtonRef}
               onClick={onClose}
