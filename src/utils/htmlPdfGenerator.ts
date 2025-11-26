@@ -118,26 +118,26 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
         /* Header Section */
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
 
         .logo-area {
             text-align: center;
-            margin-bottom: 10px;
-            line-height: 1.2;
+            margin-bottom: 6px;
+            line-height: 1.1;
         }
 
         .logo-image {
-            max-width: 150px;
+            max-width: 120px;
             height: auto;
-            margin: 0 auto 10px auto;
+            margin: 0 auto 6px auto;
             display: block;
         }
 
         h1 {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 900;
-            margin: 15px 0 5px 0;
+            margin: 8px 0 4px 0;
             text-transform: uppercase;
             text-align: center;
         }
@@ -146,8 +146,8 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
         .input-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 13px;
+            margin-bottom: 6px;
+            font-size: 12px;
             font-weight: bold;
             align-items: baseline;
         }
@@ -177,10 +177,10 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
         .w-parent { width: 50%; }
 
         .instruction-text {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
-            margin-bottom: 4px;
-            margin-top: 10px;
+            margin-bottom: 3px;
+            margin-top: 6px;
         }
 
         /* Tables */
@@ -229,14 +229,17 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
         }
 
         /* Lists in cells */
+        .cell-content {
+            overflow: hidden;
+        }
         .cell-content div {
-            margin-bottom: 2px;
-            padding-left: 8px;
-            text-indent: -8px;
+            margin-bottom: 1px;
+            padding-left: 6px;
+            text-indent: -6px;
         }
         .cell-content div::before {
             content: "-";
-            margin-right: 2px;
+            margin-right: 1px;
         }
 
         /* Log Table Specifics */
@@ -416,7 +419,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
             </thead>
             <tbody>
                 <tr>
-                    ${sixGoals.map(goal => `<td style="height: 60px;">${goal.description}</td>`).join('')}
+                    ${sixGoals.map(goal => `<td style="height: 35px; font-size: 9px; line-height: 1.2;">${goal.description}</td>`).join('')}
                 </tr>
                 <tr>
                     <td colspan="6" class="activities-header" style="text-transform: uppercase;">ACTIVITIES TO SUPPORT HS/EHS Classroom experience and Child's Individual Goals</td>
@@ -426,7 +429,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
                 </tr>
                 <tr>
                     ${sixGoals.map(goal => `
-                        <td class="cell-content" style="height: 100px;">
+                        <td class="cell-content" style="height: 45px; font-size: 8.5px; line-height: 1.1;">
                             ${goal.activities.map(activity => `<div>${activity}</div>`).join('')}
                         </td>
                     `).join('')}
