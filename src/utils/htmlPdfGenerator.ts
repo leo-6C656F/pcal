@@ -281,7 +281,8 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
             font-family: "Times New Roman", Times, serif;
             background-color: white;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
             padding: 0;
             margin: 0;
             color: black;
