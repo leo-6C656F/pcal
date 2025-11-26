@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@huggingface/transformers": "^3.8.0",
+    "@turbodocx/html-to-docx": "^1.18.1",
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",

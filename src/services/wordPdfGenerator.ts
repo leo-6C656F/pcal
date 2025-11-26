@@ -1,11 +1,11 @@
-import { Packer } from 'docx';
 import type { DailyEntry, ChildContext, Goal } from '../types';
-import { generateWordDocument, downloadWordDocument } from './wordDocGenerator';
+import { generateHTML } from '../utils/htmlPdfGenerator';
+import { downloadWordDocument } from './wordDocGenerator';
 
 /**
- * Client-Side Word Document Generator Service
- * Generates Word documents that users can download
- * Fully client-side, no server required
+ * Server-Side Word Document Generator Service
+ * Generates Word documents from HTML using @turbodocx/html-to-docx on the server
+ * Requires server to be running on localhost:3001
  */
 
 interface WordPDFOptions {
@@ -18,26 +18,64 @@ interface WordPDFOptions {
 }
 
 /**
+ * Get the API URL for Word document generation
+ * In production (Vercel): uses relative URL /api/html-to-docx
+ * In development: uses localhost:3001 or VITE_SERVER_URL env variable
+ */
+function getApiUrl(): string {
+  // If custom server URL is set, use it
+  if (import.meta.env.VITE_SERVER_URL) {
+    return `${import.meta.env.VITE_SERVER_URL}/api/html-to-docx`;
+  }
+
+  // In production (or when using relative URLs), use same domain
+  if (import.meta.env.PROD) {
+    return '/api/html-to-docx';
+  }
+
+  // In development, default to localhost server
+  return 'http://localhost:3001/api/html-to-docx';
+}
+
+/**
  * Generate Word document for download
  * Returns a Blob containing the .docx file
  */
 export async function generateWordPDF(options: WordPDFOptions): Promise<Blob> {
-  const { entries, child, centerName, teacherName, goals, logoBase64 } = options;
+  const { entries, child, centerName, teacherName, goals } = options;
 
-  console.log('Generating Word document for download...');
+  console.log('Generating Word document from HTML via server...');
 
-  // Generate Word document
-  const doc = await generateWordDocument({
+  // Generate HTML from template
+  const html = await generateHTML({
     entries,
     child,
     centerName,
     teacherName,
-    goals,
-    logoBase64
+    goals
   });
 
-  // Convert Document to Blob
-  const blob = await Packer.toBlob(doc);
+  const apiUrl = getApiUrl();
+  console.log('Using API endpoint:', apiUrl);
+
+  // Send HTML to server for conversion to Word
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ html })
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(`Server error: ${error.error || response.statusText}`);
+  }
+
+  // Convert response to Blob
+  const blob = await response.blob();
+
+  console.log('Word document generated successfully');
 
   return blob;
 }
