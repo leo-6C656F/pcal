@@ -8,7 +8,7 @@
  * @param {Request} req - The incoming request with Authorization header
  * @returns {Promise<{userId: string, sessionId: string} | null>} Auth result or null if invalid
  */
-async function verifyAuth(req) {
+export async function verifyAuth(req) {
   try {
     const authHeader = req.headers.authorization;
 
@@ -61,13 +61,8 @@ async function verifyAuth(req) {
  * Create unauthorized response
  * @param {Response} res - Express response object
  */
-function sendUnauthorized(res) {
+export function sendUnauthorized(res) {
   return res.status(401).json({
     error: 'Unauthorized - Valid authentication required'
   });
 }
-
-export {
-  verifyAuth,
-  sendUnauthorized
-};
