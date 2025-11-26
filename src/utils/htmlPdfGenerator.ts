@@ -149,7 +149,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
   const activityFontSize = aggregatedActivities.length > 6 ? '7.5px' : '8.5px';
 
   // Helper function to generate a single page
-  const generatePage = (pageActivities: AggregatedDailyActivity[], pageNum: number, totalPages: number) => {
+  const generatePage = (pageActivities: AggregatedDailyActivity[]) => {
     const fillRows = Math.max(0, 10 - pageActivities.length);
 
     // Calculate total for THIS page
@@ -166,7 +166,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
             <div class="logo-area">
                 <img src="data:image/png;base64,LOGO_BASE64_PLACEHOLDER" alt="Orange County Head Start Logo" class="logo-image">
             </div>
-            <h1>Parent-Child Activity Log (PCAL) In-Kind Form${totalPages > 1 ? ` - Page ${pageNum + 1} of ${totalPages}` : ''}${weekRange ? ` - Week of ${weekRange}` : ''}</h1>
+            <h1>Parent-Child Activity Log (PCAL) In-Kind Form${weekRange ? ` - Week of ${weekRange}` : ''}</h1>
         </div>
 
         <!-- Top Inputs -->
@@ -608,7 +608,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
     </style>
 </head>
 <body>
-    ${activityPages.map((pageActivities, pageIndex) => generatePage(pageActivities, pageIndex, activityPages.length)).join('')}
+    ${activityPages.map((pageActivities) => generatePage(pageActivities)).join('')}
 </body>
 </html>`;
 }
