@@ -638,6 +638,14 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
     // Then append the page container
     wrapper.appendChild(pageContainer);
 
+    // Explicitly set logo source for each page BEFORE adding to DOM
+    const logoImages = Array.from(pageContainer.querySelectorAll('img.logo-image')) as HTMLImageElement[];
+    console.log(`Page ${i + 1}: Found ${logoImages.length} logo image(s)`);
+    logoImages.forEach(img => {
+      img.src = `data:image/png;base64,${logoBase64}`;
+      console.log(`Page ${i + 1}: Set logo src, length: ${logoBase64.length} chars`);
+    });
+
     // Add to DOM temporarily for rendering
     wrapper.style.position = 'fixed';
     wrapper.style.top = '0';
@@ -648,25 +656,33 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
     document.body.appendChild(wrapper);
 
     try {
-      // Explicitly set logo source for each page to ensure it loads
-      const logoImages = Array.from(pageContainer.querySelectorAll('img.logo-image')) as HTMLImageElement[];
-      logoImages.forEach(img => {
-        img.src = `data:image/png;base64,${logoBase64}`;
-      });
 
       // Wait for all images to load
       const images = Array.from(pageContainer.querySelectorAll('img'));
-      await Promise.all(images.map(img => {
-        if (img.complete) return Promise.resolve();
+      console.log(`Page ${i + 1}: Waiting for ${images.length} image(s) to load...`);
+      await Promise.all(images.map((img, idx) => {
+        if (img.complete && img.naturalHeight > 0) {
+          console.log(`Page ${i + 1}: Image ${idx + 1} already loaded`);
+          return Promise.resolve();
+        }
         return new Promise((resolve) => {
-          img.onload = () => resolve(true);
-          img.onerror = () => resolve(true); // Continue even if image fails
-          setTimeout(() => resolve(true), 1000); // Timeout after 1s
+          img.onload = () => {
+            console.log(`Page ${i + 1}: Image ${idx + 1} loaded successfully`);
+            resolve(true);
+          };
+          img.onerror = (err) => {
+            console.error(`Page ${i + 1}: Image ${idx + 1} failed to load:`, err);
+            resolve(true); // Continue even if image fails
+          };
+          setTimeout(() => {
+            console.log(`Page ${i + 1}: Image ${idx + 1} load timeout`);
+            resolve(true);
+          }, 2000); // Increased timeout to 2s
         });
       }));
 
       // Additional wait for rendering
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       console.log(`Rendering page ${i + 1}/${pageContainers.length} to canvas...`);
 
