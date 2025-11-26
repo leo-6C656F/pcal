@@ -86,7 +86,8 @@ export default async function handler(req, res) {
     // Send PDF as response
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Length', pdfBuffer.length);
-    res.setHeader('Content-Disposition', 'attachment; filename="pcal-report.pdf"');
+    // Use inline disposition to allow iframe preview
+    res.setHeader('Content-Disposition', 'inline; filename="pcal-report.pdf"');
 
     return res.send(pdfBuffer);
 
