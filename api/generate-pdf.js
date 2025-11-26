@@ -27,14 +27,28 @@ export default async function handler(req, res) {
     }
 
     console.log('Generating PDF with Puppeteer...');
+    console.log('Environment:', process.env.VERCEL ? 'Vercel' : 'Local');
+
+    // Get Chromium executable path
+    const executablePath = await chromium.executablePath();
+    console.log('Chromium executable path:', executablePath);
 
     // Launch headless browser with Vercel-compatible Chromium
     browser = await puppeteer.launch({
-      args: chromium.args,
+      args: [
+        ...chromium.args,
+        '--disable-gpu',
+        '--single-process',
+        '--no-zygote',
+        '--no-sandbox',
+        '--disable-dev-shm-usage'
+      ],
       defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
+      executablePath: executablePath,
+      headless: true,
     });
+
+    console.log('Browser launched successfully');
 
     const page = await browser.newPage();
 
@@ -47,11 +61,11 @@ export default async function handler(req, res) {
 
     // Set the HTML content
     await page.setContent(html, {
-      waitUntil: ['networkidle0', 'domcontentloaded']
+      waitUntil: ['networkidle0', 'load']
     });
 
-    // Wait a bit for any dynamic content or fonts to load
-    await page.waitForTimeout(500);
+    // Wait for fonts and images to fully load
+    await page.evaluateHandle('document.fonts.ready');
 
     // Generate PDF with landscape orientation
     const pdfBuffer = await page.pdf({
@@ -78,9 +92,11 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('PDF generation error:', error);
+    console.error('Error stack:', error.stack);
     return res.status(500).json({
       error: 'Failed to generate PDF',
-      details: error.message
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   } finally {
     if (browser) {
