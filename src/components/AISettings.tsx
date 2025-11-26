@@ -22,8 +22,9 @@ import {
   getAISettings,
   saveAISettings
 } from '../services/aiService';
+import { getSelectedModelId, setSelectedModelId } from '../services/transformersService';
 import type { ModelLoadingState, AIGenerationSettings } from '../types';
-import { DEFAULT_AI_SETTINGS } from '../types';
+import { DEFAULT_AI_SETTINGS, PREDEFINED_MODELS } from '../types';
 
 export function AISettings() {
   const { t } = useTranslation();
@@ -36,6 +37,9 @@ export function AISettings() {
   const [customPrompt, setCustomPrompt] = useState<string>('');
   const [isEditingPrompt, setIsEditingPrompt] = useState(false);
   const [genSettings, setGenSettings] = useState<AIGenerationSettings>(DEFAULT_AI_SETTINGS);
+  const [selectedModel, setSelectedModel] = useState<string>('');
+  const [customModelId, setCustomModelId] = useState<string>('');
+  const [isCustomModel, setIsCustomModel] = useState(false);
 
   useEffect(() => {
     updateStatus();
@@ -46,6 +50,17 @@ export function AISettings() {
     }
     // Load generation settings
     setGenSettings(getAISettings());
+
+    // Load selected model
+    const currentModel = getSelectedModelId();
+    setSelectedModel(currentModel);
+
+    // Check if it's a custom model (not in predefined list)
+    const isPredefined = PREDEFINED_MODELS.some(m => m.id === currentModel);
+    if (!isPredefined) {
+      setIsCustomModel(true);
+      setCustomModelId(currentModel);
+    }
   }, []);
 
   const updateStatus = async () => {
@@ -154,6 +169,30 @@ export function AISettings() {
     alert(t('aiSettings.settingsReset'));
   };
 
+  const handleModelChange = (modelId: string) => {
+    setSelectedModel(modelId);
+    setSelectedModelId(modelId);
+
+    // Check if switching to custom mode
+    if (modelId === 'custom') {
+      setIsCustomModel(true);
+    } else {
+      setIsCustomModel(false);
+      setCustomModelId('');
+    }
+  };
+
+  const handleCustomModelSave = () => {
+    if (!customModelId.trim()) {
+      alert('Please enter a valid model ID');
+      return;
+    }
+
+    setSelectedModelId(customModelId.trim());
+    setSelectedModel(customModelId.trim());
+    alert('Custom model saved. Please reload the model to use it.');
+  };
+
   const defaultPrompt = `Rewrite the activities below into one concise sentence in past tense describing only what the parent did.
 Follow these strict rules:
 - Use ONLY the actions written.
@@ -194,7 +233,7 @@ Final sentence:`;
                 {t('aiSettings.transformersModel')}
               </h3>
               <p className="text-sm text-slate-500">
-                Xenova/LaMini-Flan-T5-248M (~21MB)
+                {selectedModel || 'Not selected'}
               </p>
             </div>
           </div>
@@ -313,6 +352,72 @@ Final sentence:`;
           <p className="text-sm text-blue-900">
             <strong>{t('aiSettings.note')}:</strong> {t('aiSettings.noteText')}
           </p>
+        </div>
+      </div>
+
+      {/* Model Selection Card */}
+      <div className="card">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-slate-900">Model Selection</h3>
+          <p className="text-sm text-slate-500 mt-1">
+            Choose from predefined models or enter a custom Hugging Face model ID
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {/* Predefined Models Dropdown */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Select Model
+            </label>
+            <select
+              value={isCustomModel ? 'custom' : selectedModel}
+              onChange={(e) => handleModelChange(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+            >
+              {PREDEFINED_MODELS.map((model) => (
+                <option key={model.id} value={model.id}>
+                  {model.name} - {model.description} ({model.size})
+                </option>
+              ))}
+              <option value="custom">Custom Model (Enter manually)</option>
+            </select>
+          </div>
+
+          {/* Custom Model Input */}
+          {isCustomModel && (
+            <div className="p-4 bg-slate-50 rounded-lg space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Custom Model ID
+                </label>
+                <input
+                  type="text"
+                  value={customModelId}
+                  onChange={(e) => setCustomModelId(e.target.value)}
+                  placeholder="e.g., Xenova/gpt2 or username/model-name"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                />
+                <p className="mt-1 text-xs text-slate-500">
+                  Enter a Hugging Face model ID. Must be compatible with text2text-generation or text-generation tasks.
+                </p>
+              </div>
+              <button
+                onClick={handleCustomModelSave}
+                disabled={!customModelId.trim()}
+                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Save Custom Model
+              </button>
+            </div>
+          )}
+
+          {/* Model Change Warning */}
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-sm text-amber-900">
+              <strong>Note:</strong> After changing the model, you must click "Download/Reload Model" above to download and use the new model. The old model will remain cached unless you clear the cache.
+            </p>
+          </div>
         </div>
       </div>
 

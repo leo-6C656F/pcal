@@ -10,14 +10,16 @@ import { pipeline } from '@huggingface/transformers';
 import type { ModelLoadingState, AIGenerationSettings } from '../types';
 import { DEFAULT_AI_SETTINGS } from '../types';
 
-// Model configuration
-const MODEL_ID = 'Xenova/LaMini-Flan-T5-248M';
+// Default model configuration
+const DEFAULT_MODEL_ID = 'Xenova/flan-t5-small';
+const MODEL_STORAGE_KEY = 'selectedModelId';
 
 // Singleton pipeline instance (using any to avoid complex union types)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let generatorPipeline: any = null;
 let isLoading = false;
 let loadError: string | null = null;
+let currentModelId: string | null = null; // Track which model is currently loaded
 
 // Progress callback type
 type ProgressCallback = (state: ModelLoadingState) => void;
@@ -36,8 +38,16 @@ interface ProgressInfo {
 export async function initializeModel(
   onProgress?: ProgressCallback
 ): Promise<boolean> {
-  // Already loaded
-  if (generatorPipeline) {
+  const selectedModelId = getSelectedModelId();
+
+  // Check if a different model is loaded, unload it
+  if (generatorPipeline && currentModelId !== selectedModelId) {
+    console.log(`[Transformers.js] Switching from ${currentModelId} to ${selectedModelId}`);
+    unloadModel();
+  }
+
+  // Already loaded with correct model
+  if (generatorPipeline && currentModelId === selectedModelId) {
     onProgress?.({
       isLoading: false,
       progress: 100,
@@ -61,7 +71,7 @@ export async function initializeModel(
       status: 'Loading AI model...'
     });
 
-    generatorPipeline = await pipeline('text2text-generation', MODEL_ID, {
+    generatorPipeline = await pipeline('text2text-generation', selectedModelId, {
       progress_callback: (progress: ProgressInfo) => {
         if (progress.status === 'progress' && progress.progress !== undefined) {
           onProgress?.({
@@ -85,11 +95,13 @@ export async function initializeModel(
       }
     });
 
+    currentModelId = selectedModelId;
     isLoading = false;
-    console.log('[Transformers.js] Model loaded successfully:', MODEL_ID);
+    console.log('[Transformers.js] Model loaded successfully:', selectedModelId);
     return true;
   } catch (error) {
     isLoading = false;
+    currentModelId = null;
     loadError = error instanceof Error ? error.message : 'Unknown error';
     console.error('[Transformers.js] Failed to load model:', error);
 
@@ -143,6 +155,28 @@ export function getAISettings(): AIGenerationSettings {
 export function saveAISettings(settings: AIGenerationSettings): void {
   if (typeof window !== 'undefined') {
     localStorage.setItem('aiGenerationSettings', JSON.stringify(settings));
+  }
+}
+
+/**
+ * Get the currently selected model ID from localStorage
+ */
+export function getSelectedModelId(): string {
+  if (typeof window === 'undefined') {
+    return DEFAULT_MODEL_ID;
+  }
+
+  const saved = localStorage.getItem(MODEL_STORAGE_KEY);
+  return saved || DEFAULT_MODEL_ID;
+}
+
+/**
+ * Save the selected model ID to localStorage
+ * Note: Changing the model will require reloading the pipeline
+ */
+export function setSelectedModelId(modelId: string): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(MODEL_STORAGE_KEY, modelId);
   }
 }
 
@@ -212,6 +246,7 @@ export async function clearModelCache(): Promise<void> {
   try {
     // Reset in-memory pipeline
     generatorPipeline = null;
+    currentModelId = null;
     loadError = null;
     isLoading = false;
 
@@ -260,6 +295,7 @@ export async function getModelCacheSize(): Promise<number> {
  */
 export function unloadModel(): void {
   generatorPipeline = null;
+  currentModelId = null;
   loadError = null;
   console.log('[Transformers.js] Model unloaded from memory');
 }
