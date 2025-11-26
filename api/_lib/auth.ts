@@ -1,7 +1,9 @@
 /**
  * Authentication utility for Vercel API routes
- * Validates Clerk session tokens
+ * Validates Clerk session tokens using official Clerk backend SDK
  */
+
+import { verifyToken } from '@clerk/backend';
 
 interface AuthResult {
   userId: string;
@@ -18,16 +20,18 @@ export async function verifyAuth(request: Request): Promise<AuthResult | null> {
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader?.startsWith('Bearer ')) {
+      console.warn('[Auth] Missing or invalid Authorization header');
       return null;
     }
 
     const token = authHeader.substring(7);
 
     if (!token) {
+      console.warn('[Auth] Empty token');
       return null;
     }
 
-    // Verify token with Clerk's API
+    // Get Clerk secret key
     const clerkSecretKey = process.env.CLERK_SECRET_KEY;
 
     if (!clerkSecretKey) {
@@ -35,26 +39,19 @@ export async function verifyAuth(request: Request): Promise<AuthResult | null> {
       return null;
     }
 
-    // Call Clerk's session verification endpoint
-    const response = await fetch('https://api.clerk.com/v1/sessions/verify', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${clerkSecretKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ token }),
+    // Verify token using Clerk's official backend SDK
+    const payload = await verifyToken(token, {
+      secretKey: clerkSecretKey,
     });
 
-    if (!response.ok) {
-      console.error('[Auth] Token verification failed:', response.status);
+    if (!payload || !payload.sub) {
+      console.error('[Auth] Invalid token payload');
       return null;
     }
 
-    const data = await response.json();
-
     return {
-      userId: data.user_id,
-      sessionId: data.id,
+      userId: payload.sub,
+      sessionId: payload.sid as string,
     };
   } catch (error) {
     console.error('[Auth] Verification error:', error);
