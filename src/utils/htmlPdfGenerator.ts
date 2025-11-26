@@ -1,5 +1,5 @@
 import type { DailyEntry, ChildContext, Goal } from '../types';
-import { format, parse } from 'date-fns';
+import { format, parse, startOfWeek, endOfWeek } from 'date-fns';
 
 /**
  * HTML-based PDF Generator
@@ -62,6 +62,63 @@ async function aggregateDailyActivities(entries: DailyEntry[], _goals: Goal[]): 
 }
 
 /**
+ * Group activities by week (Sunday to Saturday)
+ */
+function groupActivitiesByWeek(activities: AggregatedDailyActivity[]): AggregatedDailyActivity[][] {
+  if (activities.length === 0) return [];
+
+  // Sort activities by date
+  const sortedActivities = [...activities].sort((a, b) => a.date.localeCompare(b.date));
+
+  // Group by week
+  const weekGroups: Map<string, AggregatedDailyActivity[]> = new Map();
+
+  sortedActivities.forEach(activity => {
+    const activityDate = parse(activity.date, 'yyyy-MM-dd', new Date());
+    // Get the start of the week (Sunday)
+    const weekStart = startOfWeek(activityDate, { weekStartsOn: 0 }); // 0 = Sunday
+
+    // Create a key for this week (using the week start date)
+    const weekKey = format(weekStart, 'yyyy-MM-dd');
+
+    if (!weekGroups.has(weekKey)) {
+      weekGroups.set(weekKey, []);
+    }
+    weekGroups.get(weekKey)!.push(activity);
+  });
+
+  // Convert map to array of arrays, sorted by week start date
+  return Array.from(weekGroups.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([_, activities]) => activities);
+}
+
+/**
+ * Get week date range string (e.g., "November 23 - 29" or "November 30 - December 6")
+ */
+function getWeekDateRange(activities: AggregatedDailyActivity[]): string {
+  if (activities.length === 0) return '';
+
+  const dates = activities.map(a => parse(a.date, 'yyyy-MM-dd', new Date()));
+  const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
+  const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
+
+  const weekStart = startOfWeek(minDate, { weekStartsOn: 0 });
+  const weekEnd = endOfWeek(maxDate, { weekStartsOn: 0 });
+
+  const startMonth = format(weekStart, 'MMMM');
+  const endMonth = format(weekEnd, 'MMMM');
+  const startDay = format(weekStart, 'd');
+  const endDay = format(weekEnd, 'd');
+
+  if (startMonth === endMonth) {
+    return `${startMonth} ${startDay} - ${endDay}`;
+  } else {
+    return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
+  }
+}
+
+/**
  * Generate HTML for PCAL form
  */
 export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
@@ -73,13 +130,6 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
 
   const aggregatedActivities = await aggregateDailyActivities(entries, goals);
 
-  // Calculate totals
-  let totalMinutes = 0;
-  entries.forEach(entry => {
-    totalMinutes += entry.lines.reduce((sum, line) => sum + line.durationMinutes, 0);
-  });
-  const totalHours = (totalMinutes / 60).toFixed(2);
-
   // Get date range
   const startDate = entries[0].date;
   const monthYear = format(parse(startDate, 'yyyy-MM-dd', new Date()), 'yyyy');
@@ -90,17 +140,8 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
     sixGoals.push({ code: sixGoals.length + 1, description: '', activities: [] });
   }
 
-  // Split activities into pages (max 8 entries per page)
-  const MAX_ENTRIES_PER_PAGE = 8;
-  const activityPages: AggregatedDailyActivity[][] = [];
-
-  if (aggregatedActivities.length <= MAX_ENTRIES_PER_PAGE) {
-    activityPages.push(aggregatedActivities);
-  } else {
-    for (let i = 0; i < aggregatedActivities.length; i += MAX_ENTRIES_PER_PAGE) {
-      activityPages.push(aggregatedActivities.slice(i, i + MAX_ENTRIES_PER_PAGE));
-    }
-  }
+  // Group activities by week (Sunday to Saturday)
+  const activityPages: AggregatedDailyActivity[][] = groupActivitiesByWeek(aggregatedActivities);
 
   // Determine font sizes based on content density
   const descriptionFontSize = aggregatedActivities.length > 6 ? '9px' : '10.5px';
@@ -111,6 +152,13 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
   const generatePage = (pageActivities: AggregatedDailyActivity[], pageNum: number, totalPages: number) => {
     const fillRows = Math.max(0, 10 - pageActivities.length);
 
+    // Calculate total for THIS page
+    const pageTotal = pageActivities.reduce((sum, activity) => sum + activity.totalMinutes, 0);
+    const pageTotalHours = (pageTotal / 60).toFixed(2);
+
+    // Get week date range for this page
+    const weekRange = getWeekDateRange(pageActivities);
+
     return `
     <div class="page-container">
         <!-- Header -->
@@ -118,7 +166,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
             <div class="logo-area">
                 <img src="data:image/png;base64,LOGO_BASE64_PLACEHOLDER" alt="Orange County Head Start Logo" class="logo-image">
             </div>
-            <h1>Parent-Child Activity Log (PCAL) In-Kind Form${totalPages > 1 ? ` - Page ${pageNum + 1} of ${totalPages}` : ''}</h1>
+            <h1>Parent-Child Activity Log (PCAL) In-Kind Form${totalPages > 1 ? ` - Page ${pageNum + 1} of ${totalPages}` : ''}${weekRange ? ` - Week of ${weekRange}` : ''}</h1>
         </div>
 
         <!-- Top Inputs -->
@@ -253,7 +301,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 2px;">
                     <tr>
                         <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #d3d3d3;">TOTAL HRS</td>
-                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #d3d3d3;">${totalPages > 1 && pageNum === totalPages - 1 ? totalHours : ''}</td>
+                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #d3d3d3;">${pageTotalHours}</td>
                     </tr>
                     <tr>
                         <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #d3d3d3;">HRLY RATE</td>
