@@ -112,7 +112,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
     const fillRows = Math.max(0, 10 - pageActivities.length);
 
     return `
-    <div class="page-container" ${pageNum > 0 ? 'style="page-break-before: always;"' : ''}>
+    <div class="page-container">
         <!-- Header -->
         <div class="header">
             <div class="logo-area">
@@ -293,6 +293,13 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
             padding: 28px;
             position: relative;
             box-sizing: border-box;
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .page-container:last-child {
+            page-break-after: avoid;
+            break-after: avoid;
         }
 
         /* Header Section */
@@ -548,14 +555,6 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
             text-align: right;
             margin-top: 5px;
             font-weight: normal;
-        }
-        @media print {
-            .page-container {
-                page-break-after: always;
-            }
-            .page-container:last-child {
-                page-break-after: auto;
-            }
         }
     </style>
 </head>
