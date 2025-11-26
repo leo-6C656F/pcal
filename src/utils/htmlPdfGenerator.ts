@@ -270,21 +270,21 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
 
             <!-- Totals Box attached to right side -->
             <div class="totals-box">
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 2px;">
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 2px; border-bottom: 1px solid black;">
                     <tr>
-                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #d3d3d3;">TOTAL HRS</td>
-                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #d3d3d3;">${pageTotalHours}</td>
+                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #dbe4f1;">TOTAL HRS</td>
+                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #dbe4f1;">${pageTotalHours}</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #d3d3d3;">HRLY RATE</td>
-                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #d3d3d3;"></td>
+                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #dbe4f1;">HRLY RATE</td>
+                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #dbe4f1;"></td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #d3d3d3;">TOTAL $</td>
-                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #d3d3d3;"></td>
+                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #dbe4f1;">TOTAL $</td>
+                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #dbe4f1;"></td>
                     </tr>
                 </table>
-                <div style="text-align: right; color: red; font-size: 10px; font-weight: normal;">Original copy to Accounting</div>
+                <div style="text-align: center; color: red; font-size: 10px; font-weight: normal; margin-top: 2px;">Original copy to Accounting</div>
             </div>
         </div>
     </div>`;
@@ -534,10 +534,8 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
             font-weight: bold;
             border-left: 1px solid black;
             border-right: 1px solid black;
-            border-bottom: 1px solid black;
             margin-right: 0px;
             margin-top: -1px;
-            background-color: #dbe4f1;
         }
 
         .total-row {
