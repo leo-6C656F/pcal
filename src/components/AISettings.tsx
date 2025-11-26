@@ -310,7 +310,9 @@ Final sentence:`;
             <div>
               <h3 className="text-lg font-semibold text-slate-900">AI Features</h3>
               <p className="text-sm text-slate-500">
-                {aiEnabled ? 'AI summary generation is enabled' : 'AI features are disabled'}
+                {aiEnabled
+                  ? 'AI-powered summaries are enabled. Choose a provider below.'
+                  : 'AI features are disabled. Enable to generate smart summaries.'}
               </p>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import type { ActivityLine, AIServiceConfig, AIProvider, ModelLoadingState, AIProviderMode, OpenAISource } from '../types';
+import type { ActivityLine, AIServiceConfig, AIProvider, ModelLoadingState, AIProviderMode } from '../types';
 import { GOALS } from '../constants';
 import {
   generateLocalSummary,
