@@ -1,11 +1,11 @@
-import { Packer } from 'docx';
 import type { DailyEntry, ChildContext, Goal } from '../types';
-import { generateWordDocument, downloadWordDocument } from './wordDocGenerator';
+import { generateHTML } from '../utils/htmlPdfGenerator';
+import { downloadWordDocument } from './wordDocGenerator';
 
 /**
- * Client-Side Word Document Generator Service
- * Generates Word documents that users can download
- * Fully client-side, no server required
+ * Server-Side Word Document Generator Service
+ * Generates Word documents from HTML using @turbodocx/html-to-docx on the server
+ * Requires server to be running on localhost:3001
  */
 
 interface WordPDFOptions {
@@ -17,27 +17,44 @@ interface WordPDFOptions {
   logoBase64?: string;
 }
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
+
 /**
  * Generate Word document for download
  * Returns a Blob containing the .docx file
  */
 export async function generateWordPDF(options: WordPDFOptions): Promise<Blob> {
-  const { entries, child, centerName, teacherName, goals, logoBase64 } = options;
+  const { entries, child, centerName, teacherName, goals } = options;
 
-  console.log('Generating Word document for download...');
+  console.log('Generating Word document from HTML via server...');
 
-  // Generate Word document
-  const doc = await generateWordDocument({
+  // Generate HTML from template
+  const html = await generateHTML({
     entries,
     child,
     centerName,
     teacherName,
-    goals,
-    logoBase64
+    goals
   });
 
-  // Convert Document to Blob
-  const blob = await Packer.toBlob(doc);
+  // Send HTML to server for conversion to Word
+  const response = await fetch(`${SERVER_URL}/api/html-to-docx`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ html })
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(`Server error: ${error.error || response.statusText}`);
+  }
+
+  // Convert response to Blob
+  const blob = await response.blob();
+
+  console.log('Word document generated successfully');
 
   return blob;
 }

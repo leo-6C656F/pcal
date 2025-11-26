@@ -144,9 +144,13 @@ export function PDFSettings() {
                   </span>
                 </div>
                 <p className="text-sm text-slate-600 mt-1">
-                  Generates editable Word documents (.docx) that you can convert to PDF later
+                  Generates editable Word documents from HTML with perfect formatting
                 </p>
                 <div className="mt-3 space-y-1">
+                  <div className="flex items-start gap-2 text-sm">
+                    <span className="text-green-600">✓</span>
+                    <span className="text-slate-600">Preserves all HTML formatting automatically</span>
+                  </div>
                   <div className="flex items-start gap-2 text-sm">
                     <span className="text-green-600">✓</span>
                     <span className="text-slate-600">Fully editable in Microsoft Word or LibreOffice</span>
@@ -157,19 +161,15 @@ export function PDFSettings() {
                   </div>
                   <div className="flex items-start gap-2 text-sm">
                     <span className="text-green-600">✓</span>
-                    <span className="text-slate-600">Convert to PDF yourself for best quality</span>
-                  </div>
-                  <div className="flex items-start gap-2 text-sm">
-                    <span className="text-green-600">✓</span>
-                    <span className="text-slate-600">Fully client-side (no server required)</span>
-                  </div>
-                  <div className="flex items-start gap-2 text-sm">
-                    <span className="text-green-600">✓</span>
                     <span className="text-slate-600">Smaller file sizes than canvas method</span>
                   </div>
                   <div className="flex items-start gap-2 text-sm">
+                    <span className="text-amber-600">⚠</span>
+                    <span className="text-slate-600">Requires server running (port 3001)</span>
+                  </div>
+                  <div className="flex items-start gap-2 text-sm">
                     <span className="text-amber-600">ℹ</span>
-                    <span className="text-slate-600">Downloads as .docx file (not PDF)</span>
+                    <span className="text-slate-600">Downloads as .docx file (convert to PDF in Word)</span>
                   </div>
                 </div>
               </div>
@@ -219,7 +219,16 @@ export function PDFSettings() {
                     <span className="inline-block w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs">✓</span>
                   </td>
                   <td className="text-center py-2 px-3">
-                    <span className="inline-block w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs">✓</span>
+                    <span className="inline-block w-5 h-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs">✗</span>
+                  </td>
+                </tr>
+                <tr className="border-b border-slate-100">
+                  <td className="py-2 px-3">Server Required</td>
+                  <td className="text-center py-2 px-3">
+                    <span className="text-green-600">No</span>
+                  </td>
+                  <td className="text-center py-2 px-3">
+                    <span className="text-amber-600">Yes (port 3001)</span>
                   </td>
                 </tr>
                 <tr className="border-b border-slate-100">
