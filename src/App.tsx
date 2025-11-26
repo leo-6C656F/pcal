@@ -7,6 +7,7 @@ import { DailyEntryForm } from './components/DailyEntryForm';
 import { SettingsPage } from './components/SettingsPage';
 import { ToastContainer } from './components/ToastContainer';
 import { LanguageSelector } from './components/LanguageSelector';
+import { ThemeToggle } from './components/ThemeToggle';
 import { useToast } from './hooks/useToast';
 import { preWarmModel, isModelReady } from './services/aiService';
 import type { ModelLoadingState } from './types';
@@ -183,16 +184,16 @@ function App() {
 
   if (initError) {
     return (
-      <div className="min-h-screen bg-rose-50 flex items-center justify-center p-6">
-        <div className="card p-8 max-w-lg w-full border-rose-100">
+      <div className="min-h-screen bg-rose-50 dark:bg-rose-950 flex items-center justify-center p-6 transition-colors">
+        <div className="card p-8 max-w-lg w-full border-rose-100 dark:border-rose-900 bg-white dark:bg-slate-900">
           <div className="flex flex-col items-center text-center">
-            <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900 rounded-full flex items-center justify-center mb-4">
               <span className="text-2xl">⚠️</span>
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
               {t('app.initializationError')}
             </h1>
-            <p className="text-slate-600 mb-6">{initError}</p>
+            <p className="text-slate-600 dark:text-slate-400 mb-6">{initError}</p>
             <button
               onClick={() => window.location.reload()}
               className="btn-primary bg-rose-600 hover:bg-rose-700 focus:ring-rose-500"
@@ -207,10 +208,10 @@ function App() {
 
   if (!isInitialized) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center transition-colors">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-10 w-10 border-[3px] border-primary border-t-transparent"></div>
-          <p className="mt-4 text-slate-600 font-medium">{t('app.initializingPcal')}</p>
+          <p className="mt-4 text-slate-600 dark:text-slate-400 font-medium">{t('app.initializingPcal')}</p>
         </div>
       </div>
     );
@@ -243,7 +244,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 font-sans transition-colors">
       {/* Toast Container */}
       <ToastContainer toasts={toast.toasts} onClose={toast.removeToast} />
 
@@ -298,13 +299,13 @@ function App() {
       )}
 
       {/* Navigation */}
-      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-slate-200/50 shadow-soft">
+      <header className="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 shadow-soft transition-colors">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             {currentView !== 'dashboard' && (
               <button
                 onClick={handleBackToDashboard}
-                className="p-2 -ml-2 text-slate-500 hover:text-primary hover:bg-blue-50 rounded-full transition-colors"
+                className="p-2 -ml-2 text-slate-500 hover:text-primary hover:bg-blue-50 dark:text-slate-400 dark:hover:text-primary dark:hover:bg-slate-800 rounded-full transition-colors"
                 aria-label={t('app.back')}
               >
                 <ArrowLeft size={20} />
@@ -312,10 +313,10 @@ function App() {
             )}
 
             <div className="flex items-center gap-2.5">
-              <div className="bg-primary p-1.5 rounded-lg">
+              <div className="bg-primary dark:bg-primary/90 p-1.5 rounded-lg">
                 <BookOpenCheck size={20} className="text-white" />
               </div>
-              <span className="text-lg font-bold text-slate-900 tracking-tight hidden sm:block">
+              <span className="text-lg font-bold text-slate-900 dark:text-white tracking-tight hidden sm:block">
                 {t('app.name')}
               </span>
             </div>
@@ -326,23 +327,22 @@ function App() {
               <button
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className="p-2 text-slate-500 hover:text-primary hover:bg-blue-50 rounded-full transition-colors disabled:opacity-50"
+                className="p-2 text-slate-500 hover:text-primary hover:bg-blue-50 dark:text-slate-400 dark:hover:text-primary dark:hover:bg-slate-800 rounded-full transition-colors disabled:opacity-50"
                 aria-label={t('app.refresh')}
                 title={t('app.refresh')}
               >
                 <RefreshCw size={18} className={isRefreshing ? 'animate-spin' : ''} />
               </button>
             )}
+            <ThemeToggle />
             <LanguageSelector />
-            {currentView === 'dashboard' && (
-              <button
-                onClick={() => setCurrentView('settings')}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all text-slate-600 hover:text-primary hover:bg-slate-100"
-              >
-                <Settings size={18} />
-                <span className="hidden sm:inline">{t('app.goalsAndSetup')}</span>
-              </button>
-            )}
+            <button
+              onClick={() => setCurrentView('settings')}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all text-slate-600 hover:text-primary hover:bg-slate-100 dark:text-slate-400 dark:hover:text-primary dark:hover:bg-slate-800"
+            >
+              <Settings size={18} />
+              <span className="hidden sm:inline">{t('app.goalsAndSetup')}</span>
+            </button>
           </div>
         </div>
       </header>
@@ -362,14 +362,14 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 mt-auto bg-white">
+      <footer className="border-t border-slate-200 dark:border-slate-700 mt-auto bg-white dark:bg-slate-900 transition-colors">
         <div className="max-w-6xl mx-auto px-6 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
-            <div className="text-xs text-slate-400">
-              <p className="font-medium text-slate-500">{t('app.version')}</p>
+            <div className="text-xs text-slate-400 dark:text-slate-500">
+              <p className="font-medium text-slate-500 dark:text-slate-400">{t('app.version')}</p>
               <p>{t('app.tagline')}</p>
             </div>
-            <div className="flex gap-4 text-xs text-slate-400">
+            <div className="flex gap-4 text-xs text-slate-400 dark:text-slate-500">
               <span>✓ {t('app.worksOffline')}</span>
               <span>•</span>
               <span>✓ {t('app.dataPrivacy')}</span>
