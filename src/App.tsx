@@ -363,16 +363,47 @@ function App() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="animate-fade-in">
-          {currentView === 'dashboard' && <Dashboard />}
-          {currentView === 'entry' && (
-            <DailyEntryForm
-              subView={entrySubView}
-              onSubViewChange={handleEntrySubViewChange}
-            />
-          )}
-          {currentView === 'settings' && <SettingsPage />}
-        </div>
+        <SignedOut>
+          {/* Show sign-in prompt for unauthenticated users */}
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="card p-8 max-w-lg w-full text-center">
+              <div className="flex justify-center mb-6">
+                <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-full">
+                  <BookOpenCheck size={48} className="text-primary" />
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">
+                Welcome to PCAL
+              </h2>
+              <p className="text-slate-600 dark:text-slate-400 mb-6">
+                Please sign in to access your Parent-Child Activity Log, create entries, and track your child's development.
+              </p>
+              <SignInButton mode="modal">
+                <button className="btn-primary w-full">
+                  Sign In to Continue
+                </button>
+              </SignInButton>
+              <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+                <p className="text-xs text-slate-500 dark:text-slate-500">
+                  ✓ Secure authentication • ✓ Your data stays private • ✓ Works offline
+                </p>
+              </div>
+            </div>
+          </div>
+        </SignedOut>
+
+        <SignedIn>
+          <div className="animate-fade-in">
+            {currentView === 'dashboard' && <Dashboard />}
+            {currentView === 'entry' && (
+              <DailyEntryForm
+                subView={entrySubView}
+                onSubViewChange={handleEntrySubViewChange}
+              />
+            )}
+            {currentView === 'settings' && <SettingsPage />}
+          </div>
+        </SignedIn>
       </main>
 
       {/* Footer */}
