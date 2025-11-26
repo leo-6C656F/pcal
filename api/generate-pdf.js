@@ -83,13 +83,13 @@ export default async function handler(req, res) {
 
     console.log('PDF generated successfully, size:', pdfBuffer.length);
 
-    // Send PDF as response
+    // Send PDF as response (use end() for binary data in Vercel)
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Length', pdfBuffer.length);
     // Use inline disposition to allow iframe preview
     res.setHeader('Content-Disposition', 'inline; filename="pcal-report.pdf"');
 
-    return res.send(pdfBuffer);
+    return res.end(pdfBuffer);
 
   } catch (error) {
     console.error('PDF generation error:', error);
