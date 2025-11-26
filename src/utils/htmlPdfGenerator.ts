@@ -557,9 +557,9 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
   // Create wrapper with proper structure
   const wrapper = document.createElement('div');
   wrapper.style.fontFamily = '"Times New Roman", Times, serif';
-  wrapper.style.backgroundColor = '#f0f0f0';
-  wrapper.style.padding = '20px';
-  wrapper.style.width = '1030px'; // 950px + 2*40px padding
+  wrapper.style.backgroundColor = 'white';
+  wrapper.style.padding = '0';
+  wrapper.style.width = '1227px';
 
   // Append style element first
   if (styleElement) {
