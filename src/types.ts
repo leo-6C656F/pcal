@@ -52,6 +52,23 @@ export interface AIServiceConfig {
   openAIKey?: string;
 }
 
+// --- 5.1 AI Generation Settings ---
+export interface AIGenerationSettings {
+  maxNewTokens: number;      // Max tokens to generate (default: 100)
+  minLength: number;         // Minimum output length (default: 10)
+  doSample: boolean;         // Use sampling vs greedy (default: false)
+  temperature: number;       // Sampling temperature 0.1-2.0 (default: 0.7, only used if doSample is true)
+  topP: number;              // Nucleus sampling 0.1-1.0 (default: 0.9, only used if doSample is true)
+}
+
+export const DEFAULT_AI_SETTINGS: AIGenerationSettings = {
+  maxNewTokens: 100,
+  minLength: 10,
+  doSample: false,
+  temperature: 0.7,
+  topP: 0.9,
+};
+
 export type AIProvider = 'transformers-local' | 'openai-api' | 'fallback';
 
 // --- 6. Model Loading State ---
