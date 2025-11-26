@@ -184,7 +184,7 @@ async function tryTransformersLocal(
  * Tier 2: Try OpenAI API
  */
 async function tryOpenAI(
-  _childName: string,
+  childName: string,
   lines: ActivityLine[],
   config: AIServiceConfig
 ): Promise<string> {
@@ -197,27 +197,16 @@ async function tryOpenAI(
     throw new Error('OpenAI API key not provided');
   }
 
-  const activitiesJson = JSON.stringify(
-    lines.map(line => ({
-      goal: GOALS.find(g => g.code === line.goalCode)?.description,
-      activities: line.selectedActivities,
-      narrative: line.customNarrative
-    })),
-    null,
-    2
-  );
+  // Use the same prompt builder as local model to respect custom prompts
+  const prompt = buildPrompt(childName, lines);
 
   // Build request body with settings
   const requestBody: Record<string, unknown> = {
     model: model,
     messages: [
       {
-        role: 'system',
-        content: 'You are a professional early childhood education specialist. Write concise summaries in past tense using ONLY the information provided. Do not make up or infer activities. Do not include child names or time spent. If custom notes are provided, integrate them naturally.'
-      },
-      {
         role: 'user',
-        content: `Write one brief paragraph summarizing what was actually done. Use only the provided information:\n\n${activitiesJson}`
+        content: prompt
       }
     ],
     max_tokens: settings.maxNewTokens
