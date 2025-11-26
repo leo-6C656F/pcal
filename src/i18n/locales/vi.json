@@ -140,7 +140,8 @@
     "downloadingModel": "Đang tải mô hình AI...",
     "generateSummary": "Nhấn để Tạo Tóm tắt",
     "modelDownloaded": "Đã tải mô hình AI! Bạn có thể tạo tóm tắt ngay.",
-    "modelDownloadFailed": "Không thể tải mô hình AI. Vui lòng thử lại."
+    "modelDownloadFailed": "Không thể tải mô hình AI. Vui lòng thử lại.",
+    "generatedByAI": "Được tạo bởi AI"
   },
   "settings": {
     "goalsTab": "Mục tiêu",

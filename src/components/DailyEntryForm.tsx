@@ -439,7 +439,9 @@ export function DailyEntryForm({ subView, onSubViewChange }: DailyEntryFormProps
                 </h2>
                 {currentEntry.aiSummary && !isGeneratingAI && (
                   <button
-                    onClick={async () => {
+                    type="button"
+                    onClick={async (e) => {
+                      e.preventDefault();
                       setIsGeneratingAI(true);
                       try {
                         await generateAISummary(currentEntry.id, setModelLoadingState);
@@ -492,9 +494,16 @@ export function DailyEntryForm({ subView, onSubViewChange }: DailyEntryFormProps
               ) : currentEntry.aiSummary ? (
                 <div className="bg-white/80 p-5 rounded-xl border border-purple-100 shadow-sm">
                   <p className="text-slate-700 leading-relaxed">{currentEntry.aiSummary}</p>
+                  {currentEntry.aiSummaryProvider && currentEntry.aiSummaryProvider !== 'fallback' && (
+                    <div className="mt-3 flex items-center gap-1.5 text-xs text-purple-500">
+                      <Sparkles size={12} />
+                      <span>{t('dailyEntryForm.generatedByAI')}</span>
+                    </div>
+                  )}
                 </div>
               ) : !modelReady ? (
                 <button
+                  type="button"
                   onClick={handleDownloadModel}
                   className="w-full bg-purple-50 border-2 border-dashed border-purple-300 rounded-xl p-5 hover:bg-purple-100 hover:border-purple-400 transition-colors group"
                 >
@@ -512,7 +521,9 @@ export function DailyEntryForm({ subView, onSubViewChange }: DailyEntryFormProps
                 </button>
               ) : (
                 <button
-                  onClick={async () => {
+                  type="button"
+                  onClick={async (e) => {
+                    e.preventDefault();
                     setIsGeneratingAI(true);
                     try {
                       await generateAISummary(currentEntry.id, setModelLoadingState);

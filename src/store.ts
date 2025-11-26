@@ -219,9 +219,10 @@ export const useStore = create<AppState>((set, get) => ({
 
     if (!entry || !child) return;
 
-    const { summary } = await generateSummary(child.name, entry.lines, get().aiConfig, onModelProgress);
+    const { summary, provider } = await generateSummary(child.name, entry.lines, get().aiConfig, onModelProgress);
 
     entry.aiSummary = summary;
+    entry.aiSummaryProvider = provider;
     await db.dailyEntries.put(entry);
     await get().loadEntries();
 

@@ -22,6 +22,7 @@ export interface DailyEntry {
   lines: ActivityLine[];
   signatureBase64?: string; // PNG Data URL
   aiSummary?: string;       // Generated narrative
+  aiSummaryProvider?: AIProvider; // Which AI provider generated the summary
   isLocked: boolean;
   emailedAt?: number;       // Timestamp when PDF was emailed
 }
