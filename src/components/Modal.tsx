@@ -1,51 +1,101 @@
 import { X } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 
 interface ModalProps {
   children: ReactNode;
   onClose: () => void;
   title: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg';
 }
 
 export function Modal({ children, onClose, title, size = 'md' }: ModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Material Design 3 standard sizes (max 560px)
   const sizeClasses = {
-    sm: 'max-w-sm',
-    md: 'max-w-xl',
-    lg: 'max-w-3xl',
-    xl: 'max-w-5xl',
+    sm: 'max-w-[280px]',  // Simple dialogs
+    md: 'max-w-[420px]',  // Standard dialogs
+    lg: 'max-w-[560px]',  // Full-width dialogs (Material Design max)
   };
+
+  // Focus trap and keyboard navigation
+  useEffect(() => {
+    // Focus the close button when modal opens
+    closeButtonRef.current?.focus();
+
+    // Handle Escape key
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    // Handle Tab key for focus trap
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || !modalRef.current) return;
+
+      const focusableElements = modalRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const firstElement = focusableElements[0] as HTMLElement;
+      const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+      if (e.shiftKey && document.activeElement === firstElement) {
+        e.preventDefault();
+        lastElement?.focus();
+      } else if (!e.shiftKey && document.activeElement === lastElement) {
+        e.preventDefault();
+        firstElement?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    document.addEventListener('keydown', handleTab);
+
+    // Prevent body scroll when modal is open
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('keydown', handleTab);
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [onClose]);
 
   return (
     <div
-      className="fixed inset-0 bg-gradient-to-br from-black/50 via-black/40 to-black/50 dark:from-black/70 dark:via-black/60 dark:to-black/70 backdrop-blur-md z-50 flex items-center justify-center animate-in fade-in-0 duration-200 p-4 sm:p-6 md:p-8"
+      className="fixed inset-0 bg-gradient-to-br from-black/50 via-black/40 to-black/50 dark:from-black/70 dark:via-black/60 dark:to-black/70 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in-0 duration-200 p-4"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
     >
       <div
-        className={`bg-white dark:bg-slate-800 rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] border border-slate-200/60 dark:border-slate-700/60 w-full ${sizeClasses[size]} max-h-[85vh] sm:max-h-[88vh] flex flex-col relative animate-in zoom-in-95 duration-200 overflow-hidden`}
+        ref={modalRef}
+        className={`bg-white dark:bg-slate-800 rounded-[28px] shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-slate-200/50 dark:border-slate-700/50 w-full ${sizeClasses[size]} max-h-[90vh] flex flex-col relative animate-in zoom-in-95 duration-200 overflow-hidden overscroll-contain`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex-shrink-0 px-6 sm:px-8 pt-6 sm:pt-8 pb-5 border-b border-slate-100 dark:border-slate-700/50 bg-gradient-to-b from-slate-50/50 to-transparent dark:from-slate-900/30">
-          <div className="flex justify-between items-start gap-4">
-            <h2 id="modal-title" className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+        <div className="flex-shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex justify-between items-center gap-4">
+            <h2 id="modal-title" className="text-xl font-semibold text-slate-900 dark:text-white">
               {title}
             </h2>
             <button
+              ref={closeButtonRef}
               onClick={onClose}
-              className="flex-shrink-0 p-2.5 text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
+              className="flex-shrink-0 p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-slate-800"
               aria-label="Close modal"
             >
-              <X size={22} strokeWidth={2.5} />
+              <X size={20} strokeWidth={2} />
             </button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 sm:px-8 py-6 sm:py-7">
+        <div className="flex-1 overflow-auto scroll-smooth px-6 py-5">
           {children}
         </div>
       </div>

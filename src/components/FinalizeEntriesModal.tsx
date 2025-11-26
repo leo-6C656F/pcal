@@ -31,53 +31,53 @@ export function FinalizeEntriesModal({ onClose, unsignedEntries, onProceed }: Fi
 
   return (
     <Modal title={t('pdfExport.finalizeRequired')} onClose={onClose} size="lg">
-      <div className="space-y-5">
-        <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-          <AlertCircle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
+      <div className="space-y-4">
+        <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+          <AlertCircle size={18} className="text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-amber-900">
+            <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
               {t('pdfExport.signatureRequired')}
             </p>
-            <p className="text-sm text-amber-700 mt-1">
+            <p className="text-sm text-amber-700 dark:text-amber-300 mt-0.5">
               {t('pdfExport.signatureRequiredDescription')}
             </p>
           </div>
         </div>
 
         <div>
-          <p className="text-sm text-slate-600 font-medium mb-3">
+          <p className="text-sm text-slate-600 dark:text-slate-400 font-medium mb-3">
             {t('pdfExport.entriesNeedingFinalization')}:
           </p>
 
-          <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+          <div className="space-y-2">
             {unsignedEntries.map((entry) => (
               <div
                 key={entry.id}
-                className="flex items-center justify-between gap-3 p-4 rounded-lg border border-amber-200 bg-amber-50/30"
+                className="flex items-center justify-between gap-3 p-3 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/30 dark:bg-amber-900/10"
               >
-                <div className="flex-1">
-                  <p className="font-medium text-slate-900">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-slate-900 dark:text-white text-sm">
                     {format(parse(entry.date, 'yyyy-MM-dd', new Date()), 'MMMM d, yyyy')}
                   </p>
-                  <p className="text-sm text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     {entry.lines.length} {entry.lines.length === 1 ? t('common.activity') : t('common.activitiesPlural')}
                     {!entry.signatureBase64 && (
-                      <span className="text-amber-700 font-medium"> • {t('common.notSigned')}</span>
+                      <span className="text-amber-700 dark:text-amber-400 font-medium"> • {t('common.notSigned')}</span>
                     )}
                   </p>
                 </div>
 
                 {entry.signatureBase64 ? (
-                  <div className="flex items-center gap-2 px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg">
-                    <CheckCircle size={16} />
-                    <span className="text-sm font-semibold">{t('common.signed')}</span>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 rounded-lg flex-shrink-0">
+                    <CheckCircle size={14} />
+                    <span className="text-xs font-semibold">{t('common.signed')}</span>
                   </div>
                 ) : (
                   <button
                     onClick={() => handleFinalizeEntry(entry)}
-                    className="btn-primary flex items-center gap-2 whitespace-nowrap"
+                    className="btn-primary flex items-center gap-2 whitespace-nowrap text-sm px-3 py-1.5"
                   >
-                    <Edit3 size={16} />
+                    <Edit3 size={14} />
                     {t('pdfExport.finalize')}
                   </button>
                 )}
@@ -86,8 +86,8 @@ export function FinalizeEntriesModal({ onClose, unsignedEntries, onProceed }: Fi
           </div>
         </div>
 
-        <div className="pt-4 border-t border-slate-200">
-          <p className="text-xs text-slate-500 text-center italic">
+        <div className="pt-3 border-t border-slate-200 dark:border-slate-700">
+          <p className="text-xs text-slate-500 dark:text-slate-400 text-center italic">
             {t('pdfExport.finalizeAllToGenerate')}
           </p>
         </div>
