@@ -672,6 +672,12 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
     document.body.appendChild(wrapper);
 
     try {
+      // Explicitly set logo source for each page to ensure it loads
+      const logoImages = Array.from(pageContainer.querySelectorAll('img.logo-image')) as HTMLImageElement[];
+      logoImages.forEach(img => {
+        img.src = `data:image/png;base64,${logoBase64}`;
+      });
+
       // Wait for all images to load
       const images = Array.from(pageContainer.querySelectorAll('img'));
       await Promise.all(images.map(img => {
