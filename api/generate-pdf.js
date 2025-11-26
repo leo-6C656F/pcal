@@ -80,6 +80,24 @@ export default async function handler(req, res) {
     // Wait for fonts and images to fully load
     await page.evaluateHandle('document.fonts.ready');
 
+    // Debug: Check if logo images are present and loaded
+    const imageInfo = await page.evaluate(() => {
+      const logoImages = document.querySelectorAll('img.logo-image');
+      return {
+        count: logoImages.length,
+        images: Array.from(logoImages).map((img, idx) => ({
+          index: idx,
+          src: img.src.substring(0, 50) + '...',
+          srcLength: img.src.length,
+          complete: img.complete,
+          naturalWidth: img.naturalWidth,
+          naturalHeight: img.naturalHeight
+        }))
+      };
+    });
+    console.log('Logo images found:', imageInfo.count);
+    console.log('Logo image details:', JSON.stringify(imageInfo.images, null, 2));
+
     // Generate PDF with landscape orientation
     const pdfBuffer = await page.pdf({
       format: 'Letter',
