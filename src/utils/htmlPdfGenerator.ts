@@ -641,9 +641,23 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
     // Explicitly set logo source for each page BEFORE adding to DOM
     const logoImages = Array.from(pageContainer.querySelectorAll('img.logo-image')) as HTMLImageElement[];
     console.log(`Page ${i + 1}: Found ${logoImages.length} logo image(s)`);
-    logoImages.forEach(img => {
-      img.src = `data:image/png;base64,${logoBase64}`;
-      console.log(`Page ${i + 1}: Set logo src, length: ${logoBase64.length} chars`);
+    logoImages.forEach((img, idx) => {
+      console.log(`Page ${i + 1}, Logo ${idx + 1}: Current src length: ${img.src.length}`);
+      console.log(`Page ${i + 1}, Logo ${idx + 1}: Current src preview: ${img.src.substring(0, 50)}...`);
+
+      // Force refresh by clearing first
+      img.removeAttribute('src');
+
+      // Set new src
+      const newSrc = `data:image/png;base64,${logoBase64}`;
+      img.src = newSrc;
+
+      // Force the image to load
+      img.loading = 'eager';
+      img.decoding = 'sync';
+
+      console.log(`Page ${i + 1}, Logo ${idx + 1}: New src length: ${img.src.length}, base64 length: ${logoBase64.length}`);
+      console.log(`Page ${i + 1}, Logo ${idx + 1}: Src set successfully: ${img.src.substring(0, 50)}...`);
     });
 
     // Add to DOM temporarily for rendering
@@ -656,6 +670,15 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
     document.body.appendChild(wrapper);
 
     try {
+      // Re-verify logo src after adding to DOM
+      const logoImagesAfterDOM = Array.from(pageContainer.querySelectorAll('img.logo-image')) as HTMLImageElement[];
+      logoImagesAfterDOM.forEach((img, idx) => {
+        console.log(`Page ${i + 1}, Logo ${idx + 1} AFTER DOM: src length: ${img.src.length}`);
+        if (img.src.length < 100) {
+          console.error(`Page ${i + 1}, Logo ${idx + 1} AFTER DOM: src is too short, re-setting!`);
+          img.src = `data:image/png;base64,${logoBase64}`;
+        }
+      });
 
       // Wait for all images to load
       const images = Array.from(pageContainer.querySelectorAll('img'));
