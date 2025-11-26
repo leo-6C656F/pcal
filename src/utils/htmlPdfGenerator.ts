@@ -90,6 +90,186 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
     sixGoals.push({ code: sixGoals.length + 1, description: '', activities: [] });
   }
 
+  // Split activities into pages (max 8 entries per page)
+  const MAX_ENTRIES_PER_PAGE = 8;
+  const activityPages: AggregatedDailyActivity[][] = [];
+
+  if (aggregatedActivities.length <= MAX_ENTRIES_PER_PAGE) {
+    activityPages.push(aggregatedActivities);
+  } else {
+    for (let i = 0; i < aggregatedActivities.length; i += MAX_ENTRIES_PER_PAGE) {
+      activityPages.push(aggregatedActivities.slice(i, i + MAX_ENTRIES_PER_PAGE));
+    }
+  }
+
+  // Determine font sizes based on content density
+  const descriptionFontSize = aggregatedActivities.length > 6 ? '9px' : '10.5px';
+  const goalDescFontSize = aggregatedActivities.length > 6 ? '8px' : '9px';
+  const activityFontSize = aggregatedActivities.length > 6 ? '7.5px' : '8.5px';
+
+  // Helper function to generate a single page
+  const generatePage = (pageActivities: AggregatedDailyActivity[], pageNum: number, totalPages: number) => {
+    const fillRows = Math.max(0, 10 - pageActivities.length);
+
+    return `
+    <div class="page-container" ${pageNum > 0 ? 'style="page-break-before: always;"' : ''}>
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-area">
+                <img src="data:image/png;base64,LOGO_BASE64_PLACEHOLDER" alt="Orange County Head Start Logo" class="logo-image">
+            </div>
+            <h1>Parent-Child Activity Log (PCAL) In-Kind Form${totalPages > 1 ? ` - Page ${pageNum + 1} of ${totalPages}` : ''}</h1>
+        </div>
+
+        <!-- Top Inputs -->
+        <div class="input-row">
+            <div class="input-group w-center">
+                CENTER: <div class="input-line">${centerName}</div>
+            </div>
+            <div class="input-group w-teacher">
+                TEACHER/HOME VISITOR: <div class="input-line">${teacherName}</div>
+            </div>
+            <div class="input-group w-date">
+                MONTH/YEAR <div class="input-line" style="text-align: center;">${monthYear}</div>
+            </div>
+        </div>
+
+        <div class="input-row">
+            <div class="input-group w-child">
+                CHILD'S NAME: <div class="input-line">${child.name}</div>
+            </div>
+            <div class="input-group w-parent">
+                PARENT NAME (Print): <div class="input-line"></div>
+            </div>
+        </div>
+
+        <div class="instruction-text">
+            **Teacher is to set goals with parent based on child's individual needs and list suggested home activities to meet these goals
+        </div>
+
+        <!-- GOALS TABLE -->
+        <table>
+            <colgroup>
+                ${sixGoals.map(() => '<col style="width: 16.66%;">').join('')}
+            </colgroup>
+            <thead>
+                <tr>
+                    ${sixGoals.map(goal => `<th class="goal-header">GOAL ${goal.code}</th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    ${sixGoals.map(goal => `<td style="height: 35px; font-size: ${goalDescFontSize}; line-height: 1.2;">${goal.description}</td>`).join('')}
+                </tr>
+                <tr>
+                    <td colspan="6" class="activities-header" style="text-transform: uppercase;">ACTIVITIES TO SUPPORT HS/EHS Classroom experience and Child's Individual Goals</td>
+                </tr>
+                <tr>
+                    ${sixGoals.map(goal => `<td class="sub-goal-header">Goal ${goal.code} Activities</td>`).join('')}
+                </tr>
+                <tr>
+                    ${sixGoals.map(goal => `
+                        <td class="cell-content" style="height: 45px; font-size: ${activityFontSize}; line-height: 1.1;">
+                            ${goal.activities.map(activity => `<div>${activity}</div>`).join('')}
+                        </td>
+                    `).join('')}
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- LOG TABLE -->
+        <table class="log-table">
+            <colgroup>
+                <col style="width: 10%;">
+                <col style="width: 44%;">
+                <col style="width: 7%;">
+                <col style="width: 7%;">
+                <col style="width: 7%;">
+                <col style="width: 17%;">
+                <col style="width: 8%;">
+            </colgroup>
+            <thead>
+                <tr class="log-header-row">
+                    <th>DATE</th>
+                    <th>
+                        Write down what the parent and child did together to make progress towards this goal.<br>
+                        <span style="font-weight: normal; font-size: 9.5px;">For example: Parent read "Polar Bear, Polar Bear" and discussed animals and animal sounds with the child.</span>
+                    </th>
+                    <th>MEETS GOAL<br># ______</th>
+                    <th>START TIME</th>
+                    <th>END TIME</th>
+                    <th>PARENT SIGNATURE</th>
+                    <th class="grey-col">ELAPSED TIME</th>
+                </tr>
+                <tr class="black-row">
+                    <td>mm/dd/yy</td>
+                    <td>Activity Descriptions</td>
+                    <td># of Goals</td>
+                    <td>3:00</td>
+                    <td>3:25</td>
+                    <td>Signature</td>
+                    <td class="office-use">Office Use</td>
+                </tr>
+            </thead>
+            <tbody>
+                ${pageActivities.map((activity, index) => {
+                    const offsets = [-5, -3, -1, 0, 1, -4, -2, 2, 3, -6];
+                    const topOffset = offsets[index % offsets.length];
+                    return `
+                    <tr>
+                        <td>${format(parse(activity.date, 'yyyy-MM-dd', new Date()), 'MM/dd/yy')}</td>
+                        <td style="font-size: ${descriptionFontSize}; line-height: 1.2;">${activity.description}</td>
+                        <td style="text-align: center;">${activity.goalCodes.join(', ')}</td>
+                        <td>${activity.startTime}</td>
+                        <td>${activity.endTime}</td>
+                        <td style="padding: 0; position: relative; height: 26px; overflow: visible;">${activity.signatureBase64 ? `<img src="${activity.signatureBase64}" style="position: absolute; top: 50%; left: 2px; transform: translateY(calc(-50% + ${topOffset}px)); max-height: 24px; max-width: calc(100% - 4px); height: auto; object-fit: contain; mix-blend-mode: multiply;" alt="Signature" />` : ''}</td>
+                        <td class="grey-col">${(activity.totalMinutes / 60).toFixed(2)}</td>
+                    </tr>
+                `}).join('')}
+                ${Array(fillRows).fill(0).map(() => `
+                    <tr class="empty-row">
+                        <td></td><td></td><td></td><td></td><td></td><td></td><td class="grey-col"></td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+
+        <!-- Footer & Totals -->
+        <div class="footer-section">
+            <div class="signatures">
+                <div class="signature-line">
+                    Teacher/Home Education Signature: <div class="sig-input"></div>
+                    <span style="margin-left: 10px;">Date:</span> <div class="sig-input" style="flex-grow: 0; width: 100px;"></div>
+                </div>
+                <div class="signature-line">
+                    SS/CD/Home Base Supervisor Signature: <div class="sig-input"></div>
+                    <span style="margin-left: 10px;">Date:</span> <div class="sig-input" style="flex-grow: 0; width: 100px;"></div>
+                </div>
+                <div class="rev-date">Rev. 01.2020</div>
+            </div>
+
+            <!-- Totals Box attached to right side -->
+            <div class="totals-box">
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 2px;">
+                    <tr>
+                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #d3d3d3;">TOTAL HRS</td>
+                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #d3d3d3;">${totalPages > 1 && pageNum === totalPages - 1 ? totalHours : ''}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #d3d3d3;">HRLY RATE</td>
+                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #d3d3d3;"></td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #d3d3d3;">TOTAL $</td>
+                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #d3d3d3;"></td>
+                    </tr>
+                </table>
+                <div style="text-align: right; color: red; font-size: 10px; font-weight: normal;">Original copy to Accounting</div>
+            </div>
+        </div>
+    </div>`;
+  };
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -369,166 +549,18 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
             margin-top: 5px;
             font-weight: normal;
         }
+        @media print {
+            .page-container {
+                page-break-after: always;
+            }
+            .page-container:last-child {
+                page-break-after: auto;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="page-container">
-        <!-- Header -->
-        <div class="header">
-            <div class="logo-area">
-                <img src="data:image/png;base64,LOGO_BASE64_PLACEHOLDER" alt="Orange County Head Start Logo" class="logo-image">
-            </div>
-            <h1>Parent-Child Activity Log (PCAL) In-Kind Form</h1>
-        </div>
-
-        <!-- Top Inputs -->
-        <div class="input-row">
-            <div class="input-group w-center">
-                CENTER: <div class="input-line">${centerName}</div>
-            </div>
-            <div class="input-group w-teacher">
-                TEACHER/HOME VISITOR: <div class="input-line">${teacherName}</div>
-            </div>
-            <div class="input-group w-date">
-                MONTH/YEAR <div class="input-line" style="text-align: center;">${monthYear}</div>
-            </div>
-        </div>
-
-        <div class="input-row">
-            <div class="input-group w-child">
-                CHILD'S NAME: <div class="input-line">${child.name}</div>
-            </div>
-            <div class="input-group w-parent">
-                PARENT NAME (Print): <div class="input-line"></div>
-            </div>
-        </div>
-
-        <div class="instruction-text">
-            **Teacher is to set goals with parent based on child's individual needs and list suggested home activities to meet these goals
-        </div>
-
-        <!-- GOALS TABLE -->
-        <table>
-            <colgroup>
-                ${sixGoals.map(() => '<col style="width: 16.66%;">').join('')}
-            </colgroup>
-            <thead>
-                <tr>
-                    ${sixGoals.map(goal => `<th class="goal-header">GOAL ${goal.code}</th>`).join('')}
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    ${sixGoals.map(goal => `<td style="height: 35px; font-size: 9px; line-height: 1.2;">${goal.description}</td>`).join('')}
-                </tr>
-                <tr>
-                    <td colspan="6" class="activities-header" style="text-transform: uppercase;">ACTIVITIES TO SUPPORT HS/EHS Classroom experience and Child's Individual Goals</td>
-                </tr>
-                <tr>
-                    ${sixGoals.map(goal => `<td class="sub-goal-header">Goal ${goal.code} Activities</td>`).join('')}
-                </tr>
-                <tr>
-                    ${sixGoals.map(goal => `
-                        <td class="cell-content" style="height: 45px; font-size: 8.5px; line-height: 1.1;">
-                            ${goal.activities.map(activity => `<div>${activity}</div>`).join('')}
-                        </td>
-                    `).join('')}
-                </tr>
-            </tbody>
-        </table>
-
-        <!-- LOG TABLE -->
-        <table class="log-table">
-            <colgroup>
-                <col style="width: 10%;">
-                <col style="width: 44%;">
-                <col style="width: 7%;">
-                <col style="width: 7%;">
-                <col style="width: 7%;">
-                <col style="width: 17%;">
-                <col style="width: 8%;">
-            </colgroup>
-            <thead>
-                <tr class="log-header-row">
-                    <th>DATE</th>
-                    <th>
-                        Write down what the parent and child did together to make progress towards this goal.<br>
-                        <span style="font-weight: normal; font-size: 9.5px;">For example: Parent read "Polar Bear, Polar Bear" and discussed animals and animal sounds with the child.</span>
-                    </th>
-                    <th>MEETS GOAL<br># ______</th>
-                    <th>START TIME</th>
-                    <th>END TIME</th>
-                    <th>PARENT SIGNATURE</th>
-                    <th class="grey-col">ELAPSED TIME</th>
-                </tr>
-                <tr class="black-row">
-                    <td>mm/dd/yy</td>
-                    <td>Activity Descriptions</td>
-                    <td># of Goals</td>
-                    <td>3:00</td>
-                    <td>3:25</td>
-                    <td>Signature</td>
-                    <td class="office-use">Office Use</td>
-                </tr>
-            </thead>
-            <tbody>
-                ${aggregatedActivities.map((activity, index) => {
-                    // Create varied vertical offsets: centered around middle with variation
-                    const offsets = [-5, -3, -1, 0, 1, -4, -2, 2, 3, -6];
-                    const topOffset = offsets[index % offsets.length];
-                    return `
-                    <tr>
-                        <td>${format(parse(activity.date, 'yyyy-MM-dd', new Date()), 'MM/dd/yy')}</td>
-                        <td>${activity.description}</td>
-                        <td style="text-align: center;">${activity.goalCodes.join(', ')}</td>
-                        <td>${activity.startTime}</td>
-                        <td>${activity.endTime}</td>
-                        <td style="padding: 0; position: relative; height: 26px; overflow: visible;">${activity.signatureBase64 ? `<img src="${activity.signatureBase64}" style="position: absolute; top: 50%; left: 2px; transform: translateY(calc(-50% + ${topOffset}px)); max-height: 24px; max-width: calc(100% - 4px); height: auto; object-fit: contain; mix-blend-mode: multiply;" alt="Signature" />` : ''}</td>
-                        <td class="grey-col">${(activity.totalMinutes / 60).toFixed(2)}</td>
-                    </tr>
-                `}).join('')}
-                ${Array(Math.max(0, 10 - aggregatedActivities.length)).fill(0).map(() => `
-                    <tr class="empty-row">
-                        <td></td><td></td><td></td><td></td><td></td><td></td><td class="grey-col"></td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-
-        <!-- Footer & Totals -->
-        <div class="footer-section">
-            <div class="signatures">
-                <div class="signature-line">
-                    Teacher/Home Education Signature: <div class="sig-input"></div>
-                    <span style="margin-left: 10px;">Date:</span> <div class="sig-input" style="flex-grow: 0; width: 100px;"></div>
-                </div>
-                <div class="signature-line">
-                    SS/CD/Home Base Supervisor Signature: <div class="sig-input"></div>
-                    <span style="margin-left: 10px;">Date:</span> <div class="sig-input" style="flex-grow: 0; width: 100px;"></div>
-                </div>
-                <div class="rev-date">Rev. 01.2020</div>
-            </div>
-
-            <!-- Totals Box attached to right side -->
-            <div class="totals-box">
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 2px;">
-                    <tr>
-                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #d3d3d3;">TOTAL HRS</td>
-                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #d3d3d3;">${totalHours}</td>
-                    </tr>
-                    <tr>
-                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #d3d3d3;">HRLY RATE</td>
-                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #d3d3d3;"></td>
-                    </tr>
-                    <tr>
-                        <td style="border: 1px solid black; padding: 2px 3px; font-weight: bold; background-color: #d3d3d3;">TOTAL $</td>
-                        <td style="border: 1px solid black; padding: 2px 3px; background-color: #d3d3d3;"></td>
-                    </tr>
-                </table>
-                <div style="text-align: right; color: red; font-size: 10px; font-weight: normal;">Original copy to Accounting</div>
-            </div>
-        </div>
-    </div>
+    ${activityPages.map((pageActivities, pageIndex) => generatePage(pageActivities, pageIndex, activityPages.length)).join('')}
 </body>
 </html>`;
 }
@@ -536,6 +568,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
 /**
  * Convert HTML to PDF by rendering to canvas first, then to PDF
  * This ensures pixel-perfect rendering matching the HTML
+ * Supports multi-page documents
  */
 export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8Array> {
   // Import dependencies
@@ -543,118 +576,123 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
   const { PDFDocument } = await import('pdf-lib');
 
   // Replace logo placeholder with actual base64
-  const htmlWithLogo = html.replace('LOGO_BASE64_PLACEHOLDER', logoBase64);
+  const htmlWithLogo = html.replace(/LOGO_BASE64_PLACEHOLDER/g, logoBase64);
 
   // Create a container div to hold everything
   const container = document.createElement('div');
   container.innerHTML = htmlWithLogo;
 
-  // Find the page-container in the parsed HTML
-  const pageContainer = container.querySelector('.page-container') as HTMLElement;
+  // Find all page containers in the parsed HTML
+  const pageContainers = Array.from(container.querySelectorAll('.page-container')) as HTMLElement[];
   const styleElement = container.querySelector('style') as HTMLStyleElement;
 
-  if (!pageContainer) {
-    throw new Error('Could not find .page-container in HTML');
+  if (pageContainers.length === 0) {
+    throw new Error('Could not find any .page-container in HTML');
   }
 
-  // Create wrapper with proper structure
-  const wrapper = document.createElement('div');
-  wrapper.style.fontFamily = '"Times New Roman", Times, serif';
-  wrapper.style.backgroundColor = 'white';
-  wrapper.style.padding = '0';
-  wrapper.style.width = '1227px';
+  console.log(`Found ${pageContainers.length} page(s) to render`);
 
-  // Append style element first
-  if (styleElement) {
-    wrapper.appendChild(styleElement.cloneNode(true));
-  }
+  // Create PDF document
+  const pdfDoc = await PDFDocument.create();
 
-  // Then append the page container
-  wrapper.appendChild(pageContainer);
+  // Process each page
+  for (let i = 0; i < pageContainers.length; i++) {
+    const pageContainer = pageContainers[i];
 
-  // Add to DOM temporarily for rendering
-  wrapper.style.position = 'fixed';
-  wrapper.style.top = '0';
-  wrapper.style.left = '0';
-  wrapper.style.zIndex = '9999';
-  wrapper.style.pointerEvents = 'none';
+    // Create wrapper with proper structure
+    const wrapper = document.createElement('div');
+    wrapper.style.fontFamily = '"Times New Roman", Times, serif';
+    wrapper.style.backgroundColor = 'white';
+    wrapper.style.padding = '0';
+    wrapper.style.width = '1227px';
 
-  document.body.appendChild(wrapper);
-
-  try {
-    // Wait for rendering and images to load
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    console.log('Rendering HTML to canvas...');
-
-    // Render to canvas with high quality
-    const canvas = await html2canvas(pageContainer, {
-      scale: 2, // High DPI
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#ffffff',
-      logging: false,
-      width: pageContainer.offsetWidth,
-      height: pageContainer.offsetHeight
-    });
-
-    console.log('Canvas created:', canvas.width, 'x', canvas.height);
-
-    // Create PDF document
-    const pdfDoc = await PDFDocument.create();
-
-    // Letter size landscape: 11 x 8.5 inches = 792 x 612 points
-    const page = pdfDoc.addPage([792, 612]);
-
-    // Convert canvas to PNG
-    const pngDataUrl = canvas.toDataURL('image/png');
-    const pngImageBytes = await fetch(pngDataUrl).then(res => res.arrayBuffer());
-    const pngImage = await pdfDoc.embedPng(pngImageBytes);
-
-    // Calculate scaling to fit letter size landscape with margins
-    const margin = 28.8; // 0.4 inches = 28.8 points
-    const maxWidth = 792 - (margin * 2); // Landscape: page width (11") minus margins
-    const maxHeight = 612 - (margin * 2); // Landscape: page height (8.5") minus margins
-
-    const imageAspect = canvas.width / canvas.height;
-    const pageAspect = maxWidth / maxHeight;
-
-    let drawWidth, drawHeight;
-
-    if (imageAspect > pageAspect) {
-      // Image is wider, fit to width
-      drawWidth = maxWidth;
-      drawHeight = maxWidth / imageAspect;
-    } else {
-      // Image is taller, fit to height
-      drawHeight = maxHeight;
-      drawWidth = maxHeight * imageAspect;
+    // Append style element first
+    if (styleElement) {
+      wrapper.appendChild(styleElement.cloneNode(true));
     }
 
-    // Center the image on the page (landscape dimensions)
-    const x = (792 - drawWidth) / 2;
-    const y = (612 - drawHeight) / 2;
+    // Then append the page container
+    wrapper.appendChild(pageContainer);
 
-    console.log('Drawing image at:', { x, y, width: drawWidth, height: drawHeight });
+    // Add to DOM temporarily for rendering
+    wrapper.style.position = 'fixed';
+    wrapper.style.top = '0';
+    wrapper.style.left = '0';
+    wrapper.style.zIndex = '9999';
+    wrapper.style.pointerEvents = 'none';
 
-    // Draw the image
-    page.drawImage(pngImage, {
-      x,
-      y,
-      width: drawWidth,
-      height: drawHeight
-    });
+    document.body.appendChild(wrapper);
 
-    // Save PDF
-    const pdfBytes = await pdfDoc.save();
-    console.log('PDF generated, size:', pdfBytes.length);
+    try {
+      // Wait for rendering and images to load
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-    return pdfBytes;
-  } catch (error) {
-    console.error('PDF generation error:', error);
-    throw error;
-  } finally {
-    // Clean up
-    document.body.removeChild(wrapper);
+      console.log(`Rendering page ${i + 1}/${pageContainers.length} to canvas...`);
+
+      // Render to canvas with high quality
+      const canvas = await html2canvas(pageContainer, {
+        scale: 2, // High DPI
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: pageContainer.offsetWidth,
+        height: pageContainer.offsetHeight
+      });
+
+      console.log('Canvas created:', canvas.width, 'x', canvas.height);
+
+      // Letter size landscape: 11 x 8.5 inches = 792 x 612 points
+      const page = pdfDoc.addPage([792, 612]);
+
+      // Convert canvas to PNG
+      const pngDataUrl = canvas.toDataURL('image/png');
+      const pngImageBytes = await fetch(pngDataUrl).then(res => res.arrayBuffer());
+      const pngImage = await pdfDoc.embedPng(pngImageBytes);
+
+      // Calculate scaling to fit letter size landscape with margins
+      const margin = 28.8; // 0.4 inches = 28.8 points
+      const maxWidth = 792 - (margin * 2); // Landscape: page width (11") minus margins
+      const maxHeight = 612 - (margin * 2); // Landscape: page height (8.5") minus margins
+
+      const imageAspect = canvas.width / canvas.height;
+      const pageAspect = maxWidth / maxHeight;
+
+      let drawWidth, drawHeight;
+
+      if (imageAspect > pageAspect) {
+        // Image is wider, fit to width
+        drawWidth = maxWidth;
+        drawHeight = maxWidth / imageAspect;
+      } else {
+        // Image is taller, fit to height
+        drawHeight = maxHeight;
+        drawWidth = maxHeight * imageAspect;
+      }
+
+      // Center the image on the page (landscape dimensions)
+      const x = (792 - drawWidth) / 2;
+      const y = (612 - drawHeight) / 2;
+
+      console.log(`Drawing page ${i + 1} at:`, { x, y, width: drawWidth, height: drawHeight });
+
+      // Draw the image
+      page.drawImage(pngImage, {
+        x,
+        y,
+        width: drawWidth,
+        height: drawHeight
+      });
+
+    } finally {
+      // Clean up this page's wrapper
+      document.body.removeChild(wrapper);
+    }
   }
+
+  // Save PDF
+  const pdfBytes = await pdfDoc.save();
+  console.log('PDF generated, size:', pdfBytes.length);
+
+  return pdfBytes;
 }
