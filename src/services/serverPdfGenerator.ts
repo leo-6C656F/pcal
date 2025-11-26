@@ -42,6 +42,8 @@ export async function generateServerPDF(options: {
   try {
     // Convert logo to base64
     const logoBase64 = await imageToBase64(logoImage);
+    console.log('[serverPdfGenerator] Logo base64 length:', logoBase64.length);
+    console.log('[serverPdfGenerator] Logo base64 preview:', logoBase64.substring(0, 50) + '...');
 
     // Generate HTML from template
     const html = await generateHTML({
@@ -52,8 +54,17 @@ export async function generateServerPDF(options: {
       goals
     });
 
+    // Count placeholders before replacement
+    const placeholderCount = (html.match(/LOGO_BASE64_PLACEHOLDER/g) || []).length;
+    console.log('[serverPdfGenerator] Found', placeholderCount, 'logo placeholders in HTML');
+
     // Replace logo placeholder (global replace for all pages)
     const htmlWithLogo = html.replace(/LOGO_BASE64_PLACEHOLDER/g, logoBase64);
+
+    // Verify replacement worked
+    const remainingPlaceholders = (htmlWithLogo.match(/LOGO_BASE64_PLACEHOLDER/g) || []).length;
+    console.log('[serverPdfGenerator] Remaining placeholders after replacement:', remainingPlaceholders);
+    console.log('[serverPdfGenerator] HTML length:', htmlWithLogo.length);
 
     console.log('Sending HTML to server for PDF generation...');
 
