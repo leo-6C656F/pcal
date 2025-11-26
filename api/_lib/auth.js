@@ -1,5 +1,5 @@
 /**
- * Authentication utility for Vercel API routes (CommonJS version for Node.js runtime)
+ * Authentication utility for Vercel API routes
  * Validates Clerk session tokens
  */
 
@@ -67,7 +67,7 @@ function sendUnauthorized(res) {
   });
 }
 
-module.exports = {
+export {
   verifyAuth,
   sendUnauthorized
 };
