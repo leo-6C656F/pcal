@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Target, Users, Database, Brain } from 'lucide-react';
+import { Target, Users, Database, Brain, FileText } from 'lucide-react';
 import { GoalManager } from './GoalManager';
 import { ChildManager } from './ChildManager';
 import { DataManager } from './DataManager';
 import { AISettings } from './AISettings';
+import { PDFSettings } from './PDFSettings';
 
-type SettingsTab = 'goals' | 'children' | 'data' | 'ai';
+type SettingsTab = 'goals' | 'children' | 'data' | 'ai' | 'pdf';
 
 /**
  * SettingsPage Component
@@ -20,6 +21,7 @@ export function SettingsPage() {
     { id: 'goals' as const, label: t('settings.goalsTab'), icon: Target },
     { id: 'children' as const, label: t('settings.childrenTab'), icon: Users },
     { id: 'ai' as const, label: t('settings.aiTab'), icon: Brain },
+    { id: 'pdf' as const, label: 'PDF Settings', icon: FileText },
     { id: 'data' as const, label: t('settings.dataTab'), icon: Database },
   ];
 
@@ -62,6 +64,7 @@ export function SettingsPage() {
           </div>
         )}
         {activeTab === 'ai' && <AISettings />}
+        {activeTab === 'pdf' && <PDFSettings />}
         {activeTab === 'data' && <DataManager />}
       </div>
     </div>
