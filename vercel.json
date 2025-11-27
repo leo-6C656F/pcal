@@ -3,10 +3,6 @@
     "api/generate-pdf.js": {
       "memory": 2048,
       "maxDuration": 60
-    },
-    "api/html-to-docx.js": {
-      "memory": 1024,
-      "maxDuration": 30
     }
   },
   "headers": [
