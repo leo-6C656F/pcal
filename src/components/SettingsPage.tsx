@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Target, Users, Database, Brain, User } from 'lucide-react';
+import { Target, Users, Database, Brain, User, Cloud } from 'lucide-react';
 import { GoalManager } from './GoalManager';
 import { ChildManager } from './ChildManager';
 import { DataManager } from './DataManager';
 import { AISettings } from './AISettings';
 import { ParentNameSettings } from './ParentNameSettings';
+import { CloudSyncSettings } from './CloudSyncSettings';
 
-type SettingsTab = 'goals' | 'children' | 'data' | 'ai' | 'parent';
+type SettingsTab = 'goals' | 'children' | 'data' | 'ai' | 'parent' | 'sync';
 
 /**
  * SettingsPage Component
@@ -21,6 +22,7 @@ export function SettingsPage() {
     { id: 'goals' as const, label: t('settings.goalsTab'), icon: Target },
     { id: 'children' as const, label: t('settings.childrenTab'), icon: Users },
     { id: 'parent' as const, label: 'Parent Name', icon: User },
+    { id: 'sync' as const, label: 'Cloud Sync', icon: Cloud },
     { id: 'ai' as const, label: t('settings.aiTab'), icon: Brain },
     { id: 'data' as const, label: t('settings.dataTab'), icon: Database },
   ];
@@ -64,6 +66,7 @@ export function SettingsPage() {
           </div>
         )}
         {activeTab === 'parent' && <ParentNameSettings />}
+        {activeTab === 'sync' && <CloudSyncSettings />}
         {activeTab === 'ai' && <AISettings />}
         {activeTab === 'data' && <DataManager />}
       </div>
