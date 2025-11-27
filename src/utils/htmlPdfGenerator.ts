@@ -625,6 +625,18 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
 }
 
 /**
+ * Preload an image from base64 data and return a loaded Image element
+ */
+function preloadImage(base64Data: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = `data:image/png;base64,${base64Data}`;
+  });
+}
+
+/**
  * Convert HTML to PDF by rendering to canvas first, then to PDF
  * This ensures pixel-perfect rendering matching the HTML
  * Supports multi-page documents
@@ -633,6 +645,11 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
   // Import dependencies
   const html2canvas = (await import('html2canvas')).default;
   const { PDFDocument } = await import('pdf-lib');
+
+  // Preload the logo image FIRST to ensure it's cached in the browser
+  console.log('Preloading logo image...');
+  const preloadedLogo = await preloadImage(logoBase64);
+  console.log('Logo preloaded:', preloadedLogo.width, 'x', preloadedLogo.height);
 
   // Replace logo placeholder with actual base64
   const htmlWithLogo = html.replace(/LOGO_BASE64_PLACEHOLDER/g, logoBase64);
@@ -656,7 +673,8 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
 
   // Process each page
   for (let i = 0; i < pageContainers.length; i++) {
-    const pageContainer = pageContainers[i];
+    // CLONE the page container instead of moving it to avoid DOM mutation issues
+    const pageContainer = pageContainers[i].cloneNode(true) as HTMLElement;
 
     // Create wrapper with proper structure
     const wrapper = document.createElement('div');
@@ -670,29 +688,23 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
       wrapper.appendChild(styleElement.cloneNode(true));
     }
 
-    // Then append the page container
+    // Then append the cloned page container
     wrapper.appendChild(pageContainer);
 
-    // Explicitly set logo source for each page BEFORE adding to DOM
+    // Replace logo img elements with clones of the preloaded image
     const logoImages = Array.from(pageContainer.querySelectorAll('img.logo-image')) as HTMLImageElement[];
     console.log(`Page ${i + 1}: Found ${logoImages.length} logo image(s)`);
     logoImages.forEach((img, idx) => {
-      console.log(`Page ${i + 1}, Logo ${idx + 1}: Current src length: ${img.src.length}`);
-      console.log(`Page ${i + 1}, Logo ${idx + 1}: Current src preview: ${img.src.substring(0, 50)}...`);
+      console.log(`Page ${i + 1}, Logo ${idx + 1}: Replacing with preloaded image`);
 
-      // Force refresh by clearing first
-      img.removeAttribute('src');
+      // Clone the preloaded image and copy styles
+      const newImg = preloadedLogo.cloneNode(true) as HTMLImageElement;
+      newImg.className = img.className;
+      newImg.alt = img.alt;
+      newImg.style.cssText = img.style.cssText;
 
-      // Set new src
-      const newSrc = `data:image/png;base64,${logoBase64}`;
-      img.src = newSrc;
-
-      // Force the image to load
-      img.loading = 'eager';
-      img.decoding = 'sync';
-
-      console.log(`Page ${i + 1}, Logo ${idx + 1}: New src length: ${img.src.length}, base64 length: ${logoBase64.length}`);
-      console.log(`Page ${i + 1}, Logo ${idx + 1}: Src set successfully: ${img.src.substring(0, 50)}...`);
+      // Replace the original img with the preloaded one
+      img.parentNode?.replaceChild(newImg, img);
     });
 
     // Add to DOM temporarily for rendering
@@ -705,17 +717,7 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
     document.body.appendChild(wrapper);
 
     try {
-      // Re-verify logo src after adding to DOM
-      const logoImagesAfterDOM = Array.from(pageContainer.querySelectorAll('img.logo-image')) as HTMLImageElement[];
-      logoImagesAfterDOM.forEach((img, idx) => {
-        console.log(`Page ${i + 1}, Logo ${idx + 1} AFTER DOM: src length: ${img.src.length}`);
-        if (img.src.length < 100) {
-          console.error(`Page ${i + 1}, Logo ${idx + 1} AFTER DOM: src is too short, re-setting!`);
-          img.src = `data:image/png;base64,${logoBase64}`;
-        }
-      });
-
-      // Wait for all images to load
+      // Wait for all images (including signatures) to load
       const images = Array.from(pageContainer.querySelectorAll('img'));
       console.log(`Page ${i + 1}: Waiting for ${images.length} image(s) to load...`);
       await Promise.all(images.map((img, idx) => {
@@ -735,17 +737,16 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
           setTimeout(() => {
             console.log(`Page ${i + 1}: Image ${idx + 1} load timeout`);
             resolve(true);
-          }, 2000); // Increased timeout to 2s
+          }, 2000);
         });
       }));
 
       // Additional wait for rendering
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       console.log(`Rendering page ${i + 1}/${pageContainers.length} to canvas...`);
 
       // Render to canvas with high quality
-      // Use onclone to ensure logo images are properly set in the cloned document
       const canvas = await html2canvas(pageContainer, {
         scale: 2, // High DPI
         useCORS: true,
@@ -753,15 +754,7 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
         backgroundColor: '#ffffff',
         logging: false,
         width: pageContainer.offsetWidth,
-        height: pageContainer.offsetHeight,
-        onclone: (clonedDoc: Document) => {
-          // Ensure logo images in the cloned document have the correct src
-          const clonedLogos = clonedDoc.querySelectorAll('img.logo-image') as NodeListOf<HTMLImageElement>;
-          clonedLogos.forEach((img) => {
-            // Force set the src in the cloned document
-            img.src = `data:image/png;base64,${logoBase64}`;
-          });
-        }
+        height: pageContainer.offsetHeight
       });
 
       console.log('Canvas created:', canvas.width, 'x', canvas.height);
