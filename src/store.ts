@@ -47,6 +47,8 @@ interface AppState {
   syncToCloud: () => Promise<boolean>;
   syncFromCloud: () => Promise<boolean>;
   checkCloudSyncAvailability: () => Promise<void>;
+  autoSyncOnLoad: () => Promise<void>;
+  autoPushToCloud: () => void;
 }
 
 export const useStore = create<AppState>((set, get) => ({
@@ -95,6 +97,9 @@ export const useStore = create<AppState>((set, get) => ({
     // Update state directly instead of reloading all children
     set({ children: [...get().children, child] });
 
+    // Auto-push to cloud after change
+    get().autoPushToCloud();
+
     return child;
   },
 
@@ -109,6 +114,9 @@ export const useStore = create<AppState>((set, get) => ({
         // Update current child if it's the one being edited
         currentChild: get().currentChild?.id === id ? updatedChild : get().currentChild
       });
+
+      // Auto-push to cloud after change
+      get().autoPushToCloud();
     }
   },
 
@@ -128,6 +136,9 @@ export const useStore = create<AppState>((set, get) => ({
       currentChild: isCurrentChild ? null : get().currentChild,
       currentEntry: isCurrentChild ? null : get().currentEntry
     });
+
+    // Auto-push to cloud after change
+    get().autoPushToCloud();
   },
 
   createEntry: async (date, childId) => {
@@ -146,6 +157,9 @@ export const useStore = create<AppState>((set, get) => ({
     await db.dailyEntries.add(entry);
     // Update state directly instead of reloading all entries
     set({ entries: [...get().entries, entry] });
+
+    // Auto-push to cloud after change
+    get().autoPushToCloud();
 
     return entry;
   },
@@ -171,6 +185,9 @@ export const useStore = create<AppState>((set, get) => ({
         // Update current entry if it's the one being edited
         currentEntry: get().currentEntry?.id === entryId ? entry : get().currentEntry
       });
+
+      // Auto-push to cloud after change
+      get().autoPushToCloud();
     }
   },
 
@@ -192,6 +209,9 @@ export const useStore = create<AppState>((set, get) => ({
           // Update current entry if it's the one being edited
           currentEntry: get().currentEntry?.id === entryId ? entry : get().currentEntry
         });
+
+        // Auto-push to cloud after change
+        get().autoPushToCloud();
       }
     }
   },
@@ -212,6 +232,9 @@ export const useStore = create<AppState>((set, get) => ({
         // Update current entry if it's the one being edited
         currentEntry: get().currentEntry?.id === entryId ? entry : get().currentEntry
       });
+
+      // Auto-push to cloud after change
+      get().autoPushToCloud();
     }
   },
 
@@ -231,6 +254,9 @@ export const useStore = create<AppState>((set, get) => ({
         // Update current entry if it's the one being edited
         currentEntry: get().currentEntry?.id === entryId ? entry : get().currentEntry
       });
+
+      // Auto-push to cloud after change
+      get().autoPushToCloud();
     }
   },
 
@@ -252,6 +278,9 @@ export const useStore = create<AppState>((set, get) => ({
       // Update current entry if it's the one being edited
       currentEntry: get().currentEntry?.id === entryId ? entry : get().currentEntry
     });
+
+    // Auto-push to cloud after change
+    get().autoPushToCloud();
   },
 
   updateAISummary: async (entryId, summary) => {
@@ -280,12 +309,18 @@ export const useStore = create<AppState>((set, get) => ({
     } else {
       set({ goals: [...get().goals, goal] });
     }
+
+    // Auto-push to cloud after change
+    get().autoPushToCloud();
   },
 
   deleteGoal: async (code) => {
     await db.goals.delete(code);
     // Update state directly instead of reloading all goals
     set({ goals: get().goals.filter(g => g.code !== code) });
+
+    // Auto-push to cloud after change
+    get().autoPushToCloud();
   },
 
   clearAllGoals: async () => {
@@ -506,6 +541,52 @@ export const useStore = create<AppState>((set, get) => ({
       return false;
     }
   },
+
+  /**
+   * Auto-sync on app load
+   * Silently pulls from cloud if sync is enabled
+   */
+  autoSyncOnLoad: async () => {
+    const { syncStatus } = get();
+
+    if (!syncStatus.syncEnabled) {
+      console.log('[AutoSync] Cloud sync is disabled, skipping auto-sync on load');
+      return;
+    }
+
+    console.log('[AutoSync] Auto-syncing from cloud on app load...');
+
+    // Use syncFromCloud which already handles all the logic
+    await get().syncFromCloud();
+  },
+
+  /**
+   * Auto-push to cloud (debounced)
+   * Called after CRUD operations when sync is enabled
+   */
+  autoPushToCloud: (() => {
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    return () => {
+      const { syncStatus } = get();
+
+      if (!syncStatus.syncEnabled) {
+        return;
+      }
+
+      // Clear existing timeout
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
+      // Debounce: wait 3 seconds after last change before syncing
+      timeoutId = setTimeout(async () => {
+        console.log('[AutoSync] Auto-pushing to cloud after changes...');
+        await get().syncToCloud();
+        timeoutId = null;
+      }, 3000);
+    };
+  })(),
 }));
 
 /**

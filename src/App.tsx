@@ -34,7 +34,7 @@ export let showToast: ReturnType<typeof useToast>;
  */
 function App() {
   const { t } = useTranslation();
-  const { currentEntry, setCurrentEntry, loadChildren, loadEntries, loadGoals } = useStore();
+  const { currentEntry, setCurrentEntry, loadChildren, loadEntries, loadGoals, autoSyncOnLoad } = useStore();
   const [isInitialized, setIsInitialized] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -72,6 +72,11 @@ function App() {
 
         setIsInitialized(true);
         console.log('[APP] PCAL initialized successfully');
+
+        // Auto-sync from cloud if enabled (runs in background)
+        autoSyncOnLoad().catch(error => {
+          console.error('[APP] Auto-sync on load failed:', error);
+        });
       } catch (error) {
         console.error('[APP] Initialization failed:', error);
         setInitError(error instanceof Error ? error.message : 'Unknown error');
