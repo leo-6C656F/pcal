@@ -136,7 +136,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
         <!-- Header -->
         <div class="header">
             <div class="logo-area">
-                <img src="data:image/png;base64,LOGO_BASE64_PLACEHOLDER" alt="Orange County Head Start Logo" class="logo-image">
+                <div class="logo-image" style="background-image: url('data:image/png;base64,LOGO_BASE64_PLACEHOLDER');" role="img" aria-label="Orange County Head Start Logo"></div>
             </div>
             <h1>Parent-Child Activity Log (PCAL) In-Kind Form</h1>
         </div>
@@ -373,10 +373,13 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
         }
 
         .logo-image {
-            max-width: 120px;
-            height: auto;
+            width: 120px;
+            height: 80px;
             margin: 0 auto 6px auto;
             display: block;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
 
         h1 {
@@ -625,18 +628,6 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
 }
 
 /**
- * Preload an image from base64 data and return a loaded Image element
- */
-function preloadImage(base64Data: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = `data:image/png;base64,${base64Data}`;
-  });
-}
-
-/**
  * Convert HTML to PDF by rendering to canvas first, then to PDF
  * This ensures pixel-perfect rendering matching the HTML
  * Supports multi-page documents
@@ -646,35 +637,34 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
   const html2canvas = (await import('html2canvas')).default;
   const { PDFDocument } = await import('pdf-lib');
 
-  // Preload the logo image FIRST to ensure it's cached in the browser
-  console.log('Preloading logo image...');
-  const preloadedLogo = await preloadImage(logoBase64);
-  console.log('Logo preloaded:', preloadedLogo.width, 'x', preloadedLogo.height);
-
   // Replace logo placeholder with actual base64
+  // Note: Logo is now rendered as CSS background-image which html2canvas handles more reliably
   const htmlWithLogo = html.replace(/LOGO_BASE64_PLACEHOLDER/g, logoBase64);
 
-  // Create a container div to hold everything
-  const container = document.createElement('div');
-  container.innerHTML = htmlWithLogo;
+  // Count how many pages we have by parsing once
+  const tempContainer = document.createElement('div');
+  tempContainer.innerHTML = htmlWithLogo;
+  const pageCount = tempContainer.querySelectorAll('.page-container').length;
 
-  // Find all page containers in the parsed HTML
-  const pageContainers = Array.from(container.querySelectorAll('.page-container')) as HTMLElement[];
-  const styleElement = container.querySelector('style') as HTMLStyleElement;
-
-  if (pageContainers.length === 0) {
+  if (pageCount === 0) {
     throw new Error('Could not find any .page-container in HTML');
   }
 
-  console.log(`Found ${pageContainers.length} page(s) to render`);
+  console.log(`Found ${pageCount} page(s) to render`);
 
   // Create PDF document
   const pdfDoc = await PDFDocument.create();
 
-  // Process each page
-  for (let i = 0; i < pageContainers.length; i++) {
-    // CLONE the page container instead of moving it to avoid DOM mutation issues
-    const pageContainer = pageContainers[i].cloneNode(true) as HTMLElement;
+  // Process each page by creating FRESH DOM for each one
+  for (let i = 0; i < pageCount; i++) {
+    // Create a FRESH container for each page to avoid any DOM state issues
+    const freshContainer = document.createElement('div');
+    freshContainer.innerHTML = htmlWithLogo;
+
+    // Get all page containers and extract just the one we need
+    const allPageContainers = freshContainer.querySelectorAll('.page-container');
+    const pageContainer = allPageContainers[i] as HTMLElement;
+    const styleElement = freshContainer.querySelector('style') as HTMLStyleElement;
 
     // Create wrapper with proper structure
     const wrapper = document.createElement('div');
@@ -685,27 +675,11 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
 
     // Append style element first
     if (styleElement) {
-      wrapper.appendChild(styleElement.cloneNode(true));
+      wrapper.appendChild(styleElement);
     }
 
-    // Then append the cloned page container
+    // Append the page container (move it from freshContainer to wrapper)
     wrapper.appendChild(pageContainer);
-
-    // Replace logo img elements with clones of the preloaded image
-    const logoImages = Array.from(pageContainer.querySelectorAll('img.logo-image')) as HTMLImageElement[];
-    console.log(`Page ${i + 1}: Found ${logoImages.length} logo image(s)`);
-    logoImages.forEach((img, idx) => {
-      console.log(`Page ${i + 1}, Logo ${idx + 1}: Replacing with preloaded image`);
-
-      // Clone the preloaded image and copy styles
-      const newImg = preloadedLogo.cloneNode(true) as HTMLImageElement;
-      newImg.className = img.className;
-      newImg.alt = img.alt;
-      newImg.style.cssText = img.style.cssText;
-
-      // Replace the original img with the preloaded one
-      img.parentNode?.replaceChild(newImg, img);
-    });
 
     // Add to DOM temporarily for rendering
     wrapper.style.position = 'fixed';
@@ -717,7 +691,7 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
     document.body.appendChild(wrapper);
 
     try {
-      // Wait for all images (including signatures) to load
+      // Wait for all images (signatures) to load
       const images = Array.from(pageContainer.querySelectorAll('img'));
       console.log(`Page ${i + 1}: Waiting for ${images.length} image(s) to load...`);
       await Promise.all(images.map((img, idx) => {
