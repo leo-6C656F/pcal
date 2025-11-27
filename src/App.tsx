@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from '@clerk/clerk-react';
 import { format } from 'date-fns';
 import { useStore } from './store';
 import { initializeDatabase } from './services/journalReplay';
@@ -48,6 +48,12 @@ function App() {
   // Track if we're handling a popstate event to avoid pushing duplicate states
   const isPopstateHandlingRef = useRef(false);
 
+  // Track if sync has been attempted after authentication
+  const hasSyncedAfterAuthRef = useRef(false);
+
+  // Watch for user authentication state
+  const { isSignedIn, isLoaded: isUserLoaded } = useUser();
+
   // Detect if running as PWA (standalone mode)
   const isPWA = typeof window !== 'undefined' && (
     window.matchMedia('(display-mode: standalone)').matches ||
@@ -87,6 +93,25 @@ function App() {
     // Store functions are stable (from Zustand), so we don't need them as dependencies
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Trigger sync when user becomes authenticated (handles case where Clerk loads after app init)
+  useEffect(() => {
+    if (!isInitialized || !isUserLoaded || !isSignedIn) {
+      return;
+    }
+
+    // Only attempt sync once per session
+    if (hasSyncedAfterAuthRef.current) {
+      return;
+    }
+
+    hasSyncedAfterAuthRef.current = true;
+    console.log('[APP] User authenticated, triggering auto-sync...');
+
+    autoSyncOnLoad().catch(error => {
+      console.error('[APP] Auto-sync after authentication failed:', error);
+    });
+  }, [isInitialized, isUserLoaded, isSignedIn, autoSyncOnLoad]);
 
   // Update view when currentEntry changes
   useEffect(() => {
