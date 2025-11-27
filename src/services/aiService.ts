@@ -388,9 +388,17 @@ async function tryOpenAI(
   // Build request body with settings
   const requestBody: Record<string, unknown> = {
     model: model,
-    messages: messages,
-    max_tokens: settings.maxNewTokens
+    messages: messages
   };
+
+  // Use max_completion_tokens for newer models (GPT-5+, o1, o3)
+  // Use max_tokens for older models (GPT-4, GPT-3.5)
+  const isNewerModel = model.startsWith('gpt-5') || model.startsWith('o1') || model.startsWith('o3');
+  if (isNewerModel) {
+    requestBody.max_completion_tokens = settings.maxNewTokens;
+  } else {
+    requestBody.max_tokens = settings.maxNewTokens;
+  }
 
   // Add temperature if sampling is enabled
   if (settings.doSample) {

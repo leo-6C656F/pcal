@@ -89,11 +89,20 @@ export default async function handler(req: Request) {
     });
 
     // Build request body with settings
+    const model = settings.model || 'gpt-4o-mini';
     const requestBody: Record<string, unknown> = {
-      model: settings.model || 'gpt-4o-mini',
-      messages: messages,
-      max_tokens: settings.maxNewTokens || 150
+      model: model,
+      messages: messages
     };
+
+    // Use max_completion_tokens for newer models (GPT-5+, o1, o3)
+    // Use max_tokens for older models (GPT-4, GPT-3.5)
+    const isNewerModel = model.startsWith('gpt-5') || model.startsWith('o1') || model.startsWith('o3');
+    if (isNewerModel) {
+      requestBody.max_completion_tokens = settings.maxNewTokens || 150;
+    } else {
+      requestBody.max_tokens = settings.maxNewTokens || 150;
+    }
 
     // Add temperature if sampling is enabled
     if (settings.doSample !== false) {
