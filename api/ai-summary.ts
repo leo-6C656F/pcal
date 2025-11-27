@@ -15,7 +15,7 @@
 import { verifyAuth, unauthorizedResponse } from './_lib/auth-edge.js';
 
 export const config = {
-  runtime: 'edge',
+  runtime: 'nodejs',
 };
 
 interface AISettings {
