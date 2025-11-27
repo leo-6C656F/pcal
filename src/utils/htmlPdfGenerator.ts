@@ -136,7 +136,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
         <!-- Header -->
         <div class="header">
             <div class="logo-area">
-                <div class="logo-image" style="background-image: url('data:image/png;base64,LOGO_BASE64_PLACEHOLDER');" role="img" aria-label="Orange County Head Start Logo"></div>
+                <img class="logo-image" alt="Orange County Head Start Logo" />
             </div>
             <h1>Parent-Child Activity Log (PCAL) In-Kind Form</h1>
         </div>
@@ -374,12 +374,9 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
 
         .logo-image {
             width: 120px;
-            height: 80px;
+            height: auto;
             margin: 0 auto 6px auto;
             display: block;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
         }
 
         h1 {
@@ -628,6 +625,24 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
 }
 
 /**
+ * Convert base64 to Blob URL - Blob URLs are handled better by html2canvas than long data URLs
+ */
+function base64ToBlobUrl(base64: string, mimeType: string = 'image/png'): string {
+  const byteCharacters = atob(base64);
+  const byteArrays = [];
+  for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+    const slice = byteCharacters.slice(offset, offset + 512);
+    const byteNumbers = new Array(slice.length);
+    for (let i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i);
+    }
+    byteArrays.push(new Uint8Array(byteNumbers));
+  }
+  const blob = new Blob(byteArrays, { type: mimeType });
+  return URL.createObjectURL(blob);
+}
+
+/**
  * Convert HTML to PDF by rendering to canvas first, then to PDF
  * This ensures pixel-perfect rendering matching the HTML
  * Supports multi-page documents
@@ -637,16 +652,22 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
   const html2canvas = (await import('html2canvas')).default;
   const { PDFDocument } = await import('pdf-lib');
 
-  // DON'T replace the logo placeholder - we'll draw the logo directly with pdf-lib
-  // This bypasses html2canvas image handling issues entirely
-  const htmlWithoutLogo = html.replace(/LOGO_BASE64_PLACEHOLDER/g, '');
+  // Create a Blob URL for the logo - this is more reliable than long data URLs
+  const logoBlobUrl = base64ToBlobUrl(logoBase64);
+  console.log('Created logo Blob URL:', logoBlobUrl);
 
-  // Convert base64 to bytes for pdf-lib
-  const logoBytes = Uint8Array.from(atob(logoBase64), c => c.charCodeAt(0));
+  // Preload the logo image to ensure it's fully loaded before we start rendering
+  const preloadedLogo = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = logoBlobUrl;
+  });
+  console.log('Logo preloaded:', preloadedLogo.width, 'x', preloadedLogo.height);
 
   // Count how many pages we have by parsing once
   const tempContainer = document.createElement('div');
-  tempContainer.innerHTML = htmlWithoutLogo;
+  tempContainer.innerHTML = html;
   const pageCount = tempContainer.querySelectorAll('.page-container').length;
 
   if (pageCount === 0) {
@@ -655,46 +676,51 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
 
   console.log(`Found ${pageCount} page(s) to render`);
 
-  // Create PDF document and embed logo image ONCE
+  // Create PDF document
   const pdfDoc = await PDFDocument.create();
-  const logoImage = await pdfDoc.embedPng(logoBytes);
-  const logoDims = logoImage.scale(0.15); // Scale down the logo appropriately
-  console.log('Logo embedded in PDF:', logoDims.width, 'x', logoDims.height);
 
-  // Process each page by creating FRESH DOM for each one
-  for (let i = 0; i < pageCount; i++) {
-    // Create a FRESH container for each page to avoid any DOM state issues
-    const freshContainer = document.createElement('div');
-    freshContainer.innerHTML = htmlWithoutLogo;
+  try {
+    // Process each page by creating FRESH DOM for each one
+    for (let i = 0; i < pageCount; i++) {
+      // Create a FRESH container for each page to avoid any DOM state issues
+      const freshContainer = document.createElement('div');
+      freshContainer.innerHTML = html;
 
-    // Get all page containers and extract just the one we need
-    const allPageContainers = freshContainer.querySelectorAll('.page-container');
-    const pageContainer = allPageContainers[i] as HTMLElement;
-    const styleElement = freshContainer.querySelector('style') as HTMLStyleElement;
+      // Get all page containers and extract just the one we need
+      const allPageContainers = freshContainer.querySelectorAll('.page-container');
+      const pageContainer = allPageContainers[i] as HTMLElement;
+      const styleElement = freshContainer.querySelector('style') as HTMLStyleElement;
 
-    // Create wrapper with proper structure
-    const wrapper = document.createElement('div');
-    wrapper.style.fontFamily = '"Times New Roman", Times, serif';
-    wrapper.style.backgroundColor = 'white';
-    wrapper.style.padding = '0';
-    wrapper.style.width = '1050px';
+      // Set the logo src on this page's logo image using the Blob URL
+      const logoImg = pageContainer.querySelector('img.logo-image') as HTMLImageElement;
+      if (logoImg) {
+        logoImg.src = logoBlobUrl;
+        console.log(`Page ${i + 1}: Set logo src to Blob URL`);
+      }
 
-    // Append style element first
-    if (styleElement) {
-      wrapper.appendChild(styleElement);
-    }
+      // Create wrapper with proper structure
+      const wrapper = document.createElement('div');
+      wrapper.style.fontFamily = '"Times New Roman", Times, serif';
+      wrapper.style.backgroundColor = 'white';
+      wrapper.style.padding = '0';
+      wrapper.style.width = '1050px';
 
-    // Append the page container (move it from freshContainer to wrapper)
-    wrapper.appendChild(pageContainer);
+      // Append style element first
+      if (styleElement) {
+        wrapper.appendChild(styleElement);
+      }
 
-    // Add to DOM temporarily for rendering
-    wrapper.style.position = 'fixed';
-    wrapper.style.top = '0';
-    wrapper.style.left = '0';
-    wrapper.style.zIndex = '9999';
-    wrapper.style.pointerEvents = 'none';
+      // Append the page container (move it from freshContainer to wrapper)
+      wrapper.appendChild(pageContainer);
 
-    document.body.appendChild(wrapper);
+      // Add to DOM temporarily for rendering
+      wrapper.style.position = 'fixed';
+      wrapper.style.top = '0';
+      wrapper.style.left = '0';
+      wrapper.style.zIndex = '9999';
+      wrapper.style.pointerEvents = 'none';
+
+      document.body.appendChild(wrapper);
 
     try {
       // Wait for all images (signatures) to load
@@ -773,7 +799,7 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
 
       console.log(`Drawing page ${i + 1} at:`, { x, y, width: drawWidth, height: drawHeight });
 
-      // Draw the canvas content (page without logo)
+      // Draw the canvas content (includes logo rendered by html2canvas)
       page.drawImage(pngImage, {
         x,
         y,
@@ -781,30 +807,21 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
         height: drawHeight
       });
 
-      // Draw the logo directly on the PDF page using pdf-lib
-      // This bypasses html2canvas entirely for the logo
-      // Position: top center of the page content area
-      const logoX = (792 - logoDims.width) / 2; // Center horizontally
-      const logoY = 612 - margin - logoDims.height - 5; // Near top, accounting for margin
-
-      console.log(`Drawing logo on page ${i + 1} at:`, { logoX, logoY, width: logoDims.width, height: logoDims.height });
-
-      page.drawImage(logoImage, {
-        x: logoX,
-        y: logoY,
-        width: logoDims.width,
-        height: logoDims.height
-      });
-
-    } finally {
-      // Clean up this page's wrapper
-      document.body.removeChild(wrapper);
+      } finally {
+        // Clean up this page's wrapper
+        document.body.removeChild(wrapper);
+      }
     }
+
+    // Save PDF
+    const pdfBytes = await pdfDoc.save();
+    console.log('PDF generated, size:', pdfBytes.length);
+
+    return pdfBytes;
+
+  } finally {
+    // Clean up the Blob URL to prevent memory leaks
+    URL.revokeObjectURL(logoBlobUrl);
+    console.log('Blob URL revoked');
   }
-
-  // Save PDF
-  const pdfBytes = await pdfDoc.save();
-  console.log('PDF generated, size:', pdfBytes.length);
-
-  return pdfBytes;
 }
