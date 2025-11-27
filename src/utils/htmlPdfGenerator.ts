@@ -740,6 +740,29 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
 
       console.log(`Rendering page ${i + 1}/${pageCount} to canvas...`);
 
+      // DEBUG: Download the HTML to inspect what html2canvas will render
+      if (i === 0) { // Only for first page to avoid multiple downloads
+        const debugHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Debug - Page ${i + 1}</title>
+  ${styleElement ? styleElement.outerHTML : ''}
+</head>
+<body style="margin: 0; padding: 20px; background: #ccc;">
+  ${pageContainer.outerHTML}
+</body>
+</html>`;
+        const blob = new Blob([debugHtml], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `debug-page-${i + 1}.html`;
+        a.click();
+        URL.revokeObjectURL(url);
+        console.log('DEBUG: Downloaded HTML for inspection');
+      }
+
       // Render to canvas with high quality
       const canvas = await html2canvas(pageContainer, {
         scale: 2, // High DPI
