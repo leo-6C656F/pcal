@@ -12,7 +12,7 @@ import { ToastContainer } from './components/ToastContainer';
 import { LanguageSelector } from './components/LanguageSelector';
 import { ThemeToggle } from './components/ThemeToggle';
 import { useToast } from './hooks/useToast';
-import { preWarmModel, isModelReady } from './services/aiService';
+import { preWarmModel, isModelReady, getProviderMode } from './services/aiService';
 import type { ModelLoadingState } from './types';
 import { ArrowLeft, Settings, BookOpenCheck, RefreshCw, Brain, X } from 'lucide-react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
@@ -160,10 +160,13 @@ function App() {
     setEntrySubView(subView);
   }, []);
 
-  // Pre-warm AI model after app initializes
+  // Pre-warm AI model after app initializes (only if local mode is selected)
   useEffect(() => {
     if (!isInitialized) return;
     if (isModelReady()) return; // Already loaded
+
+    // Only pre-warm if user has explicitly selected local mode
+    if (getProviderMode() !== 'local') return;
 
     // Small delay to let the UI settle first
     const timer = setTimeout(() => {

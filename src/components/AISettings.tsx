@@ -723,6 +723,8 @@ Final sentence:`;
                 onChange={(e) => setOpenAIModel(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               >
+                <option value="gpt-5.1">GPT-5.1 (Latest)</option>
+                <option value="gpt-5">GPT-5</option>
                 <option value="gpt-4o-mini">GPT-4o Mini (Recommended - Fast & Affordable)</option>
                 <option value="gpt-4o">GPT-4o (Most Capable)</option>
                 <option value="gpt-4-turbo">GPT-4 Turbo</option>

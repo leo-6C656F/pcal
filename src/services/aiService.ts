@@ -18,8 +18,9 @@ import {
  * User explicitly selects provider mode:
  * - 'off': AI disabled
  * - 'local': Transformers.js (local, works offline)
- * - 'openai': OpenAI API (via proxy or direct based on openAISource)
+ * - 'openai': OpenAI API (via proxy or direct based on openAISource) - DEFAULT
  *
+ * Defaults to OpenAI proxy. Local model only downloads when user explicitly selects it.
  * Falls back to deterministic summary if selected provider fails.
  */
 
@@ -41,7 +42,7 @@ export {
  */
 function getAIConfig(): AIServiceConfig {
   if (typeof window === 'undefined') {
-    return { aiEnabled: true, providerMode: 'local', openAISource: 'proxy' };
+    return { aiEnabled: true, providerMode: 'openai', openAISource: 'proxy' };
   }
 
   const saved = localStorage.getItem('openAIConfig');
@@ -50,7 +51,7 @@ function getAIConfig(): AIServiceConfig {
       const config = JSON.parse(saved);
       return {
         aiEnabled: config.aiEnabled !== false,
-        providerMode: config.providerMode || 'local',
+        providerMode: config.providerMode || 'openai',
         openAISource: config.openAISource || 'proxy',
         openAIKey: config.openAIKey,
         openAIModel: config.openAIModel,
@@ -59,10 +60,10 @@ function getAIConfig(): AIServiceConfig {
         providerPriority: config.providerPriority
       };
     } catch {
-      return { aiEnabled: true, providerMode: 'local', openAISource: 'proxy' };
+      return { aiEnabled: true, providerMode: 'openai', openAISource: 'proxy' };
     }
   }
-  return { aiEnabled: true, providerMode: 'local', openAISource: 'proxy' };
+  return { aiEnabled: true, providerMode: 'openai', openAISource: 'proxy' };
 }
 
 /**
@@ -78,7 +79,7 @@ export function isAIEnabled(): boolean {
  */
 export function getProviderMode(): AIProviderMode {
   const config = getAIConfig();
-  return config.providerMode || 'local';
+  return config.providerMode || 'openai';
 }
 
 /**
@@ -122,7 +123,7 @@ export async function generateSummary(
     return { summary, provider: 'fallback' };
   }
 
-  const providerMode = mergedConfig.providerMode || 'local';
+  const providerMode = mergedConfig.providerMode || 'openai';
   const openAISource = mergedConfig.openAISource || 'proxy';
 
   // Handle based on provider mode
