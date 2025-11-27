@@ -6,7 +6,6 @@ import { printPDF } from '../utils/printPdf';
 import { emailPDF } from '../utils/emailPdf';
 import { Download, FileText, Loader2, Printer, Mail, X } from 'lucide-react';
 import { useStore } from '../store';
-import { getPDFGenerationMethod } from './PDFSettings';
 
 interface PDFPreviewProps {
   entries: DailyEntry[];  // Support multiple entries
@@ -33,49 +32,9 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals, onC
 
   // Auto-generate preview on mount
   useEffect(() => {
-    const method = getPDFGenerationMethod();
-
-    if (method === 'word-docx') {
-      // For Word documents, auto-download instead of preview
-      autoDownloadWordDocument();
-    } else {
-      generatePreview();
-    }
+    generatePreview();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const autoDownloadWordDocument = async () => {
-    setIsGenerating(true);
-    setError(null);
-
-    try {
-      const docBytes = await generatePDF({ entries, child, centerName, teacherName, goals });
-      const blob = new Blob([new Uint8Array(docBytes)], {
-        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-      });
-
-      const startDate = entries[0]?.date || 'unknown';
-      const endDate = entries[entries.length - 1]?.date || startDate;
-      const dateStr = startDate === endDate ? startDate : `${startDate}_to_${endDate}`;
-
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `PCAL-${child.name}-${dateStr}.docx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      // Set a flag to show download message
-      setPdfUrl('word-downloaded');
-    } catch (err) {
-      console.error('Word document generation error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to generate Word document');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
 
   const generatePreview = async () => {
     setIsGenerating(true);
@@ -101,8 +60,6 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals, onC
   };
 
   const downloadPDF = async () => {
-    const method = getPDFGenerationMethod();
-
     try {
       const bytes = await generatePDF({ entries, child, centerName, teacherName, goals });
 
@@ -110,46 +67,24 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals, onC
       const endDate = entries[entries.length - 1]?.date || startDate;
       const dateStr = startDate === endDate ? startDate : `${startDate}_to_${endDate}`;
 
-      if (method === 'word-docx') {
-        // Download as Word document
-        const blob = new Blob([new Uint8Array(bytes)], {
-          type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        });
-        const url = URL.createObjectURL(blob);
+      // Download as PDF
+      const blob = new Blob([new Uint8Array(bytes)], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
 
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `PCAL-${child.name}-${dateStr}.docx`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      } else {
-        // Download as PDF
-        const blob = new Blob([new Uint8Array(bytes)], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `PCAL-${child.name}-${dateStr}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `PCAL-${child.name}-${dateStr}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Download error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to download document');
+      setError(err instanceof Error ? err.message : 'Failed to download PDF');
     }
   };
 
   const handlePrintPDF = async () => {
-    const method = getPDFGenerationMethod();
-    if (method === 'word-docx') {
-      setError('Printing is not available for Word documents. Please download the document and print from Word/LibreOffice.');
-      return;
-    }
-
     try {
       await printPDF({ entries, child, centerName, teacherName, goals });
     } catch (err) {
@@ -159,12 +94,6 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals, onC
   };
 
   const handleEmailPDF = () => {
-    const method = getPDFGenerationMethod();
-    if (method === 'word-docx') {
-      setError('Email sharing is not available for Word documents. Please download the document and attach it to your email manually.');
-      return;
-    }
-
     setShowEmailConfirm(true);
   };
 
@@ -191,7 +120,7 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals, onC
   // Clean up blob URL on unmount
   useEffect(() => {
     return () => {
-      if (pdfUrl && pdfUrl !== 'word-downloaded') {
+      if (pdfUrl) {
         URL.revokeObjectURL(pdfUrl);
       }
     };
@@ -319,14 +248,7 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals, onC
           </span>
           <div className="flex gap-2 items-center">
             <button
-              onClick={() => {
-                const method = getPDFGenerationMethod();
-                if (method === 'word-docx') {
-                  autoDownloadWordDocument();
-                } else {
-                  generatePreview();
-                }
-              }}
+              onClick={generatePreview}
               disabled={isGenerating}
               className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
               title={t('pdfPreview.regenerate')}
@@ -367,41 +289,7 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals, onC
             </div>
           )}
 
-          {pdfUrl === 'word-downloaded' && (
-            <div className="absolute inset-0 flex items-center justify-center bg-slate-50">
-              <div className="flex flex-col items-center text-center px-6 max-w-md">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                  <FileText size={32} className="text-green-600" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">
-                  Word Document Downloaded
-                </h3>
-                <p className="text-sm text-slate-600 mb-4">
-                  Your PCAL form has been downloaded as a Word document (.docx).
-                  Word documents cannot be previewed in the browser.
-                </p>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
-                  <p className="text-sm text-blue-900 font-medium mb-2">
-                    💡 Next Steps:
-                  </p>
-                  <ul className="text-sm text-blue-800 space-y-1">
-                    <li>• Open the file in Microsoft Word or LibreOffice</li>
-                    <li>• Edit the document if needed</li>
-                    <li>• Convert to PDF: File → Save As → PDF (or Export as PDF)</li>
-                  </ul>
-                </div>
-                <button
-                  onClick={downloadPDF}
-                  className="mt-4 inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors"
-                >
-                  <Download size={16} className="mr-2" />
-                  Download Again
-                </button>
-              </div>
-            </div>
-          )}
-
-          {pdfUrl && pdfUrl !== 'word-downloaded' && (
+          {pdfUrl && (
             <iframe
               src={`${pdfUrl}#toolbar=0`}
               className="w-full h-full"
