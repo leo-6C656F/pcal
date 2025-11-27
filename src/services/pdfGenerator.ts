@@ -13,6 +13,7 @@ interface PDFGenerationOptions {
   child: ChildContext;
   centerName: string;
   teacherName: string;
+  parentName?: string;
   goals: Goal[];
 }
 
@@ -60,7 +61,7 @@ async function imageToBase64(imageUrl: string): Promise<string> {
  * Uses Server-Side PDF (Puppeteer) for perfect styling preservation
  */
 export async function generatePDF(options: PDFGenerationOptions): Promise<Uint8Array> {
-  const { entries, child, centerName, teacherName, goals } = options;
+  const { entries, child, centerName, teacherName, parentName, goals } = options;
 
   if (entries.length === 0) {
     throw new Error('No entries to generate PDF');
@@ -78,6 +79,7 @@ export async function generatePDF(options: PDFGenerationOptions): Promise<Uint8A
     child,
     centerName,
     teacherName,
+    parentName,
     goals
   });
 

@@ -29,9 +29,10 @@ export async function printPDF(options: {
   child: ChildContext;
   centerName: string;
   teacherName: string;
+  parentName?: string;
   goals: Goal[];
 }): Promise<void> {
-  const { entries, child, centerName, teacherName, goals } = options;
+  const { entries, child, centerName, teacherName, parentName, goals } = options;
 
   if (entries.length === 0) {
     throw new Error('No entries to generate PDF');
@@ -46,6 +47,7 @@ export async function printPDF(options: {
     child,
     centerName,
     teacherName,
+    parentName,
     goals
   });
 

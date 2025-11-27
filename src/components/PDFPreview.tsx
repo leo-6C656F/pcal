@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useUser } from '@clerk/clerk-react';
 import type { DailyEntry, ChildContext, Goal } from '../types';
 import { generatePDF } from '../services/pdfGenerator';
 import { printPDF } from '../utils/printPdf';
 import { emailPDF } from '../utils/emailPdf';
+import { getParentName } from './ParentNameSettings';
 import { Download, FileText, Loader2, Printer, Mail, X } from 'lucide-react';
 import { useStore } from '../store';
 
@@ -23,12 +25,16 @@ interface PDFPreviewProps {
  */
 export function PDFPreview({ entries, child, centerName, teacherName, goals, onClose }: PDFPreviewProps) {
   const { t } = useTranslation();
+  const { user } = useUser();
   const { markEntriesAsSent } = useStore();
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showEmailConfirm, setShowEmailConfirm] = useState(false);
   const [markAsSent, setMarkAsSent] = useState(true);
+
+  // Get parent name from settings
+  const parentName = getParentName(user);
 
   // Auto-generate preview on mount
   useEffect(() => {
@@ -41,7 +47,7 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals, onC
     setError(null);
 
     try {
-      const pdfBytes = await generatePDF({ entries, child, centerName, teacherName, goals });
+      const pdfBytes = await generatePDF({ entries, child, centerName, teacherName, parentName, goals });
       const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
 
@@ -61,7 +67,7 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals, onC
 
   const downloadPDF = async () => {
     try {
-      const bytes = await generatePDF({ entries, child, centerName, teacherName, goals });
+      const bytes = await generatePDF({ entries, child, centerName, teacherName, parentName, goals });
 
       const startDate = entries[0]?.date || 'unknown';
       const endDate = entries[entries.length - 1]?.date || startDate;
@@ -86,7 +92,7 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals, onC
 
   const handlePrintPDF = async () => {
     try {
-      await printPDF({ entries, child, centerName, teacherName, goals });
+      await printPDF({ entries, child, centerName, teacherName, parentName, goals });
     } catch (err) {
       console.error('Print error:', err);
       setError(err instanceof Error ? err.message : 'Failed to print PDF');
@@ -100,7 +106,7 @@ export function PDFPreview({ entries, child, centerName, teacherName, goals, onC
   const confirmEmailPDF = async () => {
     try {
       setShowEmailConfirm(false);
-      await emailPDF({ entries, child, centerName, teacherName, goals });
+      await emailPDF({ entries, child, centerName, teacherName, parentName, goals });
 
       // Mark entries as sent if checkbox is checked
       if (markAsSent) {

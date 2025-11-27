@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Target, Users, Database, Brain } from 'lucide-react';
+import { Target, Users, Database, Brain, User } from 'lucide-react';
 import { GoalManager } from './GoalManager';
 import { ChildManager } from './ChildManager';
 import { DataManager } from './DataManager';
 import { AISettings } from './AISettings';
+import { ParentNameSettings } from './ParentNameSettings';
 
-type SettingsTab = 'goals' | 'children' | 'data' | 'ai';
+type SettingsTab = 'goals' | 'children' | 'data' | 'ai' | 'parent';
 
 /**
  * SettingsPage Component
@@ -19,6 +20,7 @@ export function SettingsPage() {
   const tabs = [
     { id: 'goals' as const, label: t('settings.goalsTab'), icon: Target },
     { id: 'children' as const, label: t('settings.childrenTab'), icon: Users },
+    { id: 'parent' as const, label: 'Parent Name', icon: User },
     { id: 'ai' as const, label: t('settings.aiTab'), icon: Brain },
     { id: 'data' as const, label: t('settings.dataTab'), icon: Database },
   ];
@@ -55,12 +57,13 @@ export function SettingsPage() {
         {activeTab === 'children' && (
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">{t('childManager.title')}</h1>
-              <p className="text-slate-500 mt-1">{t('childManager.subtitle')}</p>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{t('childManager.title')}</h1>
+              <p className="text-slate-500 dark:text-slate-400 mt-1">{t('childManager.subtitle')}</p>
             </div>
             <ChildManager />
           </div>
         )}
+        {activeTab === 'parent' && <ParentNameSettings />}
         {activeTab === 'ai' && <AISettings />}
         {activeTab === 'data' && <DataManager />}
       </div>

@@ -10,17 +10,18 @@ export async function emailPDF(options: {
   child: ChildContext;
   centerName: string;
   teacherName: string;
+  parentName?: string;
   goals: Goal[];
   recipientEmail?: string;
 }): Promise<void> {
-  const { entries, child, centerName, teacherName, goals } = options;
+  const { entries, child, centerName, teacherName, parentName, goals } = options;
 
   if (entries.length === 0) {
     throw new Error('No entries to generate PDF');
   }
 
   // Generate PDF
-  const pdfBytes = await generatePDF({ entries, child, centerName, teacherName, goals });
+  const pdfBytes = await generatePDF({ entries, child, centerName, teacherName, parentName, goals });
   const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
 
   // Create filename
