@@ -77,7 +77,7 @@ export default async function handler(request: Request): Promise<Response> {
   }
 }
 
-// Export config for Vercel Edge Runtime
+// Export config for Vercel Runtime
 export const config = {
-  runtime: 'edge',
+  runtime: 'nodejs',
 };
