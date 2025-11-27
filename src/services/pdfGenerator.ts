@@ -82,7 +82,7 @@ export async function generatePDF(options: PDFGenerationOptions): Promise<Uint8A
   });
 
   // Replace logo placeholder with actual base64
-  const htmlWithLogo = html.replace('LOGO_BASE64_PLACEHOLDER', logoBase64);
+  const htmlWithLogo = html.replace(/LOGO_BASE64_PLACEHOLDER/g, logoBase64);
 
   // Send HTML to server for conversion to PDF
   const serverUrl = getServerUrl();
