@@ -634,15 +634,14 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
   const html2canvas = (await import('html2canvas')).default;
   const { PDFDocument } = await import('pdf-lib');
 
-  // Preload the logo as an Image element for drawing directly on canvas
-  // This completely bypasses html2canvas for logo rendering
+  // Preload the logo as an Image element
   const logoImage = await new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
     img.onerror = reject;
     img.src = `data:image/png;base64,${logoBase64}`;
   });
-  console.log('Logo preloaded for canvas drawing:', logoImage.width, 'x', logoImage.height);
+  console.log('Logo preloaded:', logoImage.width, 'x', logoImage.height);
 
   // Count how many pages we have by parsing once
   const tempContainer = document.createElement('div');
@@ -669,6 +668,24 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
     const pageContainer = allPageContainers[i] as HTMLElement;
     const styleElement = freshContainer.querySelector('style') as HTMLStyleElement;
 
+    // Find the logo placeholder and replace it with a clone of the preloaded image
+    const logoPlaceholder = pageContainer.querySelector('.logo-placeholder') as HTMLElement;
+    if (logoPlaceholder && logoPlaceholder.parentNode) {
+      // Create a new img element with the same src as the preloaded image
+      const imgElement = document.createElement('img');
+      imgElement.src = logoImage.src; // Use the already-loaded data URL
+      imgElement.className = 'logo-image';
+      imgElement.alt = 'Orange County Head Start Logo';
+      imgElement.style.width = '120px';
+      imgElement.style.height = 'auto';
+      imgElement.style.display = 'block';
+      imgElement.style.margin = '0 auto 6px auto';
+
+      // Replace placeholder with the img
+      logoPlaceholder.parentNode.replaceChild(imgElement, logoPlaceholder);
+      console.log(`Page ${i + 1}: Replaced placeholder with logo img element`);
+    }
+
     // Create wrapper with proper structure
     const wrapper = document.createElement('div');
     wrapper.style.fontFamily = '"Times New Roman", Times, serif';
@@ -694,12 +711,12 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
     document.body.appendChild(wrapper);
 
     try {
-      // Wait for all images (signatures only - logo is handled separately) to load
+      // Wait for all images to load (including the logo we just added)
       const images = Array.from(pageContainer.querySelectorAll('img'));
       console.log(`Page ${i + 1}: Waiting for ${images.length} image(s) to load...`);
       await Promise.all(images.map((img, idx) => {
         if (img.complete && img.naturalHeight > 0) {
-          console.log(`Page ${i + 1}: Image ${idx + 1} already loaded`);
+          console.log(`Page ${i + 1}: Image ${idx + 1} already loaded (${img.naturalWidth}x${img.naturalHeight})`);
           return Promise.resolve();
         }
         return new Promise((resolve) => {
@@ -718,64 +735,46 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
         });
       }));
 
-      // Additional wait for rendering
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Wait for layout to complete
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       console.log(`Rendering page ${i + 1}/${pageCount} to canvas...`);
 
-      // Render to canvas with high quality (without logo - we'll add it after)
+      // DEBUG: Download the HTML to inspect what html2canvas will render
+      if (i === 0) { // Only for first page to avoid multiple downloads
+        const debugHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Debug - Page ${i + 1}</title>
+  ${styleElement ? styleElement.outerHTML : ''}
+</head>
+<body style="margin: 0; padding: 20px; background: #ccc;">
+  ${pageContainer.outerHTML}
+</body>
+</html>`;
+        const blob = new Blob([debugHtml], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `debug-page-${i + 1}.html`;
+        a.click();
+        URL.revokeObjectURL(url);
+        console.log('DEBUG: Downloaded HTML for inspection');
+      }
+
+      // Render to canvas with high quality
       const canvas = await html2canvas(pageContainer, {
         scale: 2, // High DPI
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        logging: false,
+        logging: true, // Enable logging to debug
         width: pageContainer.offsetWidth,
         height: pageContainer.offsetHeight
       });
 
       console.log('Canvas created:', canvas.width, 'x', canvas.height);
-
-      // Draw the logo directly onto the canvas using native Canvas 2D API
-      // This completely bypasses html2canvas for logo rendering
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        // Find where the logo placeholder is in the rendered page
-        const logoPlaceholder = pageContainer.querySelector('.logo-placeholder') as HTMLElement;
-        if (logoPlaceholder) {
-          const rect = logoPlaceholder.getBoundingClientRect();
-          const containerRect = pageContainer.getBoundingClientRect();
-
-          // Calculate position relative to the page container, accounting for scale
-          const scale = 2; // Must match html2canvas scale
-          const logoX = (rect.left - containerRect.left) * scale;
-          const logoY = (rect.top - containerRect.top) * scale;
-
-          // Calculate logo size to fit in placeholder while maintaining aspect ratio
-          const placeholderWidth = rect.width * scale;
-          const placeholderHeight = rect.height * scale;
-          const logoAspect = logoImage.width / logoImage.height;
-          const placeholderAspect = placeholderWidth / placeholderHeight;
-
-          let drawWidth, drawHeight, drawX, drawY;
-          if (logoAspect > placeholderAspect) {
-            // Logo is wider, fit to width
-            drawWidth = placeholderWidth;
-            drawHeight = placeholderWidth / logoAspect;
-            drawX = logoX;
-            drawY = logoY + (placeholderHeight - drawHeight) / 2;
-          } else {
-            // Logo is taller, fit to height
-            drawHeight = placeholderHeight;
-            drawWidth = placeholderHeight * logoAspect;
-            drawX = logoX + (placeholderWidth - drawWidth) / 2;
-            drawY = logoY;
-          }
-
-          console.log(`Page ${i + 1}: Drawing logo at (${drawX}, ${drawY}) size ${drawWidth}x${drawHeight}`);
-          ctx.drawImage(logoImage, drawX, drawY, drawWidth, drawHeight);
-        }
-      }
 
       // Letter size landscape: 11 x 8.5 inches = 792 x 612 points
       const page = pdfDoc.addPage([792, 612]);
