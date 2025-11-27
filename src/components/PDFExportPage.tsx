@@ -13,7 +13,10 @@ export function PDFExportPage() {
   const { t } = useTranslation();
   const { goals, currentChild, setCurrentEntry, entries } = useStore();
   const childEntries = useMemo(() => {
-    return currentChild ? entries[currentChild.id] ?? [] : [];
+    if (!currentChild) return [];
+    return entries
+      .filter((e: DailyEntry) => e.childId === currentChild.id)
+      .sort((a: DailyEntry, b: DailyEntry) => b.date.localeCompare(a.date));
   }, [entries, currentChild]);
   const [selectedEntryIds, setSelectedEntryIds] = useState<Set<string>>(new Set());
   const [view, setView] = useState<View>('select');
@@ -33,12 +36,12 @@ export function PDFExportPage() {
     if (selectedEntryIds.size === childEntries.length) {
       setSelectedEntryIds(new Set());
     } else {
-      setSelectedEntryIds(new Set(childEntries.map(e => e.id)));
+      setSelectedEntryIds(new Set(childEntries.map((e: DailyEntry) => e.id)));
     }
   };
 
   const handleGeneratePDF = () => {
-    const unsignedEntries = selectedEntries.filter(e => !e.signatureBase64);
+    const unsignedEntries = selectedEntries.filter((e: DailyEntry) => !e.signatureBase64);
     if (unsignedEntries.length > 0) {
       setView('finalize');
     } else {
@@ -51,8 +54,8 @@ export function PDFExportPage() {
     navigate('/');
   };
 
-  const selectedEntries = childEntries.filter(e => selectedEntryIds.has(e.id)).sort((a, b) => a.date.localeCompare(b.date));
-  const unsignedEntries = selectedEntries.filter(e => !e.signatureBase64);
+  const selectedEntries = childEntries.filter((e: DailyEntry) => selectedEntryIds.has(e.id)).sort((a: DailyEntry, b: DailyEntry) => a.date.localeCompare(b.date));
+  const unsignedEntries = selectedEntries.filter((e: DailyEntry) => !e.signatureBase64);
 
   // Check if all entries are now signed
   if (view === 'finalize' && unsignedEntries.length === 0) {
@@ -126,7 +129,7 @@ export function PDFExportPage() {
                 </div>
 
                 <div className="p-4 space-y-2 max-h-[60vh] overflow-y-auto">
-                  {childEntries.map((entry) => (
+                  {childEntries.map((entry: DailyEntry) => (
                     <label
                       key={entry.id}
                       className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer ${
@@ -231,8 +234,8 @@ export function PDFExportPage() {
                       </div>
                     </>
                   )}
-                </>
-              </div>
+                </div>
+              </>
             )}
 
             {/* Preview View */}
