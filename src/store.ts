@@ -554,6 +554,13 @@ export const useStore = create<AppState>((set, get) => ({
       return;
     }
 
+    // Check if user is authenticated before attempting sync
+    const isAvailable = await isCloudSyncAvailable();
+    if (!isAvailable) {
+      console.log('[AutoSync] User not authenticated yet, skipping auto-sync on load');
+      return;
+    }
+
     console.log('[AutoSync] Auto-syncing from cloud on app load...');
 
     // Use syncFromCloud which already handles all the logic
@@ -581,6 +588,14 @@ export const useStore = create<AppState>((set, get) => ({
 
       // Debounce: wait 3 seconds after last change before syncing
       timeoutId = setTimeout(async () => {
+        // Check authentication before attempting to sync
+        const isAvailable = await isCloudSyncAvailable();
+        if (!isAvailable) {
+          console.log('[AutoSync] User not authenticated, skipping auto-push');
+          timeoutId = null;
+          return;
+        }
+
         console.log('[AutoSync] Auto-pushing to cloud after changes...');
         await get().syncToCloud();
         timeoutId = null;
