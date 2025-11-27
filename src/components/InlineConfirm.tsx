@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { AlertTriangle } from 'lucide-react';
 
 interface InlineConfirmProps {
@@ -44,11 +44,23 @@ export function InlineConfirm({
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
   const setIsOpen = onOpenChange || setInternalIsOpen;
 
+  // Use refs to hold callback references to avoid re-running effects
+  const setIsOpenRef = useRef(setIsOpen);
+  const onCancelRef = useRef(onCancel);
+  setIsOpenRef.current = setIsOpen;
+  onCancelRef.current = onCancel;
+
   const variantStyles = {
     danger: 'bg-rose-600 hover:bg-rose-700 focus:ring-rose-500',
     warning: 'bg-amber-600 hover:bg-amber-700 focus:ring-amber-500',
     info: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
   };
+
+  // Stable close handler
+  const closeAndCancel = useCallback(() => {
+    setIsOpenRef.current(false);
+    onCancelRef.current?.();
+  }, []);
 
   // Close on escape key
   useEffect(() => {
@@ -56,14 +68,13 @@ export function InlineConfirm({
 
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setIsOpen(false);
-        onCancel?.();
+        closeAndCancel();
       }
     };
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, setIsOpen, onCancel]);
+  }, [isOpen, closeAndCancel]);
 
   // Close when clicking outside
   useEffect(() => {
@@ -71,8 +82,7 @@ export function InlineConfirm({
 
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-        onCancel?.();
+        closeAndCancel();
       }
     };
 
@@ -85,7 +95,7 @@ export function InlineConfirm({
       clearTimeout(timer);
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [isOpen, setIsOpen, onCancel]);
+  }, [isOpen, closeAndCancel]);
 
   const handleTriggerClick = () => {
     setIsOpen(true);

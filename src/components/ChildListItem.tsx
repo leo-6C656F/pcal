@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { useStore } from '../store';
 import { User, Edit2 } from 'lucide-react';
 import type { ChildContext } from '../types';
@@ -9,7 +9,7 @@ interface ChildListItemProps {
   onSelect: (child: ChildContext) => void;
 }
 
-export function ChildListItem({ child, isSelected, onSelect }: ChildListItemProps) {
+export const ChildListItem = memo(function ChildListItem({ child, isSelected, onSelect }: ChildListItemProps) {
   const { updateChild } = useStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editedChild, setEditedChild] = useState(child);
@@ -133,4 +133,4 @@ export function ChildListItem({ child, isSelected, onSelect }: ChildListItemProp
       </div>
     </button>
   );
-}
+});

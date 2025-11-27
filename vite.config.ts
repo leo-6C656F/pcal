@@ -21,7 +21,7 @@ export default defineConfig(() => {
     plugins: [
       react(),
       VitePWA({
-        registerType: 'autoUpdate',
+        registerType: 'prompt',
         includeAssets: ['favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'robots.txt', 'apple-touch-icon.png', 'icon.svg', '.nojekyll', 'CNAME'],
         manifest: {
           name: 'PCAL - Parent-Child Activity Log',
