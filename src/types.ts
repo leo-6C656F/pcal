@@ -2,7 +2,7 @@
 export interface JournalEvent {
   id: string;          // UUID
   timestamp: number;   // Date.now()
-  type: 'ENTRY_CREATED' | 'LINE_ADDED' | 'LINE_UPDATED' | 'LINE_DELETED' | 'SIGNATURE_SAVED' | 'PDF_EXPORTED';
+  type: 'ENTRY_CREATED' | 'LINE_ADDED' | 'LINE_UPDATED' | 'LINE_DELETED' | 'SIGNATURE_SAVED' | 'AI_SUMMARY_GENERATED' | 'AI_SUMMARY_UPDATED' | 'PDF_EXPORTED';
   payload: any;        // The data for the event
   checksum: string;    // SHA-256 of the payload (integrity)
 }

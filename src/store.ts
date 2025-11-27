@@ -271,6 +271,10 @@ export const useStore = create<AppState>((set, get) => ({
     entry.aiSummary = summary;
     entry.aiSummaryProvider = provider;
     await db.dailyEntries.put(entry);
+
+    // Record journal event for persistence
+    await addJournalEvent('AI_SUMMARY_GENERATED', { entryId, summary, provider });
+
     // Update state directly instead of reloading all entries
     const updatedEntries = get().entries.map(e => e.id === entryId ? entry : e);
     set({
@@ -289,6 +293,10 @@ export const useStore = create<AppState>((set, get) => ({
 
     entry.aiSummary = summary;
     await db.dailyEntries.put(entry);
+
+    // Record journal event for persistence
+    await addJournalEvent('AI_SUMMARY_UPDATED', { entryId, summary });
+
     // Update state directly instead of reloading all entries
     const updatedEntries = get().entries.map(e => e.id === entryId ? entry : e);
     set({
@@ -296,6 +304,9 @@ export const useStore = create<AppState>((set, get) => ({
       // Update current entry if it's the one being edited
       currentEntry: get().currentEntry?.id === entryId ? entry : get().currentEntry
     });
+
+    // Auto-push to cloud after change
+    get().autoPushToCloud();
   },
 
   setAIConfig: (config) => set({ aiConfig: config }),
