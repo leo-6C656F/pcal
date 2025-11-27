@@ -380,6 +380,13 @@ export function DailyEntryForm({ subView, onSubViewChange }: DailyEntryFormProps
     const [editedSummary, setEditedSummary] = useState<string>('');
     const [isEditingSummary, setIsEditingSummary] = useState(false);
 
+    // Sync editedSummary with currentEntry.aiSummary when not editing
+    useEffect(() => {
+      if (currentEntry?.aiSummary && !isEditingSummary) {
+        setEditedSummary(currentEntry.aiSummary);
+      }
+    }, [currentEntry?.aiSummary, isEditingSummary]);
+
     // Check model status on mount (only for local mode)
     useEffect(() => {
       if (providerMode === 'local') {
@@ -515,13 +522,11 @@ export function DailyEntryForm({ subView, onSubViewChange }: DailyEntryFormProps
               ) : currentEntry.aiSummary ? (
                 <div className="bg-white/80 p-5 rounded-xl border border-purple-100 shadow-sm">
                   <textarea
-                    value={isEditingSummary ? editedSummary : currentEntry.aiSummary}
+                    value={editedSummary || currentEntry.aiSummary}
                     onChange={(e) => {
+                      setEditedSummary(e.target.value);
                       if (!isEditingSummary) {
                         setIsEditingSummary(true);
-                        setEditedSummary(e.target.value);
-                      } else {
-                        setEditedSummary(e.target.value);
                       }
                     }}
                     className="w-full text-slate-700 leading-relaxed bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-purple-200 rounded-lg p-2 min-h-[80px] resize-y"
@@ -534,22 +539,22 @@ export function DailyEntryForm({ subView, onSubViewChange }: DailyEntryFormProps
                         onClick={async () => {
                           await updateAISummary(currentEntry.id, editedSummary);
                           setIsEditingSummary(false);
-                          showToast?.success(t('dailyEntryForm.summarySaved') || 'Summary saved!');
+                          showToast?.success(t('common.saved') || 'Saved!');
                         }}
                         className="flex items-center gap-2 px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                       >
                         <CheckCircle size={16} />
-                        {t('dailyEntryForm.save') || 'Save'}
+                        {t('common.save')}
                       </button>
                       <button
                         type="button"
                         onClick={() => {
                           setIsEditingSummary(false);
-                          setEditedSummary('');
+                          setEditedSummary(currentEntry.aiSummary);
                         }}
                         className="px-4 py-2 text-sm bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
                       >
-                        {t('dailyEntryForm.cancel') || 'Cancel'}
+                        {t('common.cancel')}
                       </button>
                     </div>
                   )}
