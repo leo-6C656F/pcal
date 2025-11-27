@@ -7,6 +7,7 @@ import { initializeDatabase } from './services/journalReplay';
 import { Dashboard } from './components/Dashboard';
 import { DailyEntryForm } from './components/DailyEntryForm';
 import { SettingsPage } from './components/SettingsPage';
+import { PDFExportPage } from './components/PDFExportPage';
 import { ToastContainer } from './components/ToastContainer';
 import { LanguageSelector } from './components/LanguageSelector';
 import { ThemeToggle } from './components/ThemeToggle';
@@ -15,7 +16,7 @@ import { preWarmModel, isModelReady } from './services/aiService';
 import type { ModelLoadingState } from './types';
 import { ArrowLeft, Settings, BookOpenCheck, RefreshCw, Brain, X } from 'lucide-react';
 
-type View = 'dashboard' | 'entry' | 'settings';
+type View = 'dashboard' | 'entry' | 'settings' | 'export-pdf';
 
 // Navigation state for browser history
 interface NavState {
@@ -86,7 +87,7 @@ function App() {
       setCurrentView('entry');
     } else {
       // Only change to dashboard if we were on entry view
-      setCurrentView(prev => prev === 'entry' ? 'dashboard' : prev);
+      setCurrentView(prev => (prev === 'entry' || prev === 'export-pdf') ? 'dashboard' : prev);
     }
   }, [currentEntry]);
 
@@ -136,6 +137,8 @@ function App() {
         setEntrySubView(state.subView || 'list');
       } else if (state.view === 'settings') {
         setCurrentView('settings');
+      } else if (state.view === 'export-pdf') {
+        setCurrentView('export-pdf');
       }
     }
 
@@ -243,6 +246,10 @@ function App() {
 
     // Reload to apply updates (data in IndexedDB will persist)
     window.location.reload();
+  };
+
+  const navigateToExport = () => {
+    setCurrentView('export-pdf');
   };
 
   return (
@@ -394,7 +401,7 @@ function App() {
 
         <SignedIn>
           <div className="animate-fade-in">
-            {currentView === 'dashboard' && <Dashboard />}
+            {currentView === 'dashboard' && <Dashboard onNavigateToExport={navigateToExport} />}
             {currentView === 'entry' && (
               <DailyEntryForm
                 subView={entrySubView}
@@ -402,6 +409,7 @@ function App() {
               />
             )}
             {currentView === 'settings' && <SettingsPage />}
+            {currentView === 'export-pdf' && <PDFExportPage />}
           </div>
         </SignedIn>
       </main>
