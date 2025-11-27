@@ -98,6 +98,25 @@ function applyEvent(entriesMap: Map<string, DailyEntry>, event: JournalEvent): v
       break;
     }
 
+    case 'AI_SUMMARY_GENERATED': {
+      const { entryId, summary, provider } = event.payload;
+      const entry = entriesMap.get(entryId);
+      if (entry) {
+        entry.aiSummary = summary;
+        entry.aiSummaryProvider = provider;
+      }
+      break;
+    }
+
+    case 'AI_SUMMARY_UPDATED': {
+      const { entryId, summary } = event.payload;
+      const entry = entriesMap.get(entryId);
+      if (entry) {
+        entry.aiSummary = summary;
+      }
+      break;
+    }
+
     case 'PDF_EXPORTED': {
       // Just a log event, doesn't change state
       break;
