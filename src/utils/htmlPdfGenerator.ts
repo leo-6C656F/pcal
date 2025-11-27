@@ -136,7 +136,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
         <!-- Header -->
         <div class="header">
             <div class="logo-area">
-                <div class="logo-placeholder" style="width: 120px; height: 80px; margin: 0 auto 6px auto;"></div>
+                <img src="data:image/png;base64,LOGO_BASE64_PLACEHOLDER" alt="Orange County Head Start Logo" class="logo-image">
             </div>
             <h1>Parent-Child Activity Log (PCAL) In-Kind Form</h1>
         </div>
@@ -668,22 +668,14 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
     const pageContainer = allPageContainers[i] as HTMLElement;
     const styleElement = freshContainer.querySelector('style') as HTMLStyleElement;
 
-    // Find the logo placeholder and replace it with a clone of the preloaded image
-    const logoPlaceholder = pageContainer.querySelector('.logo-placeholder') as HTMLElement;
-    if (logoPlaceholder && logoPlaceholder.parentNode) {
-      // Create a new img element with the same src as the preloaded image
-      const imgElement = document.createElement('img');
-      imgElement.src = logoImage.src; // Use the already-loaded data URL
-      imgElement.className = 'logo-image';
-      imgElement.alt = 'Orange County Head Start Logo';
-      imgElement.style.width = '120px';
-      imgElement.style.height = 'auto';
-      imgElement.style.display = 'block';
-      imgElement.style.margin = '0 auto 6px auto';
-
-      // Replace placeholder with the img
-      logoPlaceholder.parentNode.replaceChild(imgElement, logoPlaceholder);
-      console.log(`Page ${i + 1}: Replaced placeholder with logo img element`);
+    // The HTML template already has img tags with LOGO_BASE64_PLACEHOLDER
+    // The logoBase64 was already replaced in the HTML before this function was called
+    // Just verify the logo img exists
+    const logoImg = pageContainer.querySelector('img.logo-image') as HTMLImageElement;
+    if (logoImg) {
+      console.log(`Page ${i + 1}: Logo img found, src length: ${logoImg.src.length}`);
+    } else {
+      console.warn(`Page ${i + 1}: No logo img found!`);
     }
 
     // Create wrapper with proper structure
@@ -740,39 +732,13 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
 
       console.log(`Rendering page ${i + 1}/${pageCount} to canvas...`);
 
-      // DEBUG: Open the HTML in a new tab to inspect what html2canvas will render
-      if (i === 0) { // Only for first page
-        const debugHtml = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Debug - Page ${i + 1}</title>
-  ${styleElement ? styleElement.outerHTML : ''}
-</head>
-<body style="margin: 0; padding: 20px; background: #ccc;">
-  ${pageContainer.outerHTML}
-</body>
-</html>`;
-        // Open in new tab - more reliable than download
-        const debugWindow = window.open('', '_blank');
-        if (debugWindow) {
-          debugWindow.document.write(debugHtml);
-          debugWindow.document.close();
-          console.log('DEBUG: Opened HTML in new tab for inspection');
-        } else {
-          // Fallback: log to console
-          console.log('DEBUG: Could not open new tab. HTML content:');
-          console.log(debugHtml);
-        }
-      }
-
       // Render to canvas with high quality
       const canvas = await html2canvas(pageContainer, {
         scale: 2, // High DPI
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        logging: true, // Enable logging to debug
+        logging: false,
         width: pageContainer.offsetWidth,
         height: pageContainer.offsetHeight
       });
