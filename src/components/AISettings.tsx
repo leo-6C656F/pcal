@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Brain,
@@ -99,18 +99,33 @@ export function AISettings() {
     }
   }, []);
 
-  // Auto-save config when any setting changes
-  useEffect(() => {
-    const config = {
-      aiEnabled,
-      providerMode,
-      openAISource,
-      openAIKey,
-      openAIModel,
-      openAIBaseURL
-    };
-    localStorage.setItem('openAIConfig', JSON.stringify(config));
+  // Auto-save config when any setting changes (debounced to reduce writes)
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveConfig = useCallback(() => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    saveTimeoutRef.current = setTimeout(() => {
+      const config = {
+        aiEnabled,
+        providerMode,
+        openAISource,
+        openAIKey,
+        openAIModel,
+        openAIBaseURL
+      };
+      localStorage.setItem('openAIConfig', JSON.stringify(config));
+    }, 300); // 300ms debounce
   }, [aiEnabled, providerMode, openAISource, openAIKey, openAIModel, openAIBaseURL]);
+
+  useEffect(() => {
+    saveConfig();
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [saveConfig]);
 
   const updateStatus = async () => {
     const ready = isModelReady();

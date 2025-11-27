@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useCallback, type ReactNode } from 'react';
 
 interface ModalProps {
   children: ReactNode;
@@ -21,6 +21,17 @@ export function Modal({ children, onClose, title, size = 'md', footer }: ModalPr
     lg: 'max-w-5xl',       // Wide dialogs for lists - 1024px
   };
 
+  // Stable reference to onClose to avoid re-running effects
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  // Stable escape handler
+  const handleEscape = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      onCloseRef.current();
+    }
+  }, []);
+
   // Focus trap and keyboard navigation
   useEffect(() => {
     // Focus the content area first so scrolling works immediately
@@ -33,12 +44,6 @@ export function Modal({ children, onClose, title, size = 'md', footer }: ModalPr
     const timer = setTimeout(() => {
       closeButtonRef.current?.focus();
     }, 50);
-
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
 
     const handleTab = (e: KeyboardEvent) => {
       if (e.key !== 'Tab' || !modalRef.current) return;
@@ -70,7 +75,7 @@ export function Modal({ children, onClose, title, size = 'md', footer }: ModalPr
       document.removeEventListener('keydown', handleTab);
       document.body.style.overflow = originalOverflow;
     };
-  }, [onClose]);
+  }, [handleEscape]);
 
   return (
     <div

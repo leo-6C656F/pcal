@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { Plus, Calendar, User, FileDown } from 'lucide-react';
@@ -50,12 +50,16 @@ export function Dashboard() {
     }
   }, [children.length, entries.length]);
 
-  const childEntries = currentChild
-    ? entries.filter(e => e.childId === currentChild.id).sort((a, b) => b.date.localeCompare(a.date))
-    : [];
+  // Memoize filtered and sorted entries to avoid recalculating on every render
+  const childEntries = useMemo(() => {
+    if (!currentChild) return [];
+    return entries
+      .filter(e => e.childId === currentChild.id)
+      .sort((a, b) => b.date.localeCompare(a.date));
+  }, [entries, currentChild]);
 
   // Handler to create and immediately navigate to new entry with date selection
-  const handleCreateEntryWithDate = async (date: string) => {
+  const handleCreateEntryWithDate = useCallback(async (date: string) => {
     if (!currentChild) return;
 
     // Check if entry already exists for this date
@@ -79,19 +83,19 @@ export function Dashboard() {
     } finally {
       setIsCreatingEntry(false);
     }
-  };
+  }, [currentChild, entries, setCurrentEntry, createEntry]);
 
   // Quick handler for today's entry
-  const handleCreateTodayEntry = () => {
+  const handleCreateTodayEntry = useCallback(() => {
     const today = format(new Date(), 'yyyy-MM-dd');
     handleCreateEntryWithDate(today);
-  };
+  }, [handleCreateEntryWithDate]);
 
-  const handleGetStarted = () => {
+  const handleGetStarted = useCallback(() => {
     localStorage.setItem('pcal_welcome_seen', 'true');
     setShowWelcome(false);
     setShowChildForm(true);
-  };
+  }, []);
 
   // Show welcome screen for first-time users
   if (showWelcome) {

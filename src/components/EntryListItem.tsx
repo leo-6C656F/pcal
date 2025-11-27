@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { format, parse } from 'date-fns';
@@ -8,9 +9,19 @@ interface EntryListItemProps {
   entry: DailyEntry;
 }
 
-export function EntryListItem({ entry }: EntryListItemProps) {
+export const EntryListItem = memo(function EntryListItem({ entry }: EntryListItemProps) {
   const { t } = useTranslation();
   const { setCurrentEntry } = useStore();
+
+  // Memoize date parsing and formatting to avoid recalculating on every render
+  const { dayNum, monthYear, dayName } = useMemo(() => {
+    const parsedDate = parse(entry.date, 'yyyy-MM-dd', new Date());
+    return {
+      dayNum: format(parsedDate, 'dd'),
+      monthYear: format(parsedDate, 'MMMM yyyy'),
+      dayName: format(parsedDate, 'EEEE'),
+    };
+  }, [entry.date]);
 
   return (
     <button
@@ -22,16 +33,16 @@ export function EntryListItem({ entry }: EntryListItemProps) {
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold ${
             entry.signatureBase64 ? 'bg-accent/10 text-accent' : 'bg-primary/10 text-primary'
           }`}>
-            {format(parse(entry.date, 'yyyy-MM-dd', new Date()), 'dd')}
+            {dayNum}
           </div>
           <div>
             <p className="font-bold text-slate-900 text-lg">
-              {format(parse(entry.date, 'yyyy-MM-dd', new Date()), 'MMMM yyyy')}
+              {monthYear}
             </p>
             <div className="flex items-center gap-4 mt-1">
               <span className="text-sm text-slate-500 flex items-center gap-1">
                 <Clock size={14} />
-                {format(parse(entry.date, 'yyyy-MM-dd', new Date()), 'EEEE')}
+                {dayName}
               </span>
               <span className="text-sm text-slate-500 font-medium px-2 py-0.5 bg-slate-100 rounded-full">
                 {entry.lines.length} {t('entryListItem.activities')}
@@ -51,4 +62,4 @@ export function EntryListItem({ entry }: EntryListItemProps) {
       </div>
     </button>
   );
-}
+});
