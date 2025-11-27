@@ -8,7 +8,6 @@
     "server": "node server/index.js",
     "dev:all": "concurrently \"npm run dev\" \"npm run server\"",
     "build": "tsc -b && vite build",
-    "build:pages": "GITHUB_PAGES=true npm run build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
