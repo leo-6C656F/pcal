@@ -132,7 +132,6 @@ export default async function handler(req, res) {
 
     // Generate PDF with landscape orientation
     // Use preferCSSPageSize: true to respect CSS @page rules for proper page breaks
-    // Scale down slightly to ensure content fits within page boundaries
     const pdfBuffer = await page.pdf({
       format: 'Letter',
       landscape: true,
@@ -143,8 +142,7 @@ export default async function handler(req, res) {
         bottom: '0.25in',
         left: '0.25in'
       },
-      preferCSSPageSize: true,
-      scale: 0.75 // Scale content to fit page (1050px / ~1400px available at 96dpi)
+      preferCSSPageSize: true
     });
 
     console.log('PDF generated successfully, size:', pdfBuffer.length);

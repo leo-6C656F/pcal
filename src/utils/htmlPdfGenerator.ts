@@ -745,6 +745,7 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
       console.log(`Rendering page ${i + 1}/${pageContainers.length} to canvas...`);
 
       // Render to canvas with high quality
+      // Use onclone to ensure logo images are properly set in the cloned document
       const canvas = await html2canvas(pageContainer, {
         scale: 2, // High DPI
         useCORS: true,
@@ -752,7 +753,15 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
         backgroundColor: '#ffffff',
         logging: false,
         width: pageContainer.offsetWidth,
-        height: pageContainer.offsetHeight
+        height: pageContainer.offsetHeight,
+        onclone: (clonedDoc: Document) => {
+          // Ensure logo images in the cloned document have the correct src
+          const clonedLogos = clonedDoc.querySelectorAll('img.logo-image') as NodeListOf<HTMLImageElement>;
+          clonedLogos.forEach((img) => {
+            // Force set the src in the cloned document
+            img.src = `data:image/png;base64,${logoBase64}`;
+          });
+        }
       });
 
       console.log('Canvas created:', canvas.width, 'x', canvas.height);
