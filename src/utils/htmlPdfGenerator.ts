@@ -637,13 +637,16 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
   const html2canvas = (await import('html2canvas')).default;
   const { PDFDocument } = await import('pdf-lib');
 
-  // Replace logo placeholder with actual base64
-  // Note: Logo is now rendered as CSS background-image which html2canvas handles more reliably
-  const htmlWithLogo = html.replace(/LOGO_BASE64_PLACEHOLDER/g, logoBase64);
+  // DON'T replace the logo placeholder - we'll draw the logo directly with pdf-lib
+  // This bypasses html2canvas image handling issues entirely
+  const htmlWithoutLogo = html.replace(/LOGO_BASE64_PLACEHOLDER/g, '');
+
+  // Convert base64 to bytes for pdf-lib
+  const logoBytes = Uint8Array.from(atob(logoBase64), c => c.charCodeAt(0));
 
   // Count how many pages we have by parsing once
   const tempContainer = document.createElement('div');
-  tempContainer.innerHTML = htmlWithLogo;
+  tempContainer.innerHTML = htmlWithoutLogo;
   const pageCount = tempContainer.querySelectorAll('.page-container').length;
 
   if (pageCount === 0) {
@@ -652,14 +655,17 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
 
   console.log(`Found ${pageCount} page(s) to render`);
 
-  // Create PDF document
+  // Create PDF document and embed logo image ONCE
   const pdfDoc = await PDFDocument.create();
+  const logoImage = await pdfDoc.embedPng(logoBytes);
+  const logoDims = logoImage.scale(0.15); // Scale down the logo appropriately
+  console.log('Logo embedded in PDF:', logoDims.width, 'x', logoDims.height);
 
   // Process each page by creating FRESH DOM for each one
   for (let i = 0; i < pageCount; i++) {
     // Create a FRESH container for each page to avoid any DOM state issues
     const freshContainer = document.createElement('div');
-    freshContainer.innerHTML = htmlWithLogo;
+    freshContainer.innerHTML = htmlWithoutLogo;
 
     // Get all page containers and extract just the one we need
     const allPageContainers = freshContainer.querySelectorAll('.page-container');
@@ -767,12 +773,27 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
 
       console.log(`Drawing page ${i + 1} at:`, { x, y, width: drawWidth, height: drawHeight });
 
-      // Draw the image
+      // Draw the canvas content (page without logo)
       page.drawImage(pngImage, {
         x,
         y,
         width: drawWidth,
         height: drawHeight
+      });
+
+      // Draw the logo directly on the PDF page using pdf-lib
+      // This bypasses html2canvas entirely for the logo
+      // Position: top center of the page content area
+      const logoX = (792 - logoDims.width) / 2; // Center horizontally
+      const logoY = 612 - margin - logoDims.height - 5; // Near top, accounting for margin
+
+      console.log(`Drawing logo on page ${i + 1} at:`, { logoX, logoY, width: logoDims.width, height: logoDims.height });
+
+      page.drawImage(logoImage, {
+        x: logoX,
+        y: logoY,
+        width: logoDims.width,
+        height: logoDims.height
       });
 
     } finally {
