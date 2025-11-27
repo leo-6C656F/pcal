@@ -550,7 +550,7 @@ export function DailyEntryForm({ subView, onSubViewChange }: DailyEntryFormProps
                         type="button"
                         onClick={() => {
                           setIsEditingSummary(false);
-                          setEditedSummary(currentEntry.aiSummary);
+                          setEditedSummary(currentEntry.aiSummary || '');
                         }}
                         className="px-4 py-2 text-sm bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
                       >
