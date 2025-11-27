@@ -740,8 +740,8 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
 
       console.log(`Rendering page ${i + 1}/${pageCount} to canvas...`);
 
-      // DEBUG: Download the HTML to inspect what html2canvas will render
-      if (i === 0) { // Only for first page to avoid multiple downloads
+      // DEBUG: Open the HTML in a new tab to inspect what html2canvas will render
+      if (i === 0) { // Only for first page
         const debugHtml = `<!DOCTYPE html>
 <html>
 <head>
@@ -753,14 +753,17 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
   ${pageContainer.outerHTML}
 </body>
 </html>`;
-        const blob = new Blob([debugHtml], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `debug-page-${i + 1}.html`;
-        a.click();
-        URL.revokeObjectURL(url);
-        console.log('DEBUG: Downloaded HTML for inspection');
+        // Open in new tab - more reliable than download
+        const debugWindow = window.open('', '_blank');
+        if (debugWindow) {
+          debugWindow.document.write(debugHtml);
+          debugWindow.document.close();
+          console.log('DEBUG: Opened HTML in new tab for inspection');
+        } else {
+          // Fallback: log to console
+          console.log('DEBUG: Could not open new tab. HTML content:');
+          console.log(debugHtml);
+        }
       }
 
       // Render to canvas with high quality
