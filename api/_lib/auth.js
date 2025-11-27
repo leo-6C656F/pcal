@@ -12,7 +12,7 @@ import { verifyToken } from '@clerk/backend';
  */
 export async function verifyAuth(req) {
   try {
-    const authHeader = req.headers.authorization;
+    const authHeader = req.headers.get('authorization');
 
     if (!authHeader?.startsWith('Bearer ')) {
       console.warn('[Auth] Missing or invalid Authorization header');
@@ -56,10 +56,17 @@ export async function verifyAuth(req) {
 
 /**
  * Create unauthorized response
- * @param {Response} res - Express response object
+ * @returns {Response} Unauthorized response
  */
-export function sendUnauthorized(res) {
-  return res.status(401).json({
-    error: 'Unauthorized - Valid authentication required'
-  });
+export function unauthorizedResponse() {
+  return new Response(
+    JSON.stringify({ error: 'Unauthorized - Valid authentication required' }),
+    {
+      status: 401,
+      headers: {
+        'Content-Type': 'application/json',
+        'WWW-Authenticate': 'Bearer realm="api"'
+      }
+    }
+  );
 }
