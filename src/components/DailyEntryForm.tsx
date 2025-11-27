@@ -248,17 +248,34 @@ export function DailyEntryForm({ subView, onSubViewChange }: DailyEntryFormProps
         const lastLine = currentEntry.lines[currentEntry.lines.length - 1];
         return lastLine.endTime;
       }
-      return '09:00';
+      // First activity defaults to current time
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      return `${hours}:${minutes}`;
     };
 
+    const getDefaultTimes = () => {
+      const startTime = getDefaultStartTime();
+      // Calculate end time based on start time + 30 minutes
+      const [hours, minutes] = startTime.split(':').map(Number);
+      const startDate = new Date();
+      startDate.setHours(hours, minutes, 0, 0);
+      startDate.setMinutes(startDate.getMinutes() + 30);
+      const endHours = startDate.getHours().toString().padStart(2, '0');
+      const endMinutes = startDate.getMinutes().toString().padStart(2, '0');
+      return { startTime, endTime: `${endHours}:${endMinutes}`, durationMinutes: 30 };
+    };
+
+    const defaultTimes = activity ? null : getDefaultTimes();
     const [line, setLine] = useState<Partial<ActivityLine>>(
       activity || {
         goalCode: goals[0]?.code || 1,
         selectedActivities: [],
         customNarrative: '',
-        startTime: getDefaultStartTime(),
-        endTime: '09:30',
-        durationMinutes: 30
+        startTime: defaultTimes!.startTime,
+        endTime: defaultTimes!.endTime,
+        durationMinutes: defaultTimes!.durationMinutes
       }
     );
     const [isSaving, setIsSaving] = useState(false);
