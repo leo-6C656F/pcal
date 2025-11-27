@@ -1,7 +1,6 @@
 /**
- * Vercel Edge Function
+ * AI Summary API (Node.js Runtime)
  * Proxies OpenAI API requests to keep API keys secure on the server
- * Uses Edge runtime for global low-latency responses
  *
  * SECURITY: Requires Clerk authentication
  *
@@ -12,7 +11,8 @@
  * Returns: OpenAI completion response
  */
 
-import { verifyAuth, unauthorizedResponse } from './_lib/auth.js';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { verifyAuth } from './_lib/auth.js';
 
 export const config = {
   runtime: 'nodejs',
@@ -34,42 +34,37 @@ interface RequestBody {
   settings?: AISettings;
 }
 
-export default async function handler(req: Request) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST requests
   if (req.method !== 'POST') {
-    return new Response(
-      JSON.stringify({ error: 'Method not allowed' }),
-      { status: 405, headers: { 'Content-Type': 'application/json' } }
-    );
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   // Verify authentication
   const auth = await verifyAuth(req);
   if (!auth) {
     console.log('[AI Summary] Unauthorized request blocked');
-    return unauthorizedResponse();
+    return res.status(401).json({
+      error: 'Unauthorized - Valid authentication required'
+    });
   }
 
   console.log(`[AI Summary] Authorized request from user: ${auth.userId}`);
 
   try {
-    const body = await req.json() as RequestBody;
+    const body = req.body as RequestBody;
     const { prompt, settings = {} } = body;
 
     if (!prompt) {
-      return new Response(
-        JSON.stringify({ error: 'Prompt is required' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+      return res.status(400).json({ error: 'Prompt is required' });
     }
 
     // Get API key from environment variable
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      return new Response(
-        JSON.stringify({ error: 'OpenAI API key not configured on server' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
+      return res.status(500).json({
+        error: 'OpenAI API key not configured on server'
+      });
     }
 
     // Build messages array
@@ -120,7 +115,7 @@ export default async function handler(req: Request) {
       requestBody.presence_penalty = settings.presencePenalty;
     }
 
-    console.log('[Edge AI] Calling OpenAI API with model:', requestBody.model);
+    console.log('[AI Summary] Calling OpenAI API with model:', requestBody.model);
 
     // Call OpenAI API
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -134,51 +129,37 @@ export default async function handler(req: Request) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('[Edge AI] OpenAI API error:', response.status, errorData);
+      console.error('[AI Summary] OpenAI API error:', response.status, errorData);
 
-      return new Response(
-        JSON.stringify({
-          error: 'OpenAI API error',
-          status: response.status,
-          details: errorData
-        }),
-        { status: response.status, headers: { 'Content-Type': 'application/json' } }
-      );
+      return res.status(response.status).json({
+        error: 'OpenAI API error',
+        status: response.status,
+        details: errorData
+      });
     }
 
     const data = await response.json();
     const summary = data.choices[0]?.message?.content?.trim();
 
     if (!summary) {
-      return new Response(
-        JSON.stringify({ error: 'No response from OpenAI' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
+      return res.status(500).json({ error: 'No response from OpenAI' });
     }
 
-    console.log('[Edge AI] Generated summary successfully');
+    console.log('[AI Summary] Generated summary successfully');
 
     // Return the summary
-    return new Response(
-      JSON.stringify({ summary, provider: 'openai-api-proxy' }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store' // Don't cache AI responses
-        }
-      }
-    );
+    res.setHeader('Cache-Control', 'no-store'); // Don't cache AI responses
+    return res.status(200).json({
+      summary,
+      provider: 'openai-api-proxy'
+    });
 
   } catch (error) {
-    console.error('[Edge AI] Error:', error);
+    console.error('[AI Summary] Error:', error);
 
-    return new Response(
-      JSON.stringify({
-        error: 'Failed to generate summary',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    return res.status(500).json({
+      error: 'Failed to generate summary',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 }
