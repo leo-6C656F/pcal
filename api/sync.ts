@@ -6,7 +6,7 @@
  * GET /api/sync - Pull cloud data to local (sync down)
  */
 
-import { verifyAuth, unauthorizedResponse } from './_lib/auth';
+import { verifyAuth, unauthorizedResponse } from './_lib/auth.js';
 import {
   syncChildren,
   syncDailyEntries,
@@ -16,7 +16,7 @@ import {
   getGoals,
   updateLastSync,
   type SyncData,
-} from './_lib/db';
+} from './_lib/db.js';
 
 interface SyncUpRequest {
   children?: SyncData['children'];

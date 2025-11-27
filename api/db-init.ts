@@ -5,7 +5,7 @@
  * GET /api/db-init - Initialize database schema
  */
 
-import { initializeDatabase } from './_lib/db';
+import { initializeDatabase } from './_lib/db.js';
 
 interface InitResponse {
   success: boolean;
