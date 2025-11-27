@@ -26,6 +26,20 @@ interface AggregatedDailyActivity {
 }
 
 /**
+ * Add minutes to a time string (HH:MM format)
+ * @param timeStr - Time in HH:MM format (e.g., "13:30")
+ * @param minutesToAdd - Number of minutes to add
+ * @returns New time string in HH:MM format
+ */
+function addMinutesToTime(timeStr: string, minutesToAdd: number): string {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  const totalMinutes = hours * 60 + minutes + minutesToAdd;
+  const newHours = Math.floor(totalMinutes / 60) % 24; // Wrap around at 24 hours
+  const newMinutes = totalMinutes % 60;
+  return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+}
+
+/**
  * Aggregate activities by date
  */
 async function aggregateDailyActivities(entries: DailyEntry[], _goals: Goal[]): Promise<AggregatedDailyActivity[]> {
@@ -36,10 +50,12 @@ async function aggregateDailyActivities(entries: DailyEntry[], _goals: Goal[]): 
 
     const goalCodes = Array.from(new Set(entry.lines.map(line => line.goalCode))).sort((a, b) => a - b);
     const startTimes = entry.lines.map(line => line.startTime);
-    const endTimes = entry.lines.map(line => line.endTime);
-    const startTime = startTimes.sort()[0];
-    const endTime = endTimes.sort().reverse()[0];
     const totalMinutes = entry.lines.reduce((sum, line) => sum + line.durationMinutes, 0);
+
+    // Use the most recent (latest) start time
+    const startTime = startTimes.sort().reverse()[0];
+    // Calculate end time by adding total duration to the most recent start time
+    const endTime = addMinutesToTime(startTime, totalMinutes);
 
     // Generate description
     const description = entry.aiSummary ||
