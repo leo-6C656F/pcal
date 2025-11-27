@@ -4,8 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig(() => {
-  // Custom domain is configured, use root path
-  const base = process.env.GITHUB_PAGES === 'true' ? '/' : '/'
+  const base = '/'
 
   // Generate build timestamp
   const buildTimestamp = new Date().toISOString()
@@ -22,7 +21,7 @@ export default defineConfig(() => {
       react(),
       VitePWA({
         registerType: 'prompt',
-        includeAssets: ['favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'robots.txt', 'apple-touch-icon.png', 'icon.svg', '.nojekyll', 'CNAME'],
+        includeAssets: ['favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'robots.txt', 'apple-touch-icon.png', 'icon.svg'],
         manifest: {
           name: 'PCAL - Parent-Child Activity Log',
           short_name: 'PCAL',

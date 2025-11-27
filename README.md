@@ -142,34 +142,13 @@ npm run preview
 
 ## Deployment
 
-### GitHub Pages
-
-The application is configured for automatic deployment to GitHub Pages:
-
-1. **Automatic Deployment (Recommended)**
-   - Push to the `main` branch
-   - GitHub Actions will automatically build and deploy
-   - Access your app at: `https://[username].github.io/pcal/`
-
-2. **Manual Setup**
-   - Go to your repository Settings > Pages
-   - Under "Build and deployment", select "GitHub Actions"
-   - Push any commit to `main` to trigger deployment
-
-3. **Local Build for GitHub Pages**
-   ```bash
-   npm run build:pages
-   ```
-
-### Other Static Hosting
-
-For Netlify, Vercel, or other platforms, use the standard build:
+The application is deployed using Vercel. To deploy:
 
 ```bash
 npm run build
 ```
 
-Then deploy the `dist/` folder.
+Then deploy the `dist/` folder to your preferred static hosting platform.
 
 ## Data Schema
 
