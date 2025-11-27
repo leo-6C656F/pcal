@@ -73,3 +73,13 @@ export function unauthorizedResponse() {
     }
   );
 }
+
+/**
+ * Send unauthorized response for Node.js/Express-style handlers
+ * @param {object} res - Node.js response object with status() and json() methods
+ * @returns {object} The response
+ */
+export function sendUnauthorized(res) {
+  res.setHeader('WWW-Authenticate', 'Bearer realm="api"');
+  return res.status(401).json({ error: 'Unauthorized - Valid authentication required' });
+}
