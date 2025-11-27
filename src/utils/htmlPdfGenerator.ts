@@ -740,30 +740,18 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
 
       console.log(`Rendering page ${i + 1}/${pageCount} to canvas...`);
 
-      // DEBUG: Open the HTML in a new tab to inspect what html2canvas will render
+      // DEBUG: Log the HTML to console to inspect what html2canvas will render
       if (i === 0) { // Only for first page
-        const debugHtml = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Debug - Page ${i + 1}</title>
-  ${styleElement ? styleElement.outerHTML : ''}
-</head>
-<body style="margin: 0; padding: 20px; background: #ccc;">
-  ${pageContainer.outerHTML}
-</body>
-</html>`;
-        // Open in new tab - more reliable than download
-        const debugWindow = window.open('', '_blank');
-        if (debugWindow) {
-          debugWindow.document.write(debugHtml);
-          debugWindow.document.close();
-          console.log('DEBUG: Opened HTML in new tab for inspection');
-        } else {
-          // Fallback: log to console
-          console.log('DEBUG: Could not open new tab. HTML content:');
-          console.log(debugHtml);
+        console.log('=== DEBUG: HTML CONTENT FOR PAGE 1 ===');
+        console.log('Logo img element exists:', !!pageContainer.querySelector('img.logo-image'));
+        const logoImg = pageContainer.querySelector('img.logo-image') as HTMLImageElement;
+        if (logoImg) {
+          console.log('Logo img src length:', logoImg.src.length);
+          console.log('Logo img complete:', logoImg.complete);
+          console.log('Logo img naturalWidth:', logoImg.naturalWidth);
         }
+        console.log('Full HTML:', pageContainer.outerHTML.substring(0, 2000) + '...');
+        console.log('=== END DEBUG ===');
       }
 
       // Render to canvas with high quality
