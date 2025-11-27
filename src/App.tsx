@@ -15,8 +15,9 @@ import { useToast } from './hooks/useToast';
 import { preWarmModel, isModelReady } from './services/aiService';
 import type { ModelLoadingState } from './types';
 import { ArrowLeft, Settings, BookOpenCheck, RefreshCw, Brain, X } from 'lucide-react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 
-type View = 'dashboard' | 'entry' | 'settings' | 'export-pdf';
+type View = 'dashboard' | 'entry' | 'settings';
 
 // Navigation state for browser history
 interface NavState {
@@ -42,6 +43,7 @@ function App() {
   const [modelLoadingState, setModelLoadingState] = useState<ModelLoadingState | null>(null);
   const [showModelBanner, setShowModelBanner] = useState(false);
   const toast = useToast();
+  const navigate = useNavigate();
 
   // Track if we're handling a popstate event to avoid pushing duplicate states
   const isPopstateHandlingRef = useRef(false);
@@ -87,7 +89,7 @@ function App() {
       setCurrentView('entry');
     } else {
       // Only change to dashboard if we were on entry view
-      setCurrentView(prev => (prev === 'entry' || prev === 'export-pdf') ? 'dashboard' : prev);
+      setCurrentView(prev => (prev === 'entry') ? 'dashboard' : prev);
     }
   }, [currentEntry]);
 
@@ -137,8 +139,6 @@ function App() {
         setEntrySubView(state.subView || 'list');
       } else if (state.view === 'settings') {
         setCurrentView('settings');
-      } else if (state.view === 'export-pdf') {
-        setCurrentView('export-pdf');
       }
     }
 
@@ -249,7 +249,7 @@ function App() {
   };
 
   const navigateToExport = () => {
-    setCurrentView('export-pdf');
+    navigate('/export-pdf');
   };
 
   return (
@@ -401,15 +401,21 @@ function App() {
 
         <SignedIn>
           <div className="animate-fade-in">
-            {currentView === 'dashboard' && <Dashboard onNavigateToExport={navigateToExport} />}
-            {currentView === 'entry' && (
-              <DailyEntryForm
-                subView={entrySubView}
-                onSubViewChange={handleEntrySubViewChange}
-              />
-            )}
-            {currentView === 'settings' && <SettingsPage />}
-            {currentView === 'export-pdf' && <PDFExportPage />}
+            <Routes>
+              <Route path="/export-pdf" element={<PDFExportPage />} />
+              <Route path="/" element={
+                <>
+                  {currentView === 'dashboard' && <Dashboard onNavigateToExport={navigateToExport} />}
+                  {currentView === 'entry' && (
+                    <DailyEntryForm
+                      subView={entrySubView}
+                      onSubViewChange={handleEntrySubViewChange}
+                    />
+                  )}
+                  {currentView === 'settings' && <SettingsPage />}
+                </>
+              } />
+            </Routes>
           </div>
         </SignedIn>
       </main>
