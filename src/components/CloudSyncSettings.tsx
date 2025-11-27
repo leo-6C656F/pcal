@@ -10,7 +10,7 @@ import { formatDistanceToNow } from 'date-fns';
  * Users can enable/disable sync and manually trigger sync operations
  */
 export function CloudSyncSettings() {
-  const { user, isSignedIn } = useUser();
+  const { isSignedIn } = useUser();
   const {
     syncStatus,
     toggleCloudSync,
