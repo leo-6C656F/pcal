@@ -12,7 +12,10 @@ import { verifyToken } from '@clerk/backend';
  */
 export async function verifyAuth(req) {
   try {
-    const authHeader = req.headers.get('authorization');
+    // Handle both Web API Request and Node.js IncomingMessage
+    const authHeader = req.headers.get
+      ? req.headers.get('authorization')  // Web API Request (Edge/standard)
+      : req.headers['authorization'];     // Node.js IncomingMessage
 
     if (!authHeader?.startsWith('Bearer ')) {
       console.warn('[Auth] Missing or invalid Authorization header');
