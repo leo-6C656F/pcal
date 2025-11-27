@@ -6,7 +6,6 @@ import { format } from 'date-fns';
 import { ChildForm } from './ChildForm';
 import { ChildList } from './ChildList';
 import { EntryList } from './EntryList';
-import { PDFExportModal } from './PDFExportModal';
 import { Sheet } from './Sheet';
 import { WelcomeScreen } from './WelcomeScreen';
 import { PullToRefresh } from './PullToRefresh';
@@ -15,7 +14,7 @@ import { PullToRefresh } from './PullToRefresh';
  * Dashboard Component
  * Manages children and daily entries
  */
-export function Dashboard() {
+export function Dashboard({ onNavigateToExport }: { onNavigateToExport: () => void }) {
   const { t } = useTranslation();
   const {
     entries,
@@ -36,7 +35,6 @@ export function Dashboard() {
   }, []);
 
   const [showChildForm, setShowChildForm] = useState(false);
-  const [showPDFExport, setShowPDFExport] = useState(false);
   const [isCreatingEntry, setIsCreatingEntry] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -150,16 +148,16 @@ export function Dashboard() {
                   {t('dashboard.activityLogs')}
                 </h2>
                 <div className="flex gap-2 flex-wrap">
-                  {childEntries.length > 0 && !showPDFExport && !showDatePicker && (
+                  {childEntries.length > 0 && !showDatePicker && (
                     <button
-                      onClick={() => setShowPDFExport(true)}
+                      onClick={onNavigateToExport}
                       className="btn-secondary"
                     >
                       <FileDown size={18} className="mr-2" />
                       {t('dashboard.exportPdf')}
                     </button>
                   )}
-                  {!showPDFExport && !showDatePicker && (
+                  {!showDatePicker && (
                     <>
                       <button
                         onClick={handleCreateTodayEntry}
@@ -240,13 +238,6 @@ export function Dashboard() {
                     </div>
                   </div>
                 </Sheet>
-              )}
-
-              {showPDFExport && (
-                <PDFExportModal
-                  onClose={() => setShowPDFExport(false)}
-                  childEntries={childEntries}
-                />
               )}
 
               <EntryList />
