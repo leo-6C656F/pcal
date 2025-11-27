@@ -718,7 +718,7 @@ export async function htmlToPDF(html: string, logoBase64: string): Promise<Uint8
       // Additional wait for rendering
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      console.log(`Rendering page ${i + 1}/${pageContainers.length} to canvas...`);
+      console.log(`Rendering page ${i + 1}/${pageCount} to canvas...`);
 
       // Render to canvas with high quality
       const canvas = await html2canvas(pageContainer, {
