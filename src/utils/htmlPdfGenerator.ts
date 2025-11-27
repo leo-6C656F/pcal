@@ -12,6 +12,7 @@ interface HTMLPDFOptions {
   child: ChildContext;
   centerName: string;
   teacherName: string;
+  parentName?: string;
   goals: Goal[];
 }
 
@@ -97,7 +98,7 @@ function groupActivitiesByWeek(activities: AggregatedDailyActivity[]): Aggregate
  * Generate HTML for PCAL form
  */
 export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
-  const { entries, child, centerName, teacherName, goals } = options;
+  const { entries, child, centerName, teacherName, parentName = '', goals } = options;
 
   if (entries.length === 0) {
     throw new Error('No entries to generate PDF');
@@ -159,7 +160,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
                 CHILD'S NAME: <div class="input-line">${child.name}</div>
             </div>
             <div class="input-group w-parent">
-                PARENT NAME (Print): <div class="input-line"></div>
+                PARENT NAME (Print): <div class="input-line">${parentName}</div>
             </div>
         </div>
 
