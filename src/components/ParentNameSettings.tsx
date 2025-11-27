@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useUser } from '@clerk/clerk-react';
 import { User, Check } from 'lucide-react';
 
@@ -17,7 +16,6 @@ interface ParentNameConfig {
 const STORAGE_KEY = 'parentNameConfig';
 
 export function ParentNameSettings() {
-  const { t } = useTranslation();
   const { user } = useUser();
   const [config, setConfig] = useState<ParentNameConfig>({
     useClerkName: true,
