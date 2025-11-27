@@ -12,7 +12,7 @@
  * Returns: OpenAI completion response
  */
 
-import { verifyAuth, unauthorizedResponse } from './_lib/auth-edge.js';
+import { verifyAuth, unauthorizedResponse } from './_lib/auth.js';
 
 export const config = {
   runtime: 'nodejs',
