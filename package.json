@@ -16,6 +16,7 @@
     "@clerk/clerk-react": "^5.57.0",
     "@huggingface/transformers": "^3.8.0",
     "@sparticuz/chromium": "^141.0.0",
+    "@vercel/postgres": "^0.10.0",
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",

@@ -3,6 +3,7 @@ import type { DailyEntry, ChildContext, ActivityLine, AIServiceConfig, Goal, Mod
 import { db, generateId, addJournalEvent } from './db';
 import { generateSummary } from './services/aiService';
 import { add, parse, differenceInMinutes } from 'date-fns';
+import { syncUp, syncDown, isCloudSyncAvailable, type SyncStatus } from './services/cloudSync';
 
 /**
  * Zustand Store - UI State Management
@@ -17,6 +18,7 @@ interface AppState {
   goals: Goal[];
   aiConfig: AIServiceConfig;
   isGeneratingPDF: boolean;
+  syncStatus: SyncStatus;
 
   // Actions
   setCurrentChild: (child: ChildContext | null) => void;
@@ -38,6 +40,12 @@ interface AppState {
   deleteGoal: (code: number) => Promise<void>;
   clearAllGoals: () => Promise<void>;
   markEntriesAsSent: (entryIds: string[]) => Promise<void>;
+
+  // Cloud sync actions
+  toggleCloudSync: (enabled: boolean) => void;
+  syncToCloud: () => Promise<boolean>;
+  syncFromCloud: () => Promise<boolean>;
+  checkCloudSyncAvailability: () => Promise<void>;
 }
 
 export const useStore = create<AppState>((set, get) => ({
@@ -49,6 +57,12 @@ export const useStore = create<AppState>((set, get) => ({
   goals: [],
   aiConfig: {},
   isGeneratingPDF: false,
+  syncStatus: {
+    isSyncing: false,
+    lastSyncAt: localStorage.getItem('pcal_last_sync_at'),
+    lastSyncError: null,
+    syncEnabled: localStorage.getItem('pcal_sync_enabled') === 'true',
+  },
 
   // Actions
   setCurrentChild: (child) => set({ currentChild: child }),
@@ -286,7 +300,196 @@ export const useStore = create<AppState>((set, get) => ({
         ? updatedEntriesMap.get(currentEntryId)!
         : get().currentEntry
     });
-  }
+  },
+
+  // Cloud sync actions
+
+  toggleCloudSync: (enabled) => {
+    localStorage.setItem('pcal_sync_enabled', String(enabled));
+    set({
+      syncStatus: {
+        ...get().syncStatus,
+        syncEnabled: enabled,
+      },
+    });
+  },
+
+  checkCloudSyncAvailability: async () => {
+    const available = await isCloudSyncAvailable();
+    if (!available && get().syncStatus.syncEnabled) {
+      // If sync was enabled but auth is no longer available, disable it
+      set({
+        syncStatus: {
+          ...get().syncStatus,
+          syncEnabled: false,
+        },
+      });
+    }
+  },
+
+  syncToCloud: async () => {
+    const { syncStatus } = get();
+
+    if (!syncStatus.syncEnabled) {
+      console.log('[Store] Cloud sync is disabled');
+      return false;
+    }
+
+    if (syncStatus.isSyncing) {
+      console.log('[Store] Sync already in progress');
+      return false;
+    }
+
+    try {
+      // Set syncing state
+      set({
+        syncStatus: {
+          ...syncStatus,
+          isSyncing: true,
+          lastSyncError: null,
+        },
+      });
+
+      // Get all local data
+      const children = await db.children.toArray();
+      const dailyEntries = await db.dailyEntries.toArray();
+      const goals = await db.goals.toArray();
+
+      // Sync to cloud
+      const result = await syncUp({ children, dailyEntries, goals });
+
+      if (result.success) {
+        const lastSyncAt = result.lastSyncAt || new Date().toISOString();
+        localStorage.setItem('pcal_last_sync_at', lastSyncAt);
+
+        set({
+          syncStatus: {
+            ...get().syncStatus,
+            isSyncing: false,
+            lastSyncAt,
+            lastSyncError: null,
+          },
+        });
+
+        console.log('[Store] Sync to cloud successful');
+        return true;
+      } else {
+        set({
+          syncStatus: {
+            ...get().syncStatus,
+            isSyncing: false,
+            lastSyncError: result.error || 'Unknown sync error',
+          },
+        });
+
+        console.error('[Store] Sync to cloud failed:', result.error);
+        return false;
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      set({
+        syncStatus: {
+          ...get().syncStatus,
+          isSyncing: false,
+          lastSyncError: errorMessage,
+        },
+      });
+
+      console.error('[Store] Sync to cloud error:', error);
+      return false;
+    }
+  },
+
+  syncFromCloud: async () => {
+    const { syncStatus } = get();
+
+    if (!syncStatus.syncEnabled) {
+      console.log('[Store] Cloud sync is disabled');
+      return false;
+    }
+
+    if (syncStatus.isSyncing) {
+      console.log('[Store] Sync already in progress');
+      return false;
+    }
+
+    try {
+      // Set syncing state
+      set({
+        syncStatus: {
+          ...syncStatus,
+          isSyncing: true,
+          lastSyncError: null,
+        },
+      });
+
+      // Fetch from cloud
+      const result = await syncDown();
+
+      if (result.success && result.data) {
+        const { children, dailyEntries, goals } = result.data;
+
+        // Merge cloud data into local IndexedDB
+        // For children
+        for (const child of children) {
+          await db.children.put(child);
+        }
+
+        // For daily entries
+        for (const entry of dailyEntries) {
+          await db.dailyEntries.put(entry);
+        }
+
+        // For goals
+        for (const goal of goals) {
+          await db.goals.put(goal);
+        }
+
+        // Reload state from database
+        await get().loadChildren();
+        await get().loadEntries();
+        await get().loadGoals();
+
+        const lastSyncAt = result.lastSyncAt || new Date().toISOString();
+        localStorage.setItem('pcal_last_sync_at', lastSyncAt);
+
+        set({
+          syncStatus: {
+            ...get().syncStatus,
+            isSyncing: false,
+            lastSyncAt,
+            lastSyncError: null,
+          },
+        });
+
+        console.log('[Store] Sync from cloud successful');
+        return true;
+      } else {
+        set({
+          syncStatus: {
+            ...get().syncStatus,
+            isSyncing: false,
+            lastSyncError: result.error || 'Unknown sync error',
+          },
+        });
+
+        console.error('[Store] Sync from cloud failed:', result.error);
+        return false;
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      set({
+        syncStatus: {
+          ...get().syncStatus,
+          isSyncing: false,
+          lastSyncError: errorMessage,
+        },
+      });
+
+      console.error('[Store] Sync from cloud error:', error);
+      return false;
+    }
+  },
 }));
 
 /**
