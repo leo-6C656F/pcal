@@ -377,15 +377,15 @@ export function DailyEntryForm({ subView, onSubViewChange }: DailyEntryFormProps
       progress: 0,
       status: ''
     });
-    const [editedSummary, setEditedSummary] = useState<string>('');
+    const [editedSummary, setEditedSummary] = useState<string>(() => currentEntry?.aiSummary || '');
     const [isEditingSummary, setIsEditingSummary] = useState(false);
 
     // Sync editedSummary with currentEntry.aiSummary when not editing
     useEffect(() => {
-      if (currentEntry?.aiSummary && !isEditingSummary) {
+      if (currentEntry?.aiSummary && !isEditingSummary && editedSummary !== currentEntry.aiSummary) {
         setEditedSummary(currentEntry.aiSummary);
       }
-    }, [currentEntry?.aiSummary, isEditingSummary]);
+    }, [currentEntry?.aiSummary, isEditingSummary, editedSummary]);
 
     // Check model status on mount (only for local mode)
     useEffect(() => {
@@ -522,7 +522,7 @@ export function DailyEntryForm({ subView, onSubViewChange }: DailyEntryFormProps
               ) : currentEntry.aiSummary ? (
                 <div className="bg-white/80 p-5 rounded-xl border border-purple-100 shadow-sm">
                   <textarea
-                    value={editedSummary || currentEntry.aiSummary}
+                    value={editedSummary}
                     onChange={(e) => {
                       setEditedSummary(e.target.value);
                       if (!isEditingSummary) {
