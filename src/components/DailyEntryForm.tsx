@@ -32,7 +32,8 @@ export function DailyEntryForm({ subView, onSubViewChange }: DailyEntryFormProps
     updateActivityLine,
     deleteActivityLine,
     setCurrentChild,
-    setCurrentEntry
+    setCurrentEntry,
+    updateAISummary
   } = useStore();
 
   // Use subView prop from parent for browser history integration
@@ -510,7 +511,12 @@ export function DailyEntryForm({ subView, onSubViewChange }: DailyEntryFormProps
                 </div>
               ) : currentEntry.aiSummary ? (
                 <div className="bg-white/80 p-5 rounded-xl border border-purple-100 shadow-sm">
-                  <p className="text-slate-700 leading-relaxed">{currentEntry.aiSummary}</p>
+                  <textarea
+                    value={currentEntry.aiSummary}
+                    onChange={(e) => updateAISummary(currentEntry.id, e.target.value)}
+                    className="w-full text-slate-700 leading-relaxed bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-purple-200 rounded-lg p-2 min-h-[80px] resize-y"
+                    placeholder={t('dailyEntryForm.editSummaryPlaceholder') || 'Edit your summary here...'}
+                  />
                   {currentEntry.aiSummaryProvider && currentEntry.aiSummaryProvider !== 'fallback' && (
                     <div className="mt-3 flex items-center gap-1.5 text-xs text-purple-500">
                       <Sparkles size={12} />

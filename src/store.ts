@@ -35,6 +35,7 @@ interface AppState {
   deleteActivityLine: (entryId: string, lineId: string) => Promise<void>;
   saveSignature: (entryId: string, signatureBase64: string) => Promise<void>;
   generateAISummary: (entryId: string, onModelProgress?: (state: ModelLoadingState) => void) => Promise<void>;
+  updateAISummary: (entryId: string, summary: string) => Promise<void>;
   setAIConfig: (config: AIServiceConfig) => void;
   saveGoal: (goal: Goal) => Promise<void>;
   deleteGoal: (code: number) => Promise<void>;
@@ -243,6 +244,21 @@ export const useStore = create<AppState>((set, get) => ({
 
     entry.aiSummary = summary;
     entry.aiSummaryProvider = provider;
+    await db.dailyEntries.put(entry);
+    // Update state directly instead of reloading all entries
+    const updatedEntries = get().entries.map(e => e.id === entryId ? entry : e);
+    set({
+      entries: updatedEntries,
+      // Update current entry if it's the one being edited
+      currentEntry: get().currentEntry?.id === entryId ? entry : get().currentEntry
+    });
+  },
+
+  updateAISummary: async (entryId, summary) => {
+    const entry = await db.dailyEntries.get(entryId);
+    if (!entry) return;
+
+    entry.aiSummary = summary;
     await db.dailyEntries.put(entry);
     // Update state directly instead of reloading all entries
     const updatedEntries = get().entries.map(e => e.id === entryId ? entry : e);
