@@ -40,6 +40,11 @@ export function PDFExportPage() {
     }
   };
 
+  const selectUnsent = () => {
+    const unsentEntries = childEntries.filter((e: DailyEntry) => !e.emailedAt);
+    setSelectedEntryIds(new Set(unsentEntries.map((e: DailyEntry) => e.id)));
+  };
+
   const handleGeneratePDF = () => {
     const unsignedEntries = selectedEntries.filter((e: DailyEntry) => !e.signatureBase64);
     if (unsignedEntries.length > 0) {
@@ -119,12 +124,20 @@ export function PDFExportPage() {
                 <div className="p-6 border-b border-slate-200 dark:border-slate-700">
                   <div className="flex justify-between items-center">
                     <p className="text-lg font-semibold text-slate-800 dark:text-white">{t('pdfExport.selectEntries')}</p>
-                    <button
-                      onClick={toggleSelectAll}
-                      className="text-sm text-primary hover:text-primary/90 font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded px-2 py-1"
-                    >
-                      {selectedEntryIds.size === childEntries.length ? t('common.deselectAll') : t('common.selectAll')}
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={selectUnsent}
+                        className="text-sm text-primary hover:text-primary/90 font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded px-2 py-1"
+                      >
+                        {t('pdfExport.selectUnsent')}
+                      </button>
+                      <button
+                        onClick={toggleSelectAll}
+                        className="text-sm text-primary hover:text-primary/90 font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded px-2 py-1"
+                      >
+                        {selectedEntryIds.size === childEntries.length ? t('common.deselectAll') : t('common.selectAll')}
+                      </button>
+                    </div>
                   </div>
                 </div>
 

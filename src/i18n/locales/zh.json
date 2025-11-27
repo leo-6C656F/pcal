@@ -46,7 +46,13 @@
     "hours": "小时",
     "hour": "小时",
     "error": "错误",
-    "download": "下载"
+    "download": "下载",
+    "summary": "摘要",
+    "totalEntries": "总条目数",
+    "dashboard": "仪表板",
+    "readyForExport": "准备导出",
+    "backToHome": "返回主页",
+    "back": "返回"
   },
   "dashboard": {
     "title": "仪表板",
@@ -237,7 +243,9 @@
     "signatureRequiredDescription": "所有选定的条目必须有摘要和签名才能包含在 PDF 中。请在下方完成每个条目。",
     "entriesNeedingFinalization": "需要完成的条目",
     "finalize": "完成",
-    "finalizeAllToGenerate": "完成并签署所有条目以继续生成 PDF"
+    "finalizeAllToGenerate": "完成并签署所有条目以继续生成 PDF",
+    "selectedForExport": "已选择导出",
+    "selectUnsent": "选择未发送"
   },
   "confirmDialog": {
     "defaultConfirm": "确认",

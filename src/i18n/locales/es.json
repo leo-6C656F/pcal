@@ -46,7 +46,13 @@
     "hours": "horas",
     "hour": "hora",
     "error": "Error",
-    "download": "Descargar"
+    "download": "Descargar",
+    "summary": "Resumen",
+    "totalEntries": "Total de Entradas",
+    "dashboard": "Panel Principal",
+    "readyForExport": "Listo para Exportar",
+    "backToHome": "Volver al Inicio",
+    "back": "Atrás"
   },
   "dashboard": {
     "title": "Panel Principal",
@@ -237,7 +243,9 @@
     "signatureRequiredDescription": "Todas las entradas seleccionadas deben tener un resumen y firma antes de poder incluirse en el PDF. Por favor finalice cada entrada a continuación.",
     "entriesNeedingFinalization": "Entradas que necesitan finalización",
     "finalize": "Finalizar",
-    "finalizeAllToGenerate": "Complete y firme todas las entradas para proceder con la generación del PDF"
+    "finalizeAllToGenerate": "Complete y firme todas las entradas para proceder con la generación del PDF",
+    "selectedForExport": "Seleccionadas para Exportar",
+    "selectUnsent": "Seleccionar No Enviadas"
   },
   "confirmDialog": {
     "defaultConfirm": "Confirmar",

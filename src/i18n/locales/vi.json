@@ -46,7 +46,13 @@
     "hours": "giờ",
     "hour": "giờ",
     "error": "Lỗi",
-    "download": "Tải xuống"
+    "download": "Tải xuống",
+    "summary": "Tóm tắt",
+    "totalEntries": "Tổng số Mục",
+    "dashboard": "Bảng điều khiển",
+    "readyForExport": "Sẵn sàng Xuất",
+    "backToHome": "Quay lại Trang chủ",
+    "back": "Quay lại"
   },
   "dashboard": {
     "title": "Bảng điều khiển",
@@ -237,7 +243,9 @@
     "signatureRequiredDescription": "Tất cả các mục đã chọn phải có tóm tắt và chữ ký trước khi có thể đưa vào PDF. Vui lòng hoàn tất từng mục bên dưới.",
     "entriesNeedingFinalization": "Các mục cần hoàn tất",
     "finalize": "Hoàn tất",
-    "finalizeAllToGenerate": "Hoàn tất và ký tất cả các mục để tiếp tục tạo PDF"
+    "finalizeAllToGenerate": "Hoàn tất và ký tất cả các mục để tiếp tục tạo PDF",
+    "selectedForExport": "Đã chọn để Xuất",
+    "selectUnsent": "Chọn Chưa gửi"
   },
   "confirmDialog": {
     "defaultConfirm": "Xác nhận",

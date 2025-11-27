@@ -46,7 +46,13 @@
     "hours": "hours",
     "hour": "hour",
     "error": "Error",
-    "download": "Download"
+    "download": "Download",
+    "summary": "Summary",
+    "totalEntries": "Total Entries",
+    "dashboard": "Dashboard",
+    "readyForExport": "Ready for Export",
+    "backToHome": "Back to Home",
+    "back": "Back"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -284,7 +290,9 @@
     "signatureRequiredDescription": "All selected entries must have a summary and signature before they can be included in the PDF. Please finalize each entry below.",
     "entriesNeedingFinalization": "Entries needing finalization",
     "finalize": "Finalize",
-    "finalizeAllToGenerate": "Complete and sign all entries to proceed with PDF generation"
+    "finalizeAllToGenerate": "Complete and sign all entries to proceed with PDF generation",
+    "selectedForExport": "Selected for Export",
+    "selectUnsent": "Select Unsent"
   },
   "confirmDialog": {
     "defaultConfirm": "Confirm",
