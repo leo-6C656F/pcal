@@ -263,6 +263,15 @@ export function DailyEntryForm({ subView, onSubViewChange }: DailyEntryFormProps
     );
     const [isSaving, setIsSaving] = useState(false);
 
+    // Prevent body scrolling while form is open (fixes mobile pull-to-refresh interference)
+    useEffect(() => {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }, []);
+
     const handleSave = async () => {
       if (!line.goalCode) return;
 
@@ -301,7 +310,7 @@ export function DailyEntryForm({ subView, onSubViewChange }: DailyEntryFormProps
                 {activity ? t('dailyEntryForm.editActivity') : t('dailyEntryForm.addActivity')}
               </h2>
             </div>
-            <div className="p-6 space-y-6 flex-1 overflow-y-auto">
+            <div className="p-6 space-y-6 flex-1 overflow-y-auto overscroll-contain">
               <div className="space-y-2">
                 <GoalSelector
                   selectedGoalCode={line.goalCode || 1}
