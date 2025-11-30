@@ -122,10 +122,6 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
 
   const aggregatedActivities = await aggregateDailyActivities(entries, goals);
 
-  // Get date range
-  const startDate = entries[0].date;
-  const monthYear = format(parse(startDate, 'yyyy-MM-dd', new Date()), 'yyyy');
-
   // Ensure we have exactly 6 goals (pad with empty if needed)
   const sixGoals = [...goals];
   while (sixGoals.length < 6) {
@@ -147,6 +143,10 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
     // Calculate total for THIS page
     const pageTotal = pageActivities.reduce((sum, activity) => sum + activity.totalMinutes, 0);
     const pageTotalHours = (pageTotal / 60).toFixed(2);
+
+    // Get month/year from the first entry on this page
+    const firstEntryDate = pageActivities[0]?.date || entries[0].date;
+    const monthYear = format(parse(firstEntryDate, 'yyyy-MM-dd', new Date()), 'M/yyyy');
 
     return `
     <div class="page-container">
