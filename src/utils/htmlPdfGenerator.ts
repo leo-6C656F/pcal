@@ -79,7 +79,7 @@ async function aggregateDailyActivities(entries: DailyEntry[], _goals: Goal[]): 
 }
 
 /**
- * Group activities by week (Sunday to Saturday)
+ * Group activities by week (Monday to Sunday)
  */
 function groupActivitiesByWeek(activities: AggregatedDailyActivity[]): AggregatedDailyActivity[][] {
   if (activities.length === 0) return [];
@@ -92,8 +92,8 @@ function groupActivitiesByWeek(activities: AggregatedDailyActivity[]): Aggregate
 
   sortedActivities.forEach(activity => {
     const activityDate = parse(activity.date, 'yyyy-MM-dd', new Date());
-    // Get the start of the week (Sunday)
-    const weekStart = startOfWeek(activityDate, { weekStartsOn: 0 }); // 0 = Sunday
+    // Get the start of the week (Monday)
+    const weekStart = startOfWeek(activityDate, { weekStartsOn: 1 }); // 1 = Monday
 
     // Create a key for this week (using the week start date)
     const weekKey = format(weekStart, 'yyyy-MM-dd');
@@ -128,7 +128,7 @@ export async function generateHTML(options: HTMLPDFOptions): Promise<string> {
     sixGoals.push({ code: sixGoals.length + 1, description: '', activities: [] });
   }
 
-  // Group activities by week (Sunday to Saturday)
+  // Group activities by week (Monday to Sunday)
   const activityPages: AggregatedDailyActivity[][] = groupActivitiesByWeek(aggregatedActivities);
 
   // Determine font sizes based on content density
